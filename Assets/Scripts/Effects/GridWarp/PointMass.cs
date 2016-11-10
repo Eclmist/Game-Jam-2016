@@ -32,13 +32,18 @@ public class PointMass
         acceleration += force* inverseMass;
     }
 
+    public void Translate(Vector3 amount)
+    {
+        position += amount;
+    }
+
     public void IncreaseDamping(float factor)
     {
         damping *= factor;
     }
 
     public void Update()
-    {
+    { 
         velocity += acceleration;
         position += velocity;
         acceleration = Vector3.zero;

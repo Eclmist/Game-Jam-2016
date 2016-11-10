@@ -11,13 +11,12 @@ public class DefaultBullet : MonoBehaviour {
 
     // Use this for initialization
     void Start () {
-        Destroy(gameObject, 10);
+        Destroy(gameObject, 2);
 	}
 	
 	// Update is called once per frame
 	void FixedUpdate () {
         transform.position += transform.forward * speed;
 
-        Grid.Instance.ApplyImplosiveForce(-force, transform.position, range);
     }
 }

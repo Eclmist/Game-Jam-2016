@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class PlayerMovement : MonoBehaviour
 {
-    [Range(0, 1)]
+    [Range(0, 10)]
     [Tooltip("Wow a tooltip")]
     public float speed;
 
@@ -21,12 +21,18 @@ public class PlayerMovement : MonoBehaviour
 	
 	void FixedUpdate ()
 	{
-	    targetPos.x += Input.GetAxis("Horizontal");
+        targetPos = transform.position;
+
+        targetPos.x += Input.GetAxis("Horizontal");
         targetPos.z += Input.GetAxis("Vertical");
 	    transform.position = Vector3.Lerp(transform.position, targetPos, Time.deltaTime * speed);
 
-	    if (Input.GetKeyDown(KeyCode.Space))
-	    {
+	}
+
+    void Update()
+    {
+        if (Input.GetKey(KeyCode.X) || Input.GetKeyDown(KeyCode.Z))
+        {
             float mag;
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
             Plane plane = new Plane(Vector3.up, transform.position.y + 1);
@@ -36,8 +42,8 @@ public class PlayerMovement : MonoBehaviour
 
             Vector3 lookVector = point - transform.position;
             lookVector.y = 0;
-
             Instantiate(bullet, transform.position, Quaternion.LookRotation(lookVector, Vector3.up));
-	    }
-	}
+        }
+
+    }
 }
