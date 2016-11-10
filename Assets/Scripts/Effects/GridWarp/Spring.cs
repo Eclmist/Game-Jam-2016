@@ -15,7 +15,7 @@ public class Spring
     {
         left = l;
         right = r;
-        targetLength = (Vector3.Magnitude(l.position - r.position)*0.95f);
+        targetLength = (Vector3.Magnitude(l.position - r.position)*0.5f);
         stiffness = s;
         damping = d;
     }

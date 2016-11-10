@@ -43,9 +43,9 @@ public class Grid : MonoBehaviour
 
     void Start()
     {
-        points = new PointMass[numCols,numRows];
+        points = new PointMass[numRows, numCols];
 
-        fixedPoints = new PointMass[numCols, numRows];
+        fixedPoints = new PointMass[numRows, numCols];
 
         float halfWidth = gridWidth/2;
         float halfHeight = gridHeight/2;
@@ -61,8 +61,8 @@ public class Grid : MonoBehaviour
                 float xPos = transform.position.x - halfWidth + colCellSize * cols;
                 float zPos = transform.position.z - halfHeight + rowCellSize * rows;
 
-                points[cols, rows] = new PointMass(new Vector3(xPos, yPos, zPos), 1);
-                fixedPoints[cols, rows] = new PointMass(new Vector3(xPos, yPos, zPos), 0);
+                points[rows, cols] = new PointMass(new Vector3(xPos, yPos, zPos), 1);
+                fixedPoints[rows, cols] = new PointMass(new Vector3(xPos, yPos, zPos), 0);
             }
         }
 
@@ -76,9 +76,9 @@ public class Grid : MonoBehaviour
 
                     springs.Add(new Spring(fixedPoints[row, col], points[row, col], 0.1F, 0.1F));
                 }
-                else if (col % 3 == 0 && row % 3 == 0)
+                else if (col % 10 == 0 && row % 10 == 0)
                 {
-                    springs.Add(new Spring(fixedPoints[row, col], points[row, col], 0.002f, 0.02f));
+                    springs.Add(new Spring(fixedPoints[row, col], points[row, col], 0.2f, 0.2f));
                 }
 
                 if (col > 0)
@@ -110,6 +110,8 @@ public class Grid : MonoBehaviour
 
         while (!threadStopped)
         {
+
+            resetEvent.WaitOne();
 
             foreach (Spring s in springs)
             {
@@ -152,14 +154,14 @@ public class Grid : MonoBehaviour
                 float distance = Vector3.Distance(points[row, col].position, position);
                 if (distance < radius)
                 {
-                    points[row, col].ApplyForce(10*force*(position - points[row, col].position)/(100 + distance * distance));
+                    points[row, col].ApplyForce(10*force*(position - points[row, col].position)/(100 + Mathf.Pow(distance, 0.1F)));
                     points[row, col].IncreaseDamping(0.6F);
                 }
             }
         }
     }
 
-    void ApplyExplosiveForce(float force, Vector3 position, float radius)
+    public void ApplyExplosiveForce(float force, Vector3 position, float radius)
     {
 
         for (int row = 0; row < numRows; row++)
