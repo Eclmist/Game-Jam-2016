@@ -43,7 +43,7 @@ public class RenderGrid : MonoBehaviour
                     Vector3 pos1 = points[row, col - 1].position;
                     Vector3 pos2 = points[row, col].position;
 
-                    GL.Color(new Color(0, 0.3F, 1, 0.05F));
+                    GL.Color(new Color(0.5F, 0.3F, 1, 0.05F));
 
                     //if (row % 5 == 0 || numRows - 1 == row)
                     //    GL.Color(new Color(0, 0.1F, 0.8F, 0.2F));

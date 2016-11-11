@@ -99,14 +99,14 @@ public class Grid : MonoBehaviour
         {
             for (int col = 0; col < numCols; col++)
             {
-                //if (col == 0 || row == 0 || col == numCols - 1 || row == numRows - 1)
-                //{
+                if (col == 0 || row == 0 || col == numCols - 1 || row == numRows - 1)
+                {
+                    springs.Add(new Spring(fixedPoints[row, col], points[row, col], 0.1F, 0.5F));
+                }
+                else
+                {
                     springs.Add(new Spring(fixedPoints[row, col], points[row, col], 0.01F, 0.05F));
-                //}
-                //else if (col % 10 == 0 && row % 10 == 0)
-                //{
-                //    springs.Add(new Spring(fixedPoints[row, col], points[row, col], 0.02f, 0.02f));
-                //}
+                }
 
                 if (col > 0)
                 {
