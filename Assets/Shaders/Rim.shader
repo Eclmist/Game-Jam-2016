@@ -4,7 +4,7 @@
 	{
 		_RimColor("Rim Color", Color) = (0.26,0.19,0.16,0.0)
 		_RimPower("Rim Power", Range(0.5,8.0)) = 3.0
-		_Opacity("Opacity", Range(0,1)) = 1
+		_Opacity("Brightness", Range(0,100)) = 1
 
 
 	}
