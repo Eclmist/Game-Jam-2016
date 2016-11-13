@@ -1,0 +1,2642 @@
+<!DOCTYPE html>
+<html lang="en" >
+
+<head>
+
+	
+	<script>
+window.ts_endpoint_url = "https:\/\/slack.com\/beacon\/timing";
+
+(function(e) {
+	var n=Date.now?Date.now():+new Date,r=e.performance||{},t=[],a={},i=function(e,n){for(var r=0,a=t.length,i=[];a>r;r++)t[r][e]==n&&i.push(t[r]);return i},o=function(e,n){for(var r,a=t.length;a--;)r=t[a],r.entryType!=e||void 0!==n&&r.name!=n||t.splice(a,1)};r.now||(r.now=r.webkitNow||r.mozNow||r.msNow||function(){return(Date.now?Date.now():+new Date)-n}),r.mark||(r.mark=r.webkitMark||function(e){var n={name:e,entryType:"mark",startTime:r.now(),duration:0};t.push(n),a[e]=n}),r.measure||(r.measure=r.webkitMeasure||function(e,n,r){n=a[n].startTime,r=a[r].startTime,t.push({name:e,entryType:"measure",startTime:n,duration:r-n})}),r.getEntriesByType||(r.getEntriesByType=r.webkitGetEntriesByType||function(e){return i("entryType",e)}),r.getEntriesByName||(r.getEntriesByName=r.webkitGetEntriesByName||function(e){return i("name",e)}),r.clearMarks||(r.clearMarks=r.webkitClearMarks||function(e){o("mark",e)}),r.clearMeasures||(r.clearMeasures=r.webkitClearMeasures||function(e){o("measure",e)}),e.performance=r,"function"==typeof define&&(define.amd||define.ajs)&&define("performance",[],function(){return r}) // eslint-disable-line
+})(window);
+
+</script>
+<script>;(function() {
+
+'use strict';
+
+
+window.TSMark = function(mark_label) {
+	if (!window.performance || !window.performance.mark) return;
+	performance.mark(mark_label);
+};
+window.TSMark('start_load');
+
+
+window.TSMeasureAndBeacon = function(measure_label, start_mark_label) {
+	if (start_mark_label === 'start_nav' && window.performance && window.performance.timing) {
+		window.TSBeacon(measure_label, (new Date()).getTime() - performance.timing.navigationStart);
+		return;
+	}
+	if (!window.performance || !window.performance.mark || !window.performance.measure) return;
+	performance.mark(start_mark_label + '_end');
+	try {
+		performance.measure(measure_label, start_mark_label, start_mark_label + '_end');
+		window.TSBeacon(measure_label, performance.getEntriesByName(measure_label)[0].duration);
+	} catch(e) { return; }
+};
+
+
+window.TSBeacon = function(label, value) {
+	var endpoint_url = window.ts_endpoint_url || 'https://slack.com/beacon/timing';
+	(new Image()).src = endpoint_url + '?data=' + encodeURIComponent(label + ':' + value);
+};
+
+})();
+</script>
+ 
+
+<script>
+window.TSMark('step_load');
+</script>	<noscript><meta http-equiv="refresh" content="0; URL=/files/sertingg/F31RRPNMT/borders.obj?nojsmode=1" /></noscript>
+<script>(function() {
+        'use strict';
+
+	var start_time = Date.now();
+	var logs = [];
+	var connecting = true;
+	var ever_connected = false;
+	var log_namespace;
+
+	var logWorker = function(ob) {
+		var log_str = ob.secs+' start_label:'+ob.start_label+' measure_label:'+ob.measure_label+' description:'+ob.description;
+
+		if (TS.metrics.getLatestMark(ob.start_label)) {
+			TS.metrics.measure(ob.measure_label, ob.start_label);
+			TS.log(88, log_str);
+
+			if (ob.do_reset) {
+				window.TSMark(ob.start_label);
+			}
+		} else {
+			TS.maybeWarn(88, 'not timing: '+log_str);
+		}
+	}
+
+	var log = function(k, description) {
+		var secs = (Date.now()-start_time)/1000;
+
+		logs.push({
+			k: k,
+			d: description,
+			t: secs,
+			c: !!connecting
+		})
+
+		if (!window.boot_data) return;
+		if (!window.TS) return;
+		if (!TS.metrics) return;
+		if (!connecting) return;
+
+		
+		log_namespace = log_namespace || (function() {
+			if (boot_data.app == 'client') return 'client';
+			if (boot_data.app == 'space') return 'post';
+			if (boot_data.app == 'api') return 'apisite';
+			if (boot_data.app == 'mobile') return 'mobileweb';
+			if (boot_data.app == 'web' || boot_data.app == 'oauth') return 'web';
+			return 'unknown';
+		})();
+
+		var modifier = (TS.boot_data.feature_no_rollups) ? '_no_rollups' : '';
+
+		logWorker({
+			k: k,
+			secs: secs,
+			description: description,
+			start_label: ever_connected ? 'start_reconnect' : 'start_load',
+			measure_label: 'v2_'+log_namespace+modifier+(ever_connected ? '_reconnect__' : '_load__')+k,
+			do_reset: false,
+		});
+	}
+
+	var setConnecting = function(val) {
+		val = !!val;
+		if (val == connecting) return;
+
+		if (val) {
+			log('start');
+			if (ever_connected) {
+				
+				window.TSMark('start_reconnect');
+				window.TSMark('step_reconnect');
+				window.TSMark('step_load');
+			}
+
+			connecting = val;
+			log('start');
+		} else {
+			log('over');
+			ever_connected = true;
+			connecting = val;
+		}
+	}
+
+	window.TSConnLogger = {
+		log: log,
+		logs: logs,
+		start_time: start_time,
+		setConnecting: setConnecting
+	}
+})();</script>
+
+<script type="text/javascript">
+if(self!==top)window.document.write("\u003Cstyle>body * {display:none !important;}\u003C\/style>\u003Ca href=\"#\" onclick="+
+"\"top.location.href=window.location.href\" style=\"display:block !important;padding:10px\">Go to Slack.com\u003C\/a>");
+
+(function() {
+	var timer;
+	if (self !== top) {
+		timer = window.setInterval(function() {
+			if (window.$) {
+				try {
+					$('#page').remove();
+					$('#client-ui').remove();
+					window.TS = null;
+					window.clearInterval(timer);
+				} catch(e) {}
+			}
+		}, 200);
+	}
+}());
+
+</script>
+
+<script>(function() {
+        'use strict';
+
+        window.callSlackAPIUnauthed = function(method, args, callback) {
+                var timestamp = Date.now() / 1000;  
+                var version = (window.TS && TS.boot_data) ? TS.boot_data.version_uid.substring(0, 8) : 'noversion';
+                var url = '/api/' + method + '?_x_id=' + version + '-' + timestamp;
+                var req = new XMLHttpRequest();
+
+                req.onreadystatechange = function() {
+                        if (req.readyState == 4) {
+                                req.onreadystatechange = null;
+                                var obj;
+
+                                if (req.status == 200 || req.status == 429) {
+                                        try {
+                                                obj = JSON.parse(req.responseText);
+                                        } catch (err) {
+                                                console.warn('unable to do anything with api rsp');
+                                        }
+                                }
+
+                                obj = obj || {
+                                        ok: false
+                                }
+
+                                callback(obj.ok, obj, args);
+                        }
+                }
+
+                var async = true;
+                req.open('POST', url, async);
+
+                var form_data = new FormData();
+                var has_data = false;
+                Object.keys(args).map(function(k) {
+                        if (k[0] === '_') return;
+                        form_data.append(k, args[k]);
+                        has_data = true;
+                });
+
+                if (has_data) {
+                        req.send(form_data);
+                } else {
+                        req.send();
+                }
+        }
+})();</script>
+
+						
+	
+		<script>
+			if (window.location.host == 'slack.com' && window.location.search.indexOf('story') < 0) {
+				document.cookie = '__cvo_skip_doc=' + escape(document.URL) + '|' + escape(document.referrer) + ';path=/';
+			}
+		</script>
+	
+
+		<script type="text/javascript">
+		
+		try {
+			if(window.location.hash && !window.location.hash.match(/^(#?[a-zA-Z0-9_]*)$/)) {
+				window.location.hash = '';
+			}
+		} catch(e) {}
+		
+	</script>
+
+	<script type="text/javascript">
+				(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+		(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+		m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+		})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+		ga('create', "UA-106458-17", 'slack.com');
+
+		
+			window.optimizely = [];
+		
+		
+		ga('send', 'pageview');
+	
+		(function(e,c,b,f,d,g,a){e.SlackBeaconObject=d;
+		e[d]=e[d]||function(){(e[d].q=e[d].q||[]).push([1*new Date(),arguments])};
+		e[d].l=1*new Date();g=c.createElement(b);a=c.getElementsByTagName(b)[0];
+		g.async=1;g.src=f;a.parentNode.insertBefore(g,a)
+		})(window,document,"script","https://a.slack-edge.com/dcf8/js/libs/beacon.js","sb");
+		sb('set', 'token', '3307f436963e02d4f9eb85ce5159744c');
+
+					sb('set', 'user_id', "U31B6JNJX");
+							sb('set', 'user_' + "batch", "signup_api");
+							sb('set', 'user_' + "created", "2016-11-11");
+						sb('set', 'name_tag', "kawaiigamejam" + '/' + "eclmist");
+				sb('track', 'pageview');
+
+		function track(a){ga('send','event','web',a);sb('track',a);}
+
+	</script>
+
+
+
+<script type='text/javascript'>
+	
+	/* safety stub */
+	window.mixpanel = {
+		track: function() {},
+		track_links: function() {},
+		track_forms: function() {}
+	};
+
+	function mixpanel_track(){}
+	function mixpanel_track_forms(){}
+	function mixpanel_track_links(){}
+	
+</script>
+	
+	<meta name="referrer" content="no-referrer">
+		<meta name="superfish" content="nofish">
+
+	<script type="text/javascript">
+
+
+
+var TS_last_log_date = null;
+var TSMakeLogDate = function() {
+	var date = new Date();
+
+	var y = date.getFullYear();
+	var mo = date.getMonth()+1;
+	var d = date.getDate();
+
+	var time = {
+	  h: date.getHours(),
+	  mi: date.getMinutes(),
+	  s: date.getSeconds(),
+	  ms: date.getMilliseconds()
+	};
+
+	Object.keys(time).map(function(moment, index) {
+		if (moment == 'ms') {
+			if (time[moment] < 10) {
+				time[moment] = time[moment]+'00';
+			} else if (time[moment] < 100) {
+				time[moment] = time[moment]+'0';
+			}
+		} else if (time[moment] < 10) {
+			time[moment] = '0' + time[moment];
+		}
+	});
+
+	var str = y + '/' + mo + '/' + d + ' ' + time.h + ':' + time.mi + ':' + time.s + '.' + time.ms;
+	if (TS_last_log_date) {
+		var diff = date-TS_last_log_date;
+		//str+= ' ('+diff+'ms)';
+	}
+	TS_last_log_date = date;
+	return str+' ';
+}
+
+var parseDeepLinkRequest = function(code) {
+	var m = code.match(/"id":"([CDG][A-Z0-9]{8})"/);
+	var id = m ? m[1] : null;
+
+	m = code.match(/"team":"(T[A-Z0-9]{8})"/);
+	var team = m ? m[1] : null;
+
+	m = code.match(/"message":"([0-9]+\.[0-9]+)"/);
+	var message = m ? m[1] : null;
+
+	return { id: id, team: team, message: message };
+}
+
+if ('rendererEvalAsync' in window) {
+	var origRendererEvalAsync = window.rendererEvalAsync;
+	window.rendererEvalAsync = function(blob) {
+		try {
+			var data = JSON.parse(decodeURIComponent(atob(blob)));
+			if (data.code.match(/handleDeepLink/)) {
+				var request = parseDeepLinkRequest(data.code);
+				if (!request.id || !request.team || !request.message) return;
+
+				request.cmd = 'channel';
+				TSSSB.handleDeepLinkWithArgs(JSON.stringify(request));
+				return;
+			} else {
+				origRendererEvalAsync(blob);
+			}
+		} catch (e) {
+		}
+	}
+}
+</script>
+
+
+
+<script type="text/javascript">
+
+	var TSSSB = {
+		call: function() {
+			return false;
+		}
+	};
+
+</script>
+<script>TSSSB.env = (function() {
+	'use strict';
+
+	var v = {
+		win_ssb_version: null,
+		win_ssb_version_minor: null,
+		mac_ssb_version: null,
+		mac_ssb_version_minor: null,
+		mac_ssb_build: null,
+		lin_ssb_version: null,
+		lin_ssb_version_minor: null,
+		desktop_app_version: null
+	};
+
+	var is_win = (navigator.appVersion.indexOf("Windows") !== -1);
+	var is_lin = (navigator.appVersion.indexOf("Linux") !== -1);
+	var is_mac = !!(navigator.userAgent.match(/(OS X)/g));
+
+	if (navigator.userAgent.match(/(Slack_SSB)/g) || navigator.userAgent.match(/(Slack_WINSSB)/g)) {
+		
+		var parts = navigator.userAgent.split('/');
+		var version_str = parts[parts.length-1];
+		var version_float = parseFloat(version_str);
+		var version_parts = version_str.split('.');
+		var version_minor = (version_parts.length == 3) ? parseInt(version_parts[2]) : 0;
+
+		if (navigator.userAgent.match(/(AtomShell)/g)) {
+			
+			if (is_lin) {
+				v.lin_ssb_version = version_float;
+				v.lin_ssb_version_minor = version_minor;
+			} else if (is_win) {
+				v.win_ssb_version = version_float;
+				v.win_ssb_version_minor = version_minor;
+			} else if (is_mac) {
+				v.mac_ssb_version = version_float;
+				v.mac_ssb_version_minor = version_minor;
+			}
+
+			if (version_parts.length >= 3) {
+				v.desktop_app_version = {
+					major: parseInt(version_parts[0]),
+					minor: parseInt(version_parts[1]),
+					patch: parseInt(version_parts[2])
+				}
+			}
+		} else {
+			
+			v.mac_ssb_version = version_float;
+			v.mac_ssb_version_minor = version_minor;
+
+			
+			
+			var app_ver = window.macgap && macgap.app && macgap.app.buildVersion && macgap.app.buildVersion();
+			var matches = String(app_ver).match(/(?:\()(.*)(?:\))/);
+			v.mac_ssb_build = (matches && matches.length == 2) ? parseInt(matches[1] || 0) : 0;
+		}
+	}
+
+	return v;
+})();
+</script>
+
+
+	<script type="text/javascript">
+		
+		var was_TS = window.TS;
+		delete window.TS;
+		TSSSB.call('didFinishLoading');
+		if (was_TS) window.TS = was_TS;
+	</script>
+	    <title>borders.obj | Kawaii Game Jam Slack</title>
+    <meta name="author" content="Slack">
+
+	
+		
+	
+	
+					
+	
+				
+	
+	
+	
+	
+			<!-- output_css "core" -->
+    <link href="https://a.slack-edge.com/c26e/style/rollup-plastic.css" rel="stylesheet" type="text/css" crossorigin="anonymous">
+
+		<!-- output_css "before_file_pages" -->
+    <link href="https://a.slack-edge.com/74a30/style/libs/codemirror.css" rel="stylesheet" type="text/css" crossorigin="anonymous">
+    <link href="https://a.slack-edge.com/7b37b/style/codemirror_overrides.css" rel="stylesheet" type="text/css" crossorigin="anonymous">
+
+	<!-- output_css "file_pages" -->
+    <link href="https://a.slack-edge.com/98cc/style/rollup-file_pages.css" rel="stylesheet" type="text/css" crossorigin="anonymous">
+
+	<!-- output_css "regular" -->
+    <link href="https://a.slack-edge.com/53d7/style/print.css" rel="stylesheet" type="text/css" crossorigin="anonymous">
+    <link href="https://a.slack-edge.com/1d9c/style/libs/lato-1-compressed.css" rel="stylesheet" type="text/css" crossorigin="anonymous">
+
+	
+
+	
+	
+		<meta name="robots" content="noindex, nofollow" />
+	
+
+	
+<link id="favicon" rel="shortcut icon" href="https://a.slack-edge.com/66f9/img/icons/favicon-32.png" sizes="16x16 32x32 48x48" type="image/png" />
+
+<link rel="icon" href="https://a.slack-edge.com/0180/img/icons/app-256.png" sizes="256x256" type="image/png" />
+
+<link rel="apple-touch-icon-precomposed" sizes="152x152" href="https://a.slack-edge.com/66f9/img/icons/ios-152.png" />
+<link rel="apple-touch-icon-precomposed" sizes="144x144" href="https://a.slack-edge.com/66f9/img/icons/ios-144.png" />
+<link rel="apple-touch-icon-precomposed" sizes="120x120" href="https://a.slack-edge.com/66f9/img/icons/ios-120.png" />
+<link rel="apple-touch-icon-precomposed" sizes="114x114" href="https://a.slack-edge.com/66f9/img/icons/ios-114.png" />
+<link rel="apple-touch-icon-precomposed" sizes="72x72" href="https://a.slack-edge.com/0180/img/icons/ios-72.png" />
+<link rel="apple-touch-icon-precomposed" href="https://a.slack-edge.com/66f9/img/icons/ios-57.png" />
+
+<meta name="msapplication-TileColor" content="#FFFFFF" />
+<meta name="msapplication-TileImage" content="https://a.slack-edge.com/66f9/img/icons/app-144.png" />
+	
+	<!--[if lt IE 9]>
+	<script src="https://a.slack-edge.com/ef0d/js/libs/html5shiv.js"></script>
+	<![endif]-->
+
+</head>
+
+<body class="			">
+
+		  			<script>
+		
+			var w = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
+			if (w > 1440) document.querySelector('body').classList.add('widescreen');
+		
+		</script>
+	
+  	
+	
+
+			<nav id="site_nav" class="no_transition">
+
+	<div id="site_nav_contents">
+
+		<div id="user_menu">
+			<div id="user_menu_contents">
+				<div id="user_menu_avatar">
+										<span class="member_image thumb_48" style="background-image: url('https://secure.gravatar.com/avatar/a2ba7d151a7e317e651b09dd0966b0cc.jpg?s=192&d=https%3A%2F%2Fa.slack-edge.com%2F7fa9%2Fimg%2Favatars%2Fava_0008-192.png')" data-thumb-size="48" data-member-id="U31B6JNJX"></span>
+					<span class="member_image thumb_36" style="background-image: url('https://secure.gravatar.com/avatar/a2ba7d151a7e317e651b09dd0966b0cc.jpg?s=72&d=https%3A%2F%2Fa.slack-edge.com%2F66f9%2Fimg%2Favatars%2Fava_0008-72.png')" data-thumb-size="36" data-member-id="U31B6JNJX"></span>
+				</div>
+				<h3>Signed in as</h3>
+				<span id="user_menu_name">eclmist</span>
+			</div>
+		</div>
+
+		<div class="nav_contents">
+
+			<ul class="primary_nav">
+				<li><a href="/home" data-qa="home"><i class="ts_icon ts_icon_home"></i>Home</a></li>
+				<li><a href="/account" data-qa="account_profile"><i class="ts_icon ts_icon_user"></i>Account & Profile</a></li>
+				<li><a href="/apps/manage" data-qa="configure_apps" target="_blank"><i class="ts_icon ts_icon_plug"></i>Configure Apps</a></li>
+				<li><a href="/archives"data-qa="archives"><i class="ts_icon ts_icon_archive" ></i>Message Archives</a></li>
+				<li><a href="/files" data-qa="files"><i class="ts_icon ts_icon_all_files clear_blue"></i>Files</a></li>
+				<li><a href="/team" data-qa="team_directory"><i class="ts_icon ts_icon_team_directory"></i>Team Directory</a></li>
+									<li><a href="/stats" data-qa="statistics"><i class="ts_icon ts_icon_dashboard"></i>Statistics</a></li>
+													<li><a href="/customize" data-qa="customize"><i class="ts_icon ts_icon_magic"></i>Customize</a></li>
+													<li><a href="/account/team" data-qa="team_settings"><i class="ts_icon ts_icon_cog_o"></i>Team Settings</a></li>
+							</ul>
+
+			
+		</div>
+
+		<div id="footer">
+
+			<ul id="footer_nav">
+				<li><a href="/is" data-qa="tour">Tour</a></li>
+				<li><a href="/downloads" data-qa="download_apps">Download Apps</a></li>
+				<li><a href="/brand-guidelines" data-qa="brand_guidelines">Brand Guidelines</a></li>
+				<li><a href="/help" data-qa="help">Help</a></li>
+				<li><a href="https://api.slack.com" target="_blank" data-qa="api">API<i class="ts_icon ts_icon_external_link small_left_margin ts_icon_inherit"></i></a></li>
+								<li><a href="/pricing" data-qa="pricing">Pricing</a></li>
+				<li><a href="/help/requests/new" data-qa="contact">Contact</a></li>
+				<li><a href="/terms-of-service" data-qa="policies">Policies</a></li>
+				<li><a href="http://slackhq.com/" target="_blank" data-qa="our_blog">Our Blog</a></li>
+				<li><a href="https://slack.com/signout/102732447216?crumb=s-1478941859-d20c92c044-%E2%98%83" data-qa="sign_out">Sign Out<i class="ts_icon ts_icon_sign_out small_left_margin ts_icon_inherit"></i></a></li>
+			</ul>
+
+			<p id="footer_signature">Made with <i class="ts_icon ts_icon_heart"></i> by Slack</p>
+
+		</div>
+
+	</div>
+</nav>	
+			<header>
+			<a id="menu_toggle" class="no_transition" data-qa="menu_toggle_hamburger">
+			<span class="menu_icon"></span>
+			<span class="menu_label">Menu</span>
+			<span class="vert_divider"></span>
+		</a>
+		<h1 id="header_team_name" class="inline_block no_transition" data-qa="header_team_name">
+			<a href="/home">
+				<i class="ts_icon ts_icon_home" /></i>
+				Kawaii Game Jam
+			</a>
+		</h1>
+		<div class="header_nav">
+			<div class="header_btns float_right">
+				<a id="team_switcher" data-qa="team_switcher">
+					<i class="ts_icon ts_icon_th_large ts_icon_inherit"></i>
+					<span class="block label">Teams</span>
+				</a>
+				<a href="/help" id="help_link" data-qa="help_link">
+					<i class="ts_icon ts_icon_life_ring ts_icon_inherit"></i>
+					<span class="block label">Help</span>
+				</a>
+									<a href="/messages" data-qa="launch">
+						<img src="https://a.slack-edge.com/66f9/img/icons/ios-64.png" srcset="https://a.slack-edge.com/66f9/img/icons/ios-32.png 1x, https://a.slack-edge.com/66f9/img/icons/ios-64.png 2x" />
+						<span class="block label">Launch</span>
+					</a>
+							</div>
+				                    <ul id="header_team_nav" data-qa="team_switcher_menu">
+	                        	                            <li class="active">
+	                            	<a href="https://kawaiigamejam.slack.com/home" target="https://kawaiigamejam.slack.com/">
+	                            			                            			<i class="ts_icon small ts_icon_check_circle_o active_icon s"></i>
+	                            			                            			                            			<i class="team_icon small default" >KG</i>
+	                            			                            		<span class="switcher_label team_name">Kawaii Game Jam</span>
+	                            	</a>
+	                            </li>
+	                        	                        <li id="add_team_option"><a href="https://slack.com/signin" target="_blank"><i class="ts_icon ts_icon_plus team_icon small"></i> <span class="switcher_label">Sign in to another team...</span></a></li>
+	                    </ul>
+	                		</div>
+	
+	
+</header>	
+	<div id="page" >
+
+		<div id="page_contents" data-qa="page_contents" class="">
+
+<p class="print_only">
+	<strong>Created by sertingg on November 12, 2016 at 5:09 PM</strong><br />
+	<span class="subtle_silver break_word">https://kawaiigamejam.slack.com/files/sertingg/F31RRPNMT/borders.obj</span>
+</p>
+
+<div class="file_header_container no_print"></div>
+
+<div class="alert_container">
+		<div class="file_public_link_shared alert" style="display: none;">
+		
+	<i class="ts_icon ts_icon_link"></i> Public Link: <a class="file_public_link" href="https://slack-files.com/T30MJD56C-F31RRPNMT-4b59ecdcd3" target="new">https://slack-files.com/T30MJD56C-F31RRPNMT-4b59ecdcd3</a>
+</div></div>
+
+<div id="file_page" class="card top_padding">
+
+	<p class="small subtle_silver no_print meta">
+		44KB Plain Text snippet created on <span class="date">November 12th 2016</span>.
+				<span class="file_share_list"></span>
+	</p>
+
+	<a id="file_action_cog" class="action_cog action_cog_snippet float_right no_print">
+		<span>Actions </span><i class="ts_icon ts_icon_cog"></i>
+	</a>
+	<a id="snippet_expand_toggle" class="float_right no_print">
+		<i class="ts_icon ts_icon_expand "></i>
+		<i class="ts_icon ts_icon_compress hidden"></i>
+	</a>
+
+	<div class="large_bottom_margin clearfix">
+		<pre id="file_contents"># This file uses centimeters as units for non-parametric coordinates.
+
+mtllib borders.mtl
+g default
+v -1.033920 -0.902372 19.999998
+v 1.033920 -0.902372 19.999998
+v -1.033920 24.097603 19.999998
+v 1.033920 24.097603 19.999998
+v -1.033920 24.097603 -19.999998
+v 1.033920 24.097603 -19.999998
+v -1.033920 -0.902372 -19.999998
+v 1.033920 -0.902372 -19.999998
+v 1.033920 20.015064 17.602038
+v 1.033920 21.631099 16.289809
+v 1.033920 22.222610 14.497273
+v 1.033920 24.097420 19.999697
+v 1.033920 17.807520 18.082347
+v -1.033920 21.631099 16.289809
+v -1.033920 20.015064 17.602038
+v -1.033920 17.807520 18.082347
+v -1.033920 24.097420 19.999697
+v -1.033920 22.222610 14.497273
+v 1.033920 21.631099 -16.021647
+v 1.033920 20.015064 -17.577280
+v 1.033920 17.807520 -18.146681
+v 1.033920 24.097420 -19.999697
+v 1.033920 22.222610 -13.896617
+v -1.033920 20.015064 -17.577280
+v -1.033920 21.631099 -16.021647
+v -1.033920 22.222610 -13.896617
+v -1.033920 24.097420 -19.999697
+v -1.033920 17.807520 -18.146681
+v 1.033920 1.564131 16.289809
+v 1.033920 3.180166 17.602038
+v 1.033920 5.387711 18.082347
+v 1.033920 -0.902190 19.999697
+v 1.033920 0.972621 14.497273
+v -1.033920 3.180167 17.602038
+v -1.033920 1.564131 16.289809
+v -1.033920 0.972621 14.497273
+v -1.033920 -0.902190 19.999697
+v -1.033920 5.387711 18.082347
+v 1.033920 3.180167 -17.577280
+v 1.033920 1.564131 -16.021647
+v 1.033920 0.972621 -13.896617
+v 1.033920 -0.902190 -19.999697
+v 1.033920 5.387711 -18.146681
+v -1.033920 1.564131 -16.021647
+v -1.033920 3.180166 -17.577280
+v -1.033920 5.387711 -18.146681
+v -1.033920 -0.902190 -19.999697
+v -1.033920 0.972621 -13.896617
+v 0.044444 21.130170 13.684750
+v 0.796241 21.455913 13.927026
+v -0.720511 21.418155 13.898945
+v 0.042230 20.606591 15.299855
+v -0.723932 20.874469 15.558699
+v 0.792824 20.903752 15.586994
+v 0.042171 19.157372 16.480453
+v -0.723902 19.380279 16.771942
+v 0.792796 19.404844 16.804066
+v 0.042434 17.172888 16.908350
+v -0.723613 17.339052 17.215735
+v 0.793105 17.357521 17.249899
+v 0.042433 6.022342 16.908350
+v -0.723613 5.856178 17.215735
+v 0.793105 5.837710 17.249899
+v 0.042171 4.037859 16.480453
+v -0.723902 3.814951 16.771942
+v 0.792795 3.790387 16.804066
+v 0.042230 2.588639 15.299855
+v -0.723932 2.320762 15.558699
+v 0.792824 2.291478 15.586994
+v 0.044444 2.065060 13.684750
+v -0.720511 1.777076 13.898944
+v 0.796241 1.739318 13.927028
+v 0.044444 2.065060 -12.933379
+v -0.720511 1.777076 -13.187306
+v 0.796241 1.739318 -13.220595
+v 0.042230 2.588639 -14.848069
+v -0.723932 2.320762 -15.154924
+v 0.792824 2.291478 -15.188468
+v 0.042171 4.037858 -16.247654
+v -0.723902 3.814951 -16.593211
+v 0.792796 3.790387 -16.631292
+v 0.042434 6.022342 -16.754920
+v -0.723613 5.856178 -17.119322
+v 0.793105 5.837710 -17.159823
+v 0.042433 17.172889 -16.754920
+v -0.723613 17.339053 -17.119322
+v 0.793105 17.357521 -17.159823
+v 0.042171 19.157371 -16.247653
+v -0.723902 19.380279 -16.593211
+v 0.792795 19.404844 -16.631292
+v 0.042230 20.606591 -14.848069
+v -0.723932 20.874469 -15.154924
+v 0.792824 20.903752 -15.188468
+v 0.044444 21.130170 -12.933379
+v -0.720511 21.418155 -13.187304
+v 0.796241 21.455913 -13.220596
+vt 0.375000 0.500000
+vt 0.625000 0.500000
+vt 0.375000 0.750000
+vt 0.625000 0.750000
+vt 0.375000 1.000000
+vt 0.625000 1.000000
+vt 0.625000 0.250000
+vt 0.125000 0.250000
+vt 0.625000 0.000000
+vt 0.375000 0.250000
+vt 0.875000 0.000000
+vt 0.875000 0.250000
+vt 0.125000 0.000000
+vt 0.375000 0.000000
+vt 0.625000 0.250000
+vt 0.375000 0.250000
+vt 0.875000 0.250000
+vt 0.125000 0.250000
+vt 0.625000 0.000000
+vt 0.375000 0.000000
+vt 0.875000 0.000000
+vt 0.125000 0.000000
+vt 0.215597 0.231717
+vt 0.378111 0.185814
+vt 0.345752 0.018283
+vt 0.183255 0.064186
+vt 0.345752 0.231717
+vt 0.358993 0.221663
+vt 0.370620 0.205983
+vt 0.183255 0.185814
+vt 0.192489 0.205983
+vt 0.204018 0.221663
+vt 0.378111 0.064186
+vt 0.370620 0.044017
+vt 0.358993 0.028337
+vt 0.215597 0.018283
+vt 0.204018 0.028337
+vt 0.192489 0.044017
+vt 0.641007 0.221663
+vt 0.629380 0.205983
+vt 0.621889 0.185814
+vt 0.621889 0.064186
+vt 0.629380 0.044017
+vt 0.641007 0.028337
+vt 0.654248 0.018283
+vt 0.784403 0.018283
+vt 0.795982 0.028337
+vt 0.807511 0.044017
+vt 0.816745 0.064186
+vt 0.816745 0.185814
+vt 0.807511 0.205983
+vt 0.795982 0.221663
+vt 0.784403 0.231717
+vt 0.654248 0.231717
+vt 0.506777 0.189729
+vt 0.586256 0.200726
+vt 0.425232 0.198043
+vt 0.506226 0.183605
+vt 0.428992 0.191283
+vt 0.581165 0.193532
+vt 0.505866 0.175018
+vt 0.433694 0.181434
+vt 0.575741 0.183269
+vt 0.505563 0.163964
+vt 0.438192 0.168714
+vt 0.570680 0.170038
+vt 0.505563 0.086036
+vt 0.438192 0.081286
+vt 0.570680 0.079962
+vt 0.505866 0.074982
+vt 0.433694 0.068566
+vt 0.575741 0.066731
+vt 0.506226 0.066396
+vt 0.428992 0.058717
+vt 0.581165 0.056468
+vt 0.506777 0.060271
+vt 0.425231 0.051957
+vt 0.586256 0.049274
+vt 0.510729 0.060271
+vt 0.371536 0.051957
+vt 0.647880 0.049274
+vt 0.510705 0.066395
+vt 0.365107 0.058717
+vt 0.653822 0.056468
+vt 0.511032 0.074982
+vt 0.360941 0.068566
+vt 0.658683 0.066731
+vt 0.511333 0.086036
+vt 0.358633 0.081286
+vt 0.661622 0.079962
+vt 0.511333 0.163964
+vt 0.358633 0.168714
+vt 0.661622 0.170038
+vt 0.511032 0.175018
+vt 0.360941 0.181434
+vt 0.658683 0.183269
+vt 0.510705 0.183604
+vt 0.365107 0.191283
+vt 0.653822 0.193532
+vt 0.510729 0.189729
+vt 0.371536 0.198043
+vt 0.647880 0.200726
+vn 0.000000 0.000000 1.000000
+vn 0.000000 0.000000 1.000000
+vn 0.000000 0.000000 1.000000
+vn 0.000000 0.000000 1.000000
+vn 0.000000 1.000000 0.000000
+vn 0.000000 1.000000 0.000000
+vn 0.000000 1.000000 0.000000
+vn 0.000000 1.000000 0.000000
+vn 0.000000 0.000000 -1.000000
+vn 0.000000 0.000000 -1.000000
+vn 0.000000 0.000000 -1.000000
+vn 0.000000 0.000000 -1.000000
+vn 0.000000 -1.000000 0.000000
+vn 0.000000 -1.000000 0.000000
+vn 0.000000 -1.000000 0.000000
+vn 0.000000 -1.000000 0.000000
+vn 1.000000 0.000000 0.000000
+vn 1.000000 0.000000 0.000000
+vn 1.000000 0.000000 0.000000
+vn 1.000000 0.000000 0.000000
+vn 1.000000 0.000000 0.000000
+vn 1.000000 0.000000 0.000000
+vn 1.000000 -0.000000 0.000000
+vn 1.000000 -0.000000 0.000000
+vn 1.000000 -0.000000 0.000000
+vn 1.000000 -0.000000 0.000000
+vn 1.000000 -0.000000 0.000000
+vn 1.000000 -0.000000 0.000000
+vn 1.000000 -0.000000 0.000000
+vn 1.000000 -0.000000 0.000000
+vn 1.000000 0.000000 0.000000
+vn 1.000000 0.000000 0.000000
+vn -1.000000 0.000000 0.000000
+vn -1.000000 0.000000 0.000000
+vn -1.000000 0.000000 0.000000
+vn -1.000000 0.000000 0.000000
+vn -1.000000 0.000000 0.000000
+vn -1.000000 0.000000 0.000000
+vn -1.000000 -0.000000 0.000000
+vn -1.000000 -0.000000 0.000000
+vn -1.000000 -0.000000 0.000000
+vn -1.000000 -0.000000 0.000000
+vn -1.000000 -0.000000 0.000000
+vn -1.000000 -0.000000 0.000000
+vn -1.000000 -0.000000 0.000000
+vn -1.000000 -0.000000 0.000000
+vn -1.000000 0.000000 0.000000
+vn -1.000000 0.000000 0.000000
+vn 1.000000 0.000000 0.000000
+vn 1.000000 0.000000 0.000000
+vn -1.000000 0.000000 0.000000
+vn -1.000000 0.000000 0.000000
+vn 1.000000 -0.000000 0.000000
+vn 1.000000 -0.000000 0.000000
+vn -1.000000 0.000000 0.000000
+vn -1.000000 0.000000 0.000000
+vn 1.000000 -0.000000 0.000000
+vn 1.000000 -0.000000 0.000000
+vn -1.000000 0.000000 0.000000
+vn -1.000000 0.000000 0.000000
+vn 1.000000 0.000000 0.000000
+vn 1.000000 0.000000 0.000000
+vn -1.000000 0.000000 0.000000
+vn -1.000000 0.000000 0.000000
+vn 0.762998 -0.646289 -0.012001
+vn 0.401809 -0.915560 -0.017303
+vn 0.402518 -0.915254 0.016999
+vn 0.765316 -0.643546 0.011780
+vn -0.356303 -0.934213 -0.017164
+vn -0.731081 -0.682169 -0.012903
+vn -0.733203 -0.679892 0.012639
+vn -0.356987 -0.933956 0.016939
+vn -0.433710 -0.735707 -0.520222
+vn -0.811099 -0.475985 -0.339936
+vn 0.830130 -0.454767 -0.322601
+vn 0.480223 -0.713744 -0.509859
+vn -0.425321 -0.381879 -0.820531
+vn -0.798730 -0.253493 -0.545684
+vn 0.822114 -0.239888 -0.516316
+vn 0.469994 -0.372316 -0.800304
+vn -0.377501 -0.029710 -0.925532
+vn -0.759516 -0.020790 -0.650156
+vn 0.787597 -0.019698 -0.615876
+vn 0.419569 -0.029109 -0.907256
+vn -0.377501 0.029710 -0.925532
+vn -0.759516 0.020790 -0.650156
+vn 0.787597 0.019698 -0.615875
+vn 0.419570 0.029109 -0.907256
+vn -0.425322 0.381879 -0.820530
+vn -0.798731 0.253493 -0.545684
+vn 0.822114 0.239888 -0.516316
+vn 0.469994 0.372316 -0.800304
+vn -0.433709 0.735707 -0.520222
+vn -0.811099 0.475985 -0.339936
+vn 0.830130 0.454767 -0.322601
+vn 0.480222 0.713744 -0.509859
+vn -0.356303 0.934213 -0.017164
+vn -0.731081 0.682168 -0.012903
+vn 0.762998 0.646289 -0.012001
+vn 0.401809 0.915560 -0.017303
+vn -0.356987 0.933956 0.016939
+vn -0.733203 0.679892 0.012639
+vn 0.765316 0.643547 0.011780
+vn 0.402518 0.915254 0.016999
+vn -0.451642 0.766479 0.456651
+vn -0.824693 0.484812 0.291271
+vn 0.843245 0.461472 0.275647
+vn 0.499184 0.742686 0.446355
+vn -0.473821 0.425743 0.770868
+vn -0.836209 0.264840 0.480223
+vn 0.856571 0.249223 0.451856
+vn 0.520543 0.412711 0.747465
+vn -0.435062 0.034262 0.899749
+vn -0.810631 0.022205 0.585137
+vn 0.834667 0.020890 0.550359
+vn 0.480471 0.033358 0.876376
+vn -0.435062 -0.034262 0.899749
+vn -0.810631 -0.022205 0.585137
+vn 0.834667 -0.020890 0.550359
+vn 0.480471 -0.033358 0.876376
+vn -0.473821 -0.425743 0.770867
+vn -0.836209 -0.264840 0.480223
+vn 0.856571 -0.249223 0.451857
+vn 0.520544 -0.412711 0.747465
+vn -0.451643 -0.766479 0.456650
+vn -0.824693 -0.484812 0.291271
+vn 0.843245 -0.461472 0.275647
+vn 0.499185 -0.742686 0.446355
+vn -0.933989 -0.357225 0.007405
+vn -0.933614 -0.358207 -0.007290
+vn -0.943489 -0.012282 -0.331175
+vn -0.943489 0.012282 -0.331175
+vn -0.933614 0.358207 -0.007290
+vn -0.933989 0.357225 0.007405
+vn -0.958771 0.012426 0.283908
+vn -0.958771 -0.012426 0.283908
+vn -0.958096 -0.235161 -0.163561
+vn -0.957159 -0.127621 -0.259923
+vn -0.966615 -0.128242 0.221833
+vn -0.961949 -0.234895 0.139569
+vn -0.957159 0.127621 -0.259923
+vn -0.958096 0.235161 -0.163561
+vn -0.961948 0.234895 0.139569
+vn -0.966615 0.128242 0.221833
+vn 0.956366 -0.292108 -0.006030
+vn 0.972159 -0.192767 -0.133218
+vn 0.971390 -0.105543 -0.212750
+vn 0.962040 -0.010393 -0.272710
+vn 0.962040 0.010393 -0.272710
+vn 0.971390 0.105543 -0.212750
+vn 0.972159 0.192767 -0.133218
+vn 0.956366 0.292108 -0.006030
+vn 0.956624 0.291260 0.006166
+vn 0.974766 0.192073 0.113750
+vn 0.977787 0.105593 0.181059
+vn 0.972523 0.010447 0.232574
+vn 0.972523 -0.010447 0.232574
+vn 0.977787 -0.105593 0.181059
+vn 0.974766 -0.192073 0.113750
+vn 0.956624 -0.291260 0.006166
+s off
+g pCube1
+usemtl initialShadingGroup
+f 1/14/1 2/9/2 4/7/3 3/10/4
+f 3/10/5 4/7/6 6/2/7 5/1/8
+f 5/1/9 6/2/10 8/4/11 7/3/12
+f 7/3/13 8/4/14 2/6/15 1/5/16
+s 1
+f 2/9/17 8/11/18 42/21/19 41/46/20 33/45/21 32/19/22
+f 8/11/18 6/12/23 22/17/24 21/50/25 43/49/26 42/21/19
+f 6/12/23 4/7/27 12/15/28 11/54/29 23/53/30 22/17/24
+f 4/7/27 2/9/17 32/19/22 31/42/31 13/41/32 12/15/28
+s 2
+f 7/13/33 1/14/34 37/20/35 36/25/36 48/36/37 47/22/38
+f 1/14/34 3/10/39 17/16/40 16/24/41 38/33/42 37/20/35
+f 3/10/39 5/8/43 27/18/44 26/23/45 18/27/46 17/16/40
+f 5/8/43 7/13/33 47/22/38 46/26/47 28/30/48 27/18/44
+s 1
+f 12/15/28 13/41/32 9/40/49
+f 12/15/28 9/40/49 10/39/50
+f 12/15/28 10/39/50 11/54/29
+s 2
+f 17/16/40 18/27/46 14/28/51
+f 17/16/40 14/28/51 15/29/52
+f 17/16/40 15/29/52 16/24/41
+s 1
+f 22/17/24 23/53/30 19/52/53
+f 22/17/24 19/52/53 20/51/54
+f 22/17/24 20/51/54 21/50/25
+s 2
+f 27/18/44 28/30/48 24/31/55
+f 27/18/44 24/31/55 25/32/56
+f 27/18/44 25/32/56 26/23/45
+s 1
+f 32/19/22 33/45/21 29/44/57
+f 32/19/22 29/44/57 30/43/58
+f 32/19/22 30/43/58 31/42/31
+s 2
+f 37/20/35 38/33/42 34/34/59
+f 37/20/35 34/34/59 35/35/60
+f 37/20/35 35/35/60 36/25/36
+s 1
+f 42/21/19 43/49/26 39/48/61
+f 42/21/19 39/48/61 40/47/62
+f 42/21/19 40/47/62 41/46/20
+s 2
+f 47/22/38 48/36/37 44/37/63
+f 47/22/38 44/37/63 45/38/64
+f 47/22/38 45/38/64 46/26/47
+s 3
+f 50/56/65 49/55/66 94/100/67 96/102/68
+s 4
+f 49/55/69 51/57/70 95/101/71 94/100/72
+f 51/57/70 49/55/69 52/58/73 53/59/74
+s 3
+f 49/55/66 50/56/65 54/60/75 52/58/76
+s 4
+f 53/59/74 52/58/73 55/61/77 56/62/78
+s 3
+f 52/58/76 54/60/75 57/63/79 55/61/80
+s 4
+f 56/62/78 55/61/77 58/64/81 59/65/82
+s 3
+f 55/61/80 57/63/79 60/66/83 58/64/84
+s 4
+f 59/65/82 58/64/81 61/67/85 62/68/86
+s 3
+f 58/64/84 60/66/83 63/69/87 61/67/88
+s 4
+f 62/68/86 61/67/85 64/70/89 65/71/90
+s 3
+f 61/67/88 63/69/87 66/72/91 64/70/92
+s 4
+f 65/71/90 64/70/89 67/73/93 68/74/94
+s 3
+f 64/70/92 66/72/91 69/75/95 67/73/96
+s 4
+f 68/74/94 67/73/93 70/76/97 71/77/98
+s 3
+f 67/73/96 69/75/95 72/78/99 70/76/100
+s 4
+f 71/77/98 70/76/97 73/79/101 74/80/102
+s 3
+f 70/76/100 72/78/99 75/81/103 73/79/104
+s 4
+f 74/80/102 73/79/101 76/82/105 77/83/106
+s 3
+f 73/79/104 75/81/103 78/84/107 76/82/108
+s 4
+f 77/83/106 76/82/105 79/85/109 80/86/110
+s 3
+f 76/82/108 78/84/107 81/87/111 79/85/112
+s 4
+f 80/86/110 79/85/109 82/88/113 83/89/114
+s 3
+f 79/85/112 81/87/111 84/90/115 82/88/116
+s 4
+f 83/89/114 82/88/113 85/91/117 86/92/118
+s 3
+f 82/88/116 84/90/115 87/93/119 85/91/120
+s 4
+f 86/92/118 85/91/117 88/94/121 89/95/122
+s 3
+f 85/91/120 87/93/119 90/96/123 88/94/124
+s 4
+f 89/95/122 88/94/121 91/97/125 92/98/126
+s 3
+f 88/94/124 90/96/123 93/99/127 91/97/128
+s 4
+f 92/98/126 91/97/125 94/100/72 95/101/71
+s 3
+f 91/97/128 93/99/127 96/102/68 94/100/67
+s 4
+f 26/23/129 95/101/71 51/57/70 18/27/130
+f 16/24/131 59/65/82 62/68/86 38/33/132
+f 36/25/133 71/77/98 74/80/102 48/36/134
+f 46/26/135 83/89/114 86/92/118 28/30/136
+f 51/57/70 53/59/74 14/28/137 18/27/130
+f 53/59/74 56/62/78 15/29/138 14/28/137
+f 56/62/78 59/65/82 16/24/131 15/29/138
+f 86/92/118 89/95/122 24/31/139 28/30/136
+f 89/95/122 92/98/126 25/32/140 24/31/139
+f 92/98/126 95/101/71 26/23/129 25/32/140
+f 62/68/86 65/71/90 34/34/141 38/33/132
+f 65/71/90 68/74/94 35/35/142 34/34/141
+f 68/74/94 71/77/98 36/25/133 35/35/142
+f 74/80/102 77/83/106 44/37/143 48/36/134
+f 77/83/106 80/86/110 45/38/144 44/37/143
+f 80/86/110 83/89/114 46/26/135 45/38/144
+s 3
+f 11/54/145 10/39/146 54/60/75 50/56/65
+f 10/39/146 9/40/147 57/63/79 54/60/75
+f 9/40/147 13/41/148 60/66/83 57/63/79
+f 63/69/87 60/66/83 13/41/148 31/42/149
+f 31/42/149 30/43/150 66/72/91 63/69/87
+f 30/43/150 29/44/151 69/75/95 66/72/91
+f 29/44/151 33/45/152 72/78/99 69/75/95
+f 75/81/103 72/78/99 33/45/152 41/46/153
+f 41/46/153 40/47/154 78/84/107 75/81/103
+f 40/47/154 39/48/155 81/87/111 78/84/107
+f 39/48/155 43/49/156 84/90/115 81/87/111
+f 87/93/119 84/90/115 43/49/156 21/50/157
+f 21/50/157 20/51/158 90/96/123 87/93/119
+f 20/51/158 19/52/159 93/99/127 90/96/123
+f 19/52/159 23/53/160 96/102/68 93/99/127
+f 50/56/65 96/102/68 23/53/160 11/54/145
+g default
+v 0.000000 2.119141 -14.435574
+v -0.504693 2.009539 -13.942926
+v -0.000000 1.899938 -13.450277
+v 0.504693 2.009539 -13.942926
+v 0.000000 3.253899 -13.666088
+vt 0.500000 0.000000
+vt 0.250000 0.250000
+vt 0.500000 0.500000
+vt 0.750000 0.250000
+vt 0.250000 0.500000
+vt 0.375000 0.500000
+vt 0.500000 0.500000
+vt 0.625000 0.500000
+vt 0.750000 0.500000
+vt 0.500000 1.000000
+vn 0.000000 -0.976135 -0.217165
+vn 0.000000 -0.976135 -0.217165
+vn 0.000000 -0.976135 -0.217165
+vn 0.000000 -0.976135 -0.217165
+vn -0.680928 0.411023 -0.606134
+vn -0.680928 0.411023 -0.606134
+vn -0.680928 0.411023 -0.606134
+vn -0.680928 0.115276 0.723221
+vn -0.680928 0.115276 0.723221
+vn -0.680928 0.115276 0.723221
+vn 0.680928 0.115276 0.723221
+vn 0.680928 0.115276 0.723221
+vn 0.680928 0.115276 0.723221
+vn 0.680928 0.411023 -0.606133
+vn 0.680928 0.411023 -0.606133
+vn 0.680928 0.411023 -0.606133
+s off
+g pPyramid19 group7 group3
+usemtl initialShadingGroup
+f 97/103/161 100/106/162 99/105/163 98/104/164
+f 97/107/165 98/108/166 101/112/167
+f 98/108/168 99/109/169 101/112/170
+f 99/109/171 100/110/172 101/112/173
+f 100/110/174 97/111/175 101/112/176
+g default
+v 0.000000 2.274031 -15.131791
+v -0.504693 2.164430 -14.639142
+v -0.000000 2.054828 -14.146494
+v 0.504693 2.164430 -14.639142
+v 0.000000 4.002200 -14.686540
+vt 0.500000 0.000000
+vt 0.250000 0.250000
+vt 0.500000 0.500000
+vt 0.750000 0.250000
+vt 0.250000 0.500000
+vt 0.375000 0.500000
+vt 0.500000 0.500000
+vt 0.625000 0.500000
+vt 0.750000 0.500000
+vt 0.500000 1.000000
+vn 0.000000 -0.976135 -0.217165
+vn 0.000000 -0.976135 -0.217165
+vn 0.000000 -0.976135 -0.217165
+vn 0.000000 -0.976135 -0.217165
+vn -0.706911 0.176469 -0.684935
+vn -0.706911 0.176469 -0.684935
+vn -0.706911 0.176469 -0.684935
+vn -0.661726 0.200358 0.722479
+vn -0.661726 0.200358 0.722479
+vn -0.661726 0.200358 0.722479
+vn 0.661726 0.200358 0.722479
+vn 0.661726 0.200358 0.722479
+vn 0.661726 0.200358 0.722479
+vn 0.706911 0.176469 -0.684934
+vn 0.706911 0.176469 -0.684934
+vn 0.706911 0.176469 -0.684934
+s off
+g group7 group3 pPyramid20
+usemtl initialShadingGroup
+f 102/113/177 105/116/178 104/115/179 103/114/180
+f 102/117/181 103/118/182 106/122/183
+f 103/118/184 104/119/185 106/122/186
+f 104/119/187 105/120/188 106/122/189
+f 105/120/190 102/121/191 106/122/192
+g default
+v -0.446505 2.350987 -14.698577
+v -0.728726 2.093060 -14.429213
+v -0.387985 2.052031 -14.111496
+v -0.105764 2.309958 -14.380860
+v -0.821880 3.302945 -14.132603
+vt 0.500000 0.000000
+vt 0.250000 0.250000
+vt 0.500000 0.500000
+vt 0.750000 0.250000
+vt 0.250000 0.500000
+vt 0.375000 0.500000
+vt 0.500000 0.500000
+vt 0.625000 0.500000
+vt 0.750000 0.500000
+vt 0.500000 1.000000
+vn 0.324123 -0.829553 -0.454737
+vn 0.324123 -0.829553 -0.454737
+vn 0.324123 -0.829553 -0.454737
+vn 0.324123 -0.829553 -0.454737
+vn -0.735985 0.107209 -0.668455
+vn -0.735985 0.107209 -0.668455
+vn -0.735985 0.107209 -0.668455
+vn -0.678955 -0.223705 0.699268
+vn -0.678955 -0.223705 0.699268
+vn -0.678955 -0.223705 0.699268
+vn 0.567562 0.210298 0.796020
+vn 0.567562 0.210298 0.796020
+vn 0.567562 0.210298 0.796020
+vn 0.595650 0.570848 -0.565097
+vn 0.595650 0.570848 -0.565097
+vn 0.595650 0.570848 -0.565097
+s off
+g group7 group3 pPyramid21
+usemtl initialShadingGroup
+f 107/123/193 110/126/194 109/125/195 108/124/196
+f 107/127/197 108/128/198 111/132/199
+f 108/128/200 109/129/201 111/132/202
+f 109/129/203 110/130/204 111/132/205
+f 110/130/206 107/131/207 111/132/208
+g default
+v -0.168212 3.241931 -15.979447
+v -0.565682 2.967969 -15.513743
+v -0.025920 2.792668 -15.156191
+v 0.371550 3.066630 -15.621895
+v -0.220639 4.681488 -15.120556
+vt 0.500000 0.000000
+vt 0.250000 0.250000
+vt 0.500000 0.500000
+vt 0.750000 0.250000
+vt 0.250000 0.500000
+vt 0.375000 0.500000
+vt 0.500000 0.500000
+vt 0.625000 0.500000
+vt 0.750000 0.500000
+vt 0.500000 1.000000
+vn 0.036267 -0.874573 -0.483535
+vn 0.036267 -0.874573 -0.483535
+vn 0.036267 -0.874573 -0.483535
+vn 0.036267 -0.874573 -0.483535
+vn -0.805334 0.281840 -0.521539
+vn -0.805334 0.281840 -0.521539
+vn -0.805334 0.281840 -0.521539
+vn -0.567320 -0.073959 0.820169
+vn -0.567320 -0.073959 0.820169
+vn -0.567320 -0.073959 0.820169
+vn 0.740277 0.063689 0.669279
+vn 0.740277 0.063689 0.669279
+vn 0.740277 0.063689 0.669279
+vn 0.591551 0.428887 -0.682733
+vn 0.591551 0.428887 -0.682733
+vn 0.591551 0.428887 -0.682733
+s off
+g group7 group3 pPyramid22
+usemtl initialShadingGroup
+f 112/133/209 115/136/210 114/135/211 113/134/212
+f 112/137/213 113/138/214 116/142/215
+f 113/138/216 114/139/217 116/142/218
+f 114/139/219 115/140/220 116/142/221
+f 115/140/222 112/141/223 116/142/224
+g default
+v -0.149122 4.312282 -16.516900
+v -0.393061 3.983148 -16.476496
+v -0.061793 3.743530 -16.428408
+v 0.182146 4.072664 -16.468812
+v -0.181298 4.431313 -15.495008
+vt 0.500000 0.000000
+vt 0.250000 0.250000
+vt 0.500000 0.500000
+vt 0.750000 0.250000
+vt 0.250000 0.500000
+vt 0.375000 0.500000
+vt 0.500000 0.500000
+vt 0.625000 0.500000
+vt 0.750000 0.500000
+vt 0.500000 1.000000
+vn 0.036267 -0.148201 -0.988292
+vn 0.036267 -0.148201 -0.988292
+vn 0.036267 -0.148201 -0.988292
+vn 0.036267 -0.148201 -0.988292
+vn -0.805334 0.585394 -0.093545
+vn -0.805334 0.585394 -0.093545
+vn -0.805334 0.585394 -0.093545
+vn -0.567320 -0.695971 0.440196
+vn -0.567320 -0.695971 0.440196
+vn -0.567320 -0.695971 0.440196
+vn 0.740277 -0.492477 0.457665
+vn 0.740277 -0.492477 0.457665
+vn 0.740277 -0.492477 0.457665
+vn 0.591551 0.802783 -0.074883
+vn 0.591551 0.802783 -0.074883
+vn 0.591551 0.802783 -0.074883
+s off
+g group7 group3 pPyramid23
+usemtl initialShadingGroup
+f 117/143/225 120/146/226 119/145/227 118/144/228
+f 117/147/229 118/148/230 121/152/231
+f 118/148/232 119/149/233 121/152/234
+f 119/149/235 120/150/236 121/152/237
+f 120/150/238 117/151/239 121/152/240
+g default
+v 0.000000 18.747130 -16.647488
+v -0.504693 18.286218 -16.853096
+v -0.000000 17.825305 -17.058705
+v 0.504693 18.286217 -16.853096
+v 0.000000 17.528774 -15.155137
+vt 0.500000 0.000000
+vt 0.250000 0.250000
+vt 0.500000 0.500000
+vt 0.750000 0.250000
+vt 0.250000 0.500000
+vt 0.375000 0.500000
+vt 0.500000 0.500000
+vt 0.625000 0.500000
+vt 0.750000 0.500000
+vt 0.500000 1.000000
+vn 0.000000 0.407393 -0.913253
+vn 0.000000 0.407393 -0.913253
+vn 0.000000 0.407393 -0.913253
+vn 0.000000 0.407393 -0.913253
+vn -0.694430 0.557395 0.455058
+vn -0.694430 0.557395 0.455058
+vn -0.694430 0.557395 0.455058
+vn -0.694430 -0.710985 -0.110755
+vn -0.694430 -0.710985 -0.110755
+vn -0.694430 -0.710985 -0.110755
+vn 0.694430 -0.710985 -0.110755
+vn 0.694430 -0.710985 -0.110755
+vn 0.694430 -0.710985 -0.110755
+vn 0.694430 0.557395 0.455058
+vn 0.694430 0.557395 0.455058
+vn 0.694430 0.557395 0.455058
+s off
+g pPyramid1 group5 group4
+usemtl initialShadingGroup
+f 122/153/241 125/156/242 124/155/243 123/154/244
+f 122/157/245 123/158/246 126/162/247
+f 123/158/248 124/159/249 126/162/250
+f 124/159/251 125/160/252 126/162/253
+f 125/160/254 122/161/255 126/162/256
+g default
+v 0.000000 20.119788 -16.339181
+v -0.504693 19.658876 -16.544790
+v -0.000000 19.197964 -16.750398
+v 0.504693 19.658876 -16.544790
+v -0.000000 19.338972 -14.734456
+vt 0.500000 0.000000
+vt 0.250000 0.250000
+vt 0.500000 0.500000
+vt 0.750000 0.250000
+vt 0.250000 0.500000
+vt 0.375000 0.500000
+vt 0.500000 0.500000
+vt 0.625000 0.500000
+vt 0.750000 0.500000
+vt 0.500000 1.000000
+vn 0.000000 0.407393 -0.913253
+vn 0.000000 0.407393 -0.913253
+vn 0.000000 0.407393 -0.913253
+vn 0.000000 0.407393 -0.913253
+vn -0.706911 0.636009 0.309465
+vn -0.706911 0.636009 0.309465
+vn -0.706911 0.636010 0.309465
+vn -0.661726 -0.747918 0.052314
+vn -0.661726 -0.747918 0.052314
+vn -0.661726 -0.747918 0.052314
+vn 0.661726 -0.747918 0.052314
+vn 0.661726 -0.747918 0.052314
+vn 0.661726 -0.747918 0.052314
+vn 0.706911 0.636009 0.309465
+vn 0.706911 0.636009 0.309465
+vn 0.706911 0.636009 0.309465
+s off
+g group5 group4 pPyramid2
+usemtl initialShadingGroup
+f 127/163/257 130/166/258 129/165/259 128/164/260
+f 127/167/261 128/168/262 131/172/263
+f 128/168/264 129/169/265 131/172/266
+f 129/169/267 130/170/268 131/172/269
+f 130/170/270 127/171/271 131/172/272
+g default
+v -0.573682 19.473262 -16.063534
+v -0.855902 19.260720 -16.369981
+v -0.515161 18.957558 -16.473522
+v -0.232940 19.170100 -16.167075
+v -0.949057 18.728879 -15.243507
+vt 0.500000 0.000000
+vt 0.250000 0.250000
+vt 0.500000 0.500000
+vt 0.750000 0.250000
+vt 0.250000 0.500000
+vt 0.375000 0.500000
+vt 0.500000 0.500000
+vt 0.625000 0.500000
+vt 0.750000 0.500000
+vt 0.500000 1.000000
+vn 0.324123 0.610977 -0.722254
+vn 0.324123 0.610977 -0.722254
+vn 0.324123 0.610977 -0.722254
+vn 0.324123 0.610977 -0.722254
+vn -0.735985 0.633668 0.238310
+vn -0.735985 0.633668 0.238310
+vn -0.735985 0.633668 0.238310
+vn -0.678955 -0.640639 -0.358611
+vn -0.678955 -0.640639 -0.358611
+vn -0.678955 -0.640639 -0.358611
+vn 0.567562 -0.821965 0.047395
+vn 0.567562 -0.821965 0.047395
+vn 0.567562 -0.821965 0.047395
+vn 0.595650 0.439960 0.672039
+vn 0.595650 0.439960 0.672039
+vn 0.595650 0.439960 0.672039
+s off
+g group5 group4 pPyramid3
+usemtl initialShadingGroup
+f 132/173/273 135/176/274 134/175/275 133/174/276
+f 132/177/277 133/178/278 136/182/279
+f 133/178/280 134/179/281 136/182/282
+f 134/179/283 135/180/284 136/182/285
+f 135/180/286 132/181/287 136/182/288
+g default
+v -0.240385 20.625175 -15.169384
+v -0.637855 20.223430 -15.530682
+v -0.098092 19.908000 -15.773741
+v 0.299378 20.309744 -15.412442
+v -0.292812 19.496554 -13.929935
+vt 0.500000 0.000000
+vt 0.250000 0.250000
+vt 0.500000 0.500000
+vt 0.750000 0.250000
+vt 0.250000 0.500000
+vt 0.375000 0.500000
+vt 0.500000 0.500000
+vt 0.625000 0.500000
+vt 0.750000 0.500000
+vt 0.500000 1.000000
+vn 0.036267 0.648172 -0.760630
+vn 0.036267 0.648172 -0.760630
+vn 0.036267 0.648172 -0.760630
+vn 0.036267 0.648172 -0.760630
+vn -0.805334 0.454888 0.380149
+vn -0.805334 0.454888 0.380149
+vn -0.805334 0.454888 0.380149
+vn -0.567320 -0.788965 -0.235971
+vn -0.567320 -0.788965 -0.235971
+vn -0.567320 -0.788965 -0.235971
+vn 0.740277 -0.668542 -0.071006
+vn 0.740277 -0.668542 -0.071007
+vn 0.740277 -0.668542 -0.071007
+vn 0.591551 0.583534 0.556378
+vn 0.591551 0.583534 0.556378
+vn 0.591551 0.583534 0.556378
+s off
+g group5 group4 pPyramid4
+usemtl initialShadingGroup
+f 137/183/289 140/186/290 139/185/291 138/184/292
+f 137/187/293 138/188/294 141/192/295
+f 138/188/296 139/189/297 141/192/298
+f 139/189/299 140/190/300 141/192/301
+f 140/190/302 137/191/303 141/192/304
+g default
+v -0.208209 20.869191 -14.076779
+v -0.452148 20.895209 -14.407361
+v -0.120879 20.895852 -14.651756
+v 0.123060 20.869834 -14.321173
+v -0.251851 19.528540 -14.180218
+vt 0.500000 0.000000
+vt 0.250000 0.250000
+vt 0.500000 0.500000
+vt 0.750000 0.250000
+vt 0.250000 0.500000
+vt 0.375000 0.500000
+vt 0.500000 0.500000
+vt 0.625000 0.500000
+vt 0.750000 0.500000
+vt 0.500000 1.000000
+vn 0.036267 0.998000 0.051784
+vn 0.036267 0.998000 0.051784
+vn 0.036267 0.998000 0.051784
+vn 0.036267 0.998000 0.051784
+vn -0.805226 -0.019514 0.592646
+vn -0.805226 -0.019514 0.592646
+vn -0.805226 -0.019514 0.592647
+vn -0.579447 -0.215555 -0.785988
+vn -0.579447 -0.215555 -0.785988
+vn -0.579447 -0.215555 -0.785988
+vn 0.763213 -0.274786 -0.584807
+vn 0.763213 -0.274786 -0.584807
+vn 0.763213 -0.274786 -0.584807
+vn 0.591819 -0.081143 0.801976
+vn 0.591819 -0.081143 0.801976
+vn 0.591819 -0.081143 0.801976
+s off
+g group5 group4 pPyramid5
+usemtl initialShadingGroup
+f 142/193/305 145/196/306 144/195/307 143/194/308
+f 142/197/309 143/198/310 146/202/311
+f 143/198/312 144/199/313 146/202/314
+f 144/199/315 145/200/316 146/202/317
+f 145/200/318 142/201/319 146/202/320
+g default
+v 0.000000 18.246219 -16.906964
+v -0.504693 17.785307 -17.112572
+v -0.000000 17.324395 -17.318181
+v 0.504693 17.785307 -17.112572
+v 0.000000 17.265969 -15.948374
+vt 0.500000 0.000000
+vt 0.250000 0.250000
+vt 0.500000 0.500000
+vt 0.750000 0.250000
+vt 0.250000 0.500000
+vt 0.375000 0.500000
+vt 0.500000 0.500000
+vt 0.625000 0.500000
+vt 0.750000 0.500000
+vt 0.500000 1.000000
+vn 0.000000 0.407393 -0.913253
+vn 0.000000 0.407393 -0.913253
+vn 0.000000 0.407393 -0.913253
+vn 0.000000 0.407393 -0.913253
+vn -0.680928 0.512033 0.523603
+vn -0.680928 0.512033 0.523603
+vn -0.680928 0.512033 0.523603
+vn -0.680928 -0.731685 -0.031208
+vn -0.680928 -0.731685 -0.031208
+vn -0.680928 -0.731685 -0.031208
+vn 0.680928 -0.731685 -0.031208
+vn 0.680928 -0.731685 -0.031208
+vn 0.680928 -0.731685 -0.031208
+vn 0.680928 0.512033 0.523603
+vn 0.680928 0.512033 0.523603
+vn 0.680928 0.512033 0.523603
+s off
+g group5 group4 pPyramid11
+usemtl initialShadingGroup
+f 147/203/321 150/206/322 149/205/323 148/204/324
+f 147/207/325 148/208/326 151/212/327
+f 148/208/328 149/209/329 151/212/330
+f 149/209/331 150/210/332 151/212/333
+f 150/210/334 147/211/335 151/212/336
+g default
+v 0.000000 17.466564 -16.982988
+v -0.504693 16.964880 -17.038014
+v -0.000000 16.463196 -17.093040
+v 0.504693 16.964880 -17.038014
+v 0.000000 16.825893 -15.770832
+vt 0.500000 0.000000
+vt 0.250000 0.250000
+vt 0.500000 0.500000
+vt 0.750000 0.250000
+vt 0.250000 0.500000
+vt 0.375000 0.500000
+vt 0.500000 0.500000
+vt 0.625000 0.500000
+vt 0.750000 0.500000
+vt 0.500000 1.000000
+vn 0.000000 0.109028 -0.994039
+vn 0.000000 0.109028 -0.994039
+vn 0.000000 0.109028 -0.994039
+vn 0.000000 0.109028 -0.994039
+vn -0.680928 0.647476 0.342216
+vn -0.680928 0.647476 0.342216
+vn -0.680928 0.647476 0.342216
+vn -0.680928 -0.706261 0.193736
+vn -0.680928 -0.706261 0.193736
+vn -0.680928 -0.706261 0.193735
+vn 0.680928 -0.706261 0.193735
+vn 0.680928 -0.706261 0.193735
+vn 0.680928 -0.706261 0.193735
+vn 0.680928 0.647476 0.342216
+vn 0.680928 0.647476 0.342216
+vn 0.680928 0.647476 0.342216
+s off
+g group5 group4 pPyramid12
+usemtl initialShadingGroup
+f 152/213/337 155/216/338 154/215/339 153/214/340
+f 152/217/341 153/218/342 156/222/343
+f 153/218/344 154/219/345 156/222/346
+f 154/219/347 155/220/348 156/222/349
+f 155/220/350 152/221/351 156/222/352
+g default
+v 0.000000 16.762208 -17.263820
+v -0.504693 16.260524 -17.318846
+v -0.000000 15.758840 -17.373872
+v 0.504693 16.260524 -17.318846
+v 0.000000 16.157879 -16.383000
+vt 0.500000 0.000000
+vt 0.250000 0.250000
+vt 0.500000 0.500000
+vt 0.750000 0.250000
+vt 0.250000 0.500000
+vt 0.375000 0.500000
+vt 0.500000 0.500000
+vt 0.625000 0.500000
+vt 0.750000 0.500000
+vt 0.500000 1.000000
+vn 0.000000 0.109028 -0.994039
+vn 0.000000 0.109028 -0.994039
+vn 0.000000 0.109028 -0.994039
+vn 0.000000 0.109028 -0.994039
+vn -0.661197 0.618611 0.424428
+vn -0.661197 0.618611 0.424428
+vn -0.661197 0.618611 0.424428
+vn -0.661197 -0.695901 0.280250
+vn -0.661197 -0.695901 0.280250
+vn -0.661197 -0.695901 0.280250
+vn 0.661197 -0.695901 0.280250
+vn 0.661197 -0.695901 0.280250
+vn 0.661197 -0.695901 0.280250
+vn 0.661197 0.618611 0.424428
+vn 0.661197 0.618611 0.424428
+vn 0.661197 0.618611 0.424428
+s off
+g group5 group4 pPyramid13
+usemtl initialShadingGroup
+f 157/223/353 160/226/354 159/225/355 158/224/356
+f 157/227/357 158/228/358 161/232/359
+f 158/228/360 159/229/361 161/232/362
+f 159/229/363 160/230/364 161/232/365
+f 160/230/366 157/231/367 161/232/368
+g default
+v 0.000000 20.934754 15.245848
+v -0.504693 21.168208 14.798395
+v -0.000000 21.401662 14.350942
+v 0.504693 21.168208 14.798395
+v 0.000000 20.038006 14.208724
+vt 0.500000 0.000000
+vt 0.250000 0.250000
+vt 0.500000 0.500000
+vt 0.750000 0.250000
+vt 0.250000 0.500000
+vt 0.375000 0.500000
+vt 0.500000 0.500000
+vt 0.625000 0.500000
+vt 0.750000 0.500000
+vt 0.500000 1.000000
+vn 0.000000 0.886585 0.462567
+vn 0.000000 0.886585 0.462567
+vn 0.000000 0.886585 0.462567
+vn 0.000000 0.886585 0.462567
+vn -0.680928 -0.553982 0.479000
+vn -0.680928 -0.553982 0.479000
+vn -0.680928 -0.553982 0.479000
+vn -0.680928 0.075966 -0.728400
+vn -0.680928 0.075966 -0.728400
+vn -0.680928 0.075966 -0.728400
+vn 0.680928 0.075966 -0.728400
+vn 0.680928 0.075966 -0.728400
+vn 0.680928 0.075966 -0.728400
+vn 0.680928 -0.553982 0.479000
+vn 0.680928 -0.553982 0.479000
+vn 0.680928 -0.553982 0.479000
+s off
+g pPyramid6 group6
+usemtl initialShadingGroup
+f 162/233/369 165/236/370 164/235/371 163/234/372
+f 162/237/373 163/238/374 166/242/375
+f 163/238/376 164/239/377 166/242/378
+f 164/239/379 165/240/380 166/242/381
+f 165/240/382 162/241/383 166/242/384
+g default
+v 0.000000 20.604833 15.878194
+v -0.504693 20.838287 15.430741
+v -0.000000 21.071741 14.983289
+v 0.504693 20.838287 15.430741
+v 0.000000 19.050947 15.000552
+vt 0.500000 0.000000
+vt 0.250000 0.250000
+vt 0.500000 0.500000
+vt 0.750000 0.250000
+vt 0.250000 0.500000
+vt 0.375000 0.500000
+vt 0.500000 0.500000
+vt 0.625000 0.500000
+vt 0.750000 0.500000
+vt 0.500000 1.000000
+vn 0.000000 0.886585 0.462567
+vn 0.000000 0.886585 0.462567
+vn 0.000000 0.886585 0.462567
+vn 0.000000 0.886585 0.462567
+vn -0.706911 -0.347840 0.615860
+vn -0.706911 -0.347840 0.615860
+vn -0.706911 -0.347840 0.615860
+vn -0.661726 -0.006405 -0.749718
+vn -0.661726 -0.006405 -0.749718
+vn -0.661726 -0.006405 -0.749718
+vn 0.661726 -0.006405 -0.749718
+vn 0.661726 -0.006405 -0.749718
+vn 0.661726 -0.006405 -0.749718
+vn 0.706911 -0.347840 0.615860
+vn 0.706911 -0.347840 0.615860
+vn 0.706911 -0.347840 0.615860
+s off
+g group6 pPyramid7
+usemtl initialShadingGroup
+f 167/243/385 170/246/386 169/245/387 168/244/388
+f 167/247/389 168/248/390 171/252/391
+f 168/248/392 169/249/393 171/252/394
+f 169/249/395 170/250/396 171/252/397
+f 170/250/398 167/251/399 171/252/400
+g default
+v -0.446505 20.642702 15.439831
+v -0.728726 20.961592 15.246459
+v -0.387985 21.083507 14.950209
+v -0.105764 20.764617 15.143581
+v -0.821880 19.869809 14.646619
+vt 0.500000 0.000000
+vt 0.250000 0.250000
+vt 0.500000 0.500000
+vt 0.750000 0.250000
+vt 0.250000 0.500000
+vt 0.375000 0.500000
+vt 0.500000 0.500000
+vt 0.625000 0.500000
+vt 0.750000 0.500000
+vt 0.500000 1.000000
+vn 0.324123 0.683474 0.654069
+vn 0.324123 0.683474 0.654069
+vn 0.324123 0.683474 0.654069
+vn 0.324123 0.683474 0.654069
+vn -0.735985 -0.276676 0.617881
+vn -0.735985 -0.276676 0.617881
+vn -0.735985 -0.276676 0.617881
+vn -0.678955 0.397177 -0.617471
+vn -0.678955 0.397177 -0.617471
+vn -0.678955 0.397177 -0.617471
+vn 0.567562 0.003041 -0.823325
+vn 0.567562 0.003041 -0.823325
+vn 0.567562 0.003041 -0.823325
+vn 0.595650 -0.697726 0.397970
+vn 0.595650 -0.697726 0.397970
+vn 0.595650 -0.697726 0.397970
+s off
+g group6 pPyramid8
+usemtl initialShadingGroup
+f 172/253/401 175/256/402 174/255/403 173/254/404
+f 172/257/405 173/258/406 176/262/407
+f 173/258/408 174/259/409 176/262/410
+f 174/259/411 175/260/412 176/262/413
+f 175/260/414 172/261/415 176/262/416
+g default
+v -0.168212 19.327083 16.453686
+v -0.565682 19.768449 16.142026
+v -0.025920 20.075383 15.888323
+v 0.371550 19.634017 16.199983
+v -0.220639 18.368655 15.078393
+vt 0.500000 0.000000
+vt 0.250000 0.250000
+vt 0.500000 0.500000
+vt 0.750000 0.250000
+vt 0.250000 0.500000
+vt 0.375000 0.500000
+vt 0.500000 0.500000
+vt 0.625000 0.500000
+vt 0.750000 0.500000
+vt 0.500000 1.000000
+vn 0.036267 0.598025 0.800657
+vn 0.036267 0.598025 0.800657
+vn 0.036267 0.598025 0.800657
+vn 0.036267 0.598025 0.800657
+vn -0.805334 -0.471527 0.359303
+vn -0.805334 -0.471527 0.359303
+vn -0.805334 -0.471527 0.359303
+vn -0.567320 0.404992 -0.717028
+vn -0.567320 0.404992 -0.717028
+vn -0.567320 0.404992 -0.717028
+vn 0.740277 0.217437 -0.636169
+vn 0.740277 0.217437 -0.636169
+vn 0.740277 0.217437 -0.636169
+vn 0.591551 -0.671889 0.445683
+vn 0.591551 -0.671889 0.445683
+vn 0.591551 -0.671889 0.445683
+s off
+g group6 pPyramid9
+usemtl initialShadingGroup
+f 177/263/417 180/266/418 179/265/419 178/264/420
+f 177/267/421 178/268/422 181/272/423
+f 178/268/424 179/269/425 181/272/426
+f 179/269/427 180/270/428 181/272/429
+f 180/270/430 177/271/431 181/272/432
+g default
+v -0.149122 18.384177 16.766582
+v -0.393061 18.712337 16.718910
+v -0.061793 18.950833 16.665535
+v 0.182146 18.622673 16.713207
+v -0.181298 18.242581 15.747571
+vt 0.500000 0.000000
+vt 0.250000 0.250000
+vt 0.500000 0.500000
+vt 0.750000 0.250000
+vt 0.250000 0.500000
+vt 0.375000 0.500000
+vt 0.500000 0.500000
+vt 0.625000 0.500000
+vt 0.750000 0.500000
+vt 0.500000 1.000000
+vn 0.036267 0.170016 0.984774
+vn 0.036267 0.170016 0.984774
+vn 0.036267 0.170016 0.984774
+vn 0.036267 0.170016 0.984774
+vn -0.805334 -0.583183 0.106465
+vn -0.805334 -0.583183 0.106465
+vn -0.805334 -0.583183 0.106465
+vn -0.567321 0.686068 -0.455476
+vn -0.567321 0.686068 -0.455476
+vn -0.567321 0.686068 -0.455476
+vn 0.740277 0.482237 -0.468441
+vn 0.740277 0.482237 -0.468441
+vn 0.740277 0.482237 -0.468441
+vn 0.591551 -0.800931 0.092614
+vn 0.591551 -0.800931 0.092614
+vn 0.591551 -0.800931 0.092614
+s off
+g group6 pPyramid10
+usemtl initialShadingGroup
+f 182/273/433 185/276/434 184/275/435 183/274/436
+f 182/277/437 183/278/438 186/282/439
+f 183/278/440 184/279/441 186/282/442
+f 184/279/443 185/280/444 186/282/445
+f 185/280/446 182/281/447 186/282/448
+g default
+v 0.000000 21.379391 11.811156
+v -0.504693 21.566468 11.342416
+v -0.000000 21.753545 10.873676
+v 0.504693 21.566468 11.342416
+v 0.000000 20.382498 10.869887
+vt 0.500000 0.000000
+vt 0.250000 0.250000
+vt 0.500000 0.500000
+vt 0.750000 0.250000
+vt 0.250000 0.500000
+vt 0.375000 0.500000
+vt 0.500000 0.500000
+vt 0.625000 0.500000
+vt 0.750000 0.500000
+vt 0.500000 1.000000
+vn 0.000000 0.928763 0.370674
+vn 0.000000 0.928763 0.370674
+vn 0.000000 0.928763 0.370674
+vn 0.000000 0.928763 0.370674
+vn -0.680928 -0.502781 0.532493
+vn -0.680928 -0.502781 0.532493
+vn -0.680928 -0.502781 0.532493
+vn -0.680928 0.002024 -0.732348
+vn -0.680928 0.002024 -0.732348
+vn -0.680928 0.002024 -0.732348
+vn 0.680928 0.002024 -0.732348
+vn 0.680928 0.002024 -0.732348
+vn 0.680928 0.002024 -0.732348
+vn 0.680928 -0.502781 0.532493
+vn 0.680928 -0.502781 0.532493
+vn 0.680928 -0.502781 0.532493
+s off
+g group6 pPyramid14
+usemtl initialShadingGroup
+f 187/283/449 190/286/450 189/285/451 188/284/452
+f 187/287/453 188/288/454 191/292/455
+f 188/288/456 189/289/457 191/292/458
+f 189/289/459 190/290/460 191/292/461
+f 190/290/462 187/291/463 191/292/464
+g default
+v 0.000000 21.950801 12.073843
+v -0.504693 21.797950 11.592853
+v -0.000000 21.645099 11.111863
+v 0.504693 21.797950 11.592853
+v 0.000000 20.232981 12.557488
+vt 0.500000 0.000000
+vt 0.250000 0.250000
+vt 0.500000 0.500000
+vt 0.750000 0.250000
+vt 0.250000 0.500000
+vt 0.375000 0.500000
+vt 0.500000 0.500000
+vt 0.625000 0.500000
+vt 0.750000 0.500000
+vt 0.500000 1.000000
+vn 0.000000 0.953035 -0.302859
+vn 0.000000 0.953035 -0.302859
+vn 0.000000 0.953035 -0.302859
+vn 0.000000 0.953035 -0.302859
+vn -0.706911 0.191685 0.680833
+vn -0.706911 0.191685 0.680833
+vn -0.706911 0.191685 0.680833
+vn -0.661726 -0.536329 -0.523898
+vn -0.661726 -0.536329 -0.523898
+vn -0.661726 -0.536329 -0.523898
+vn 0.661726 -0.536329 -0.523898
+vn 0.661726 -0.536329 -0.523898
+vn 0.661726 -0.536329 -0.523898
+vn 0.706911 0.191685 0.680833
+vn 0.706911 0.191685 0.680833
+vn 0.706911 0.191685 0.680833
+s off
+g group6 pPyramid15
+usemtl initialShadingGroup
+f 192/293/465 195/296/466 194/295/467 193/294/468
+f 192/297/469 193/298/470 196/302/471
+f 193/298/472 194/299/473 196/302/474
+f 194/299/475 195/300/476 196/302/477
+f 195/300/478 192/301/479 196/302/480
+g default
+v -0.446505 21.666539 11.738000
+v -0.728726 21.754140 11.375495
+v -0.387985 21.629927 11.080201
+v -0.105764 21.542325 11.442705
+v -0.821880 20.559095 11.727154
+vt 0.500000 0.000000
+vt 0.250000 0.250000
+vt 0.500000 0.500000
+vt 0.750000 0.250000
+vt 0.250000 0.500000
+vt 0.375000 0.500000
+vt 0.500000 0.500000
+vt 0.625000 0.500000
+vt 0.750000 0.500000
+vt 0.500000 1.000000
+vn 0.324123 0.945715 -0.023801
+vn 0.324123 0.945715 -0.023801
+vn 0.324123 0.945715 -0.023801
+vn 0.324123 0.945715 -0.023801
+vn -0.735985 0.243279 0.631776
+vn -0.735985 0.243279 0.631776
+vn -0.735985 0.243279 0.631776
+vn -0.678955 -0.158052 -0.716965
+vn -0.678955 -0.158052 -0.716965
+vn -0.678955 -0.158052 -0.716965
+vn 0.567562 -0.581884 -0.582480
+vn 0.567562 -0.581884 -0.582480
+vn 0.567562 -0.581884 -0.582481
+vn 0.595650 -0.209493 0.775444
+vn 0.595650 -0.209493 0.775444
+vn 0.595650 -0.209493 0.775444
+s off
+g group6 pPyramid16
+usemtl initialShadingGroup
+f 197/303/481 200/306/482 199/305/483 198/304/484
+f 197/307/485 198/308/486 201/312/487
+f 198/308/488 199/309/489 201/312/490
+f 199/309/491 200/310/492 201/312/493
+f 200/310/494 197/311/495 201/312/496
+g default
+v -0.168212 21.449109 13.394675
+v -0.565682 21.548068 12.863504
+v -0.025920 21.591104 12.467623
+v 0.371550 21.492144 12.998794
+v -0.220639 19.803086 13.077459
+vt 0.500000 0.000000
+vt 0.250000 0.250000
+vt 0.500000 0.500000
+vt 0.750000 0.250000
+vt 0.250000 0.500000
+vt 0.375000 0.500000
+vt 0.500000 0.500000
+vt 0.625000 0.500000
+vt 0.750000 0.500000
+vt 0.500000 1.000000
+vn 0.036267 0.986974 0.156740
+vn 0.036267 0.986974 0.156740
+vn 0.036267 0.986974 0.156740
+vn 0.036267 0.986974 0.156740
+vn -0.805334 -0.087349 0.586350
+vn -0.805334 -0.087349 0.586350
+vn -0.805334 -0.087349 0.586350
+vn -0.567320 -0.209816 -0.796319
+vn -0.567320 -0.209816 -0.796319
+vn -0.567320 -0.209816 -0.796319
+vn 0.740277 -0.287840 -0.607568
+vn 0.740277 -0.287840 -0.607568
+vn 0.740277 -0.287840 -0.607568
+vn 0.591551 -0.170700 0.787991
+vn 0.591551 -0.170700 0.787991
+vn 0.591551 -0.170700 0.787991
+s off
+g group6 pPyramid17
+usemtl initialShadingGroup
+f 202/313/497 205/316/498 204/315/499 203/314/500
+f 202/317/501 203/318/502 206/322/503
+f 203/318/504 204/319/505 206/322/506
+f 204/319/507 205/320/508 206/322/509
+f 205/320/510 202/321/511 206/322/512
+g default
+v -0.149122 20.884843 14.295719
+v -0.393061 21.149079 14.095367
+v -0.061793 21.332064 13.933362
+v 0.182146 21.067828 14.133714
+v -0.181298 20.268338 13.472096
+vt 0.500000 0.000000
+vt 0.250000 0.250000
+vt 0.500000 0.500000
+vt 0.750000 0.250000
+vt 0.250000 0.500000
+vt 0.375000 0.500000
+vt 0.500000 0.500000
+vt 0.625000 0.500000
+vt 0.750000 0.500000
+vt 0.500000 1.000000
+vn 0.036267 0.624836 0.779913
+vn 0.036267 0.624836 0.779913
+vn 0.036267 0.624836 0.779913
+vn 0.036267 0.624836 0.779913
+vn -0.805334 -0.459070 0.375088
+vn -0.805334 -0.459070 0.375088
+vn -0.805334 -0.459070 0.375088
+vn -0.567320 0.380440 -0.730351
+vn -0.567321 0.380440 -0.730351
+vn -0.567320 0.380440 -0.730351
+vn 0.740277 0.195735 -0.643178
+vn 0.740277 0.195735 -0.643178
+vn 0.740277 0.195735 -0.643178
+vn 0.591551 -0.656387 0.468214
+vn 0.591551 -0.656387 0.468214
+vn 0.591551 -0.656387 0.468214
+s off
+g group6 pPyramid18
+usemtl initialShadingGroup
+f 207/323/513 210/326/514 209/325/515 208/324/516
+f 207/327/517 208/328/518 211/332/519
+f 208/328/520 209/329/521 211/332/522
+f 209/329/523 210/330/524 211/332/525
+f 210/330/526 207/331/527 211/332/528
+g default
+v 0.000000 21.560084 8.795145
+v -0.504693 21.747161 8.326405
+v -0.000000 21.934238 7.857665
+v 0.504693 21.747161 8.326405
+v -0.000000 20.563191 7.853876
+vt 0.500000 0.000000
+vt 0.250000 0.250000
+vt 0.500000 0.500000
+vt 0.750000 0.250000
+vt 0.250000 0.500000
+vt 0.375000 0.500000
+vt 0.500000 0.500000
+vt 0.625000 0.500000
+vt 0.750000 0.500000
+vt 0.500000 1.000000
+vn 0.000000 0.928763 0.370674
+vn 0.000000 0.928763 0.370674
+vn 0.000000 0.928763 0.370674
+vn 0.000000 0.928763 0.370674
+vn -0.680928 -0.502781 0.532493
+vn -0.680928 -0.502781 0.532493
+vn -0.680928 -0.502781 0.532493
+vn -0.680928 0.002024 -0.732348
+vn -0.680928 0.002024 -0.732348
+vn -0.680928 0.002024 -0.732348
+vn 0.680928 0.002024 -0.732348
+vn 0.680928 0.002024 -0.732348
+vn 0.680928 0.002024 -0.732348
+vn 0.680928 -0.502781 0.532493
+vn 0.680928 -0.502781 0.532493
+vn 0.680928 -0.502781 0.532493
+s off
+g group6 pPyramid24
+usemtl initialShadingGroup
+f 212/333/529 215/336/530 214/335/531 213/334/532
+f 212/337/533 213/338/534 216/342/535
+f 213/338/536 214/339/537 216/342/538
+f 214/339/539 215/340/540 216/342/541
+f 215/340/542 212/341/543 216/342/544
+g default
+v 0.000000 22.132260 9.036579
+v -0.504693 21.979409 8.555589
+v -0.000000 21.826558 8.074599
+v 0.504693 21.979409 8.555589
+v 0.000000 20.414440 9.520223
+vt 0.500000 0.000000
+vt 0.250000 0.250000
+vt 0.500000 0.500000
+vt 0.750000 0.250000
+vt 0.250000 0.500000
+vt 0.375000 0.500000
+vt 0.500000 0.500000
+vt 0.625000 0.500000
+vt 0.750000 0.500000
+vt 0.500000 1.000000
+vn 0.000000 0.953035 -0.302859
+vn 0.000000 0.953035 -0.302859
+vn 0.000000 0.953035 -0.302859
+vn 0.000000 0.953035 -0.302859
+vn -0.706911 0.191685 0.680833
+vn -0.706911 0.191685 0.680833
+vn -0.706911 0.191685 0.680833
+vn -0.661726 -0.536329 -0.523898
+vn -0.661726 -0.536329 -0.523898
+vn -0.661726 -0.536329 -0.523898
+vn 0.661726 -0.536329 -0.523898
+vn 0.661726 -0.536329 -0.523898
+vn 0.661726 -0.536329 -0.523898
+vn 0.706911 0.191685 0.680833
+vn 0.706911 0.191685 0.680833
+vn 0.706911 0.191685 0.680833
+s off
+g group6 pPyramid25
+usemtl initialShadingGroup
+f 217/343/545 220/346/546 219/345/547 218/344/548
+f 217/347/549 218/348/550 221/352/551
+f 218/348/552 219/349/553 221/352/554
+f 219/349/555 220/350/556 221/352/557
+f 220/350/558 217/351/559 221/352/560
+g default
+v -0.436277 21.847767 8.709541
+v -0.718498 21.935368 8.347036
+v -0.377757 21.811155 8.051742
+v -0.095536 21.723553 8.414246
+v -0.811652 20.740323 8.698695
+vt 0.500000 0.000000
+vt 0.250000 0.250000
+vt 0.500000 0.500000
+vt 0.750000 0.250000
+vt 0.250000 0.500000
+vt 0.375000 0.500000
+vt 0.500000 0.500000
+vt 0.625000 0.500000
+vt 0.750000 0.500000
+vt 0.500000 1.000000
+vn 0.324123 0.945715 -0.023801
+vn 0.324123 0.945715 -0.023801
+vn 0.324123 0.945715 -0.023801
+vn 0.324123 0.945715 -0.023801
+vn -0.735985 0.243279 0.631776
+vn -0.735985 0.243279 0.631776
+vn -0.735985 0.243279 0.631776
+vn -0.678955 -0.158052 -0.716965
+vn -0.678955 -0.158052 -0.716965
+vn -0.678955 -0.158052 -0.716965
+vn 0.567562 -0.581884 -0.582480
+vn 0.567562 -0.581884 -0.582480
+vn 0.567562 -0.581884 -0.582481
+vn 0.595650 -0.209493 0.775444
+vn 0.595650 -0.209493 0.775444
+vn 0.595650 -0.209493 0.775444
+s off
+g group6 pPyramid26
+usemtl initialShadingGroup
+f 222/353/561 225/356/562 224/355/563 223/354/564
+f 222/357/565 223/358/566 226/362/567
+f 223/358/568 224/359/569 226/362/570
+f 224/359/571 225/360/572 226/362/573
+f 225/360/574 222/361/575 226/362/576
+g default
+v -0.167068 22.107421 10.544925
+v -0.564538 22.206381 10.013754
+v -0.024775 22.249417 9.617873
+v 0.372695 22.150457 10.149044
+v -0.219495 20.461398 10.227709
+vt 0.500000 0.000000
+vt 0.250000 0.250000
+vt 0.500000 0.500000
+vt 0.750000 0.250000
+vt 0.250000 0.500000
+vt 0.375000 0.500000
+vt 0.500000 0.500000
+vt 0.625000 0.500000
+vt 0.750000 0.500000
+vt 0.500000 1.000000
+vn 0.036267 0.986974 0.156740
+vn 0.036267 0.986974 0.156740
+vn 0.036267 0.986974 0.156740
+vn 0.036267 0.986974 0.156740
+vn -0.805334 -0.087349 0.586350
+vn -0.805334 -0.087349 0.586350
+vn -0.805334 -0.087349 0.586350
+vn -0.567320 -0.209816 -0.796319
+vn -0.567320 -0.209816 -0.796319
+vn -0.567320 -0.209816 -0.796319
+vn 0.740277 -0.287840 -0.607568
+vn 0.740277 -0.287840 -0.607568
+vn 0.740277 -0.287840 -0.607568
+vn 0.591551 -0.170700 0.787991
+vn 0.591551 -0.170700 0.787991
+vn 0.591551 -0.170700 0.787991
+s off
+g group6 pPyramid27
+usemtl initialShadingGroup
+f 227/363/577 230/366/578 229/365/579 228/364/580
+f 227/367/581 228/368/582 231/372/583
+f 228/368/584 229/369/585 231/372/586
+f 229/369/587 230/370/588 231/372/589
+f 230/370/590 227/371/591 231/372/592
+</pre>
+
+		<p class="file_page_meta no_print" style="line-height: 1.5rem;">
+			<label class="checkbox normal mini float_right no_top_padding no_min_width">
+				<input type="checkbox" id="file_preview_wrap_cb"> wrap long lines
+			</label>
+		</p>
+
+	</div>
+
+	<div id="comments_holder" class="clearfix clear_both">
+	<div class="col span_1_of_6"></div>
+	<div class="col span_4_of_6 no_right_padding">
+		<div id="file_page_comments">
+					</div>	
+		<form action="https://kawaiigamejam.slack.com/files/sertingg/F31RRPNMT/borders.obj"
+		id="file_comment_form"
+					class="comment_form"
+				method="post">
+			<a href="/team/eclmist" class="member_preview_link" data-member-id="U31B6JNJX" >
+			<span class="member_image thumb_36" style="background-image: url('https://secure.gravatar.com/avatar/a2ba7d151a7e317e651b09dd0966b0cc.jpg?s=72&d=https%3A%2F%2Fa.slack-edge.com%2F66f9%2Fimg%2Favatars%2Fava_0008-72.png')" data-thumb-size="36" data-member-id="U31B6JNJX"></span>
+		</a>
+		<input type="hidden" name="addcomment" value="1" />
+	<input type="hidden" name="crumb" value="s-1478941859-5208a0b0e6-☃" />
+
+	<textarea id="file_comment" data-el-id-to-keep-in-view="file_comment_submit_btn" class="small comment_input small_bottom_margin autogrow-short" name="comment" wrap="virtual" ></textarea>
+	<span class="input_note float_left cloud_silver file_comment_tip">shift+enter to add a new line</span>	<button id="file_comment_submit_btn" type="submit" class="btn float_right  ladda-button" data-style="expand-right"><span class="ladda-label">Add Comment</span></button>
+</form>
+
+<form
+		id="file_edit_comment_form"
+					class="edit_comment_form hidden"
+				method="post">
+		<textarea id="file_edit_comment" class="small comment_input small_bottom_margin" name="comment" wrap="virtual"></textarea><br>
+	<span class="input_note float_left cloud_silver file_comment_tip">shift+enter to add a new line</span>	<input type="submit" class="save btn float_right " value="Save" />
+	<button class="cancel btn btn_outline float_right small_right_margin ">Cancel</button>
+</form>	
+	</div>
+	<div class="col span_1_of_6"></div>
+</div>
+</div>
+
+
+
+
+		
+	</div>
+	<div id="overlay"></div>
+</div>
+
+
+
+
+
+
+
+<script type="text/javascript">
+
+	function vvv(v) {
+
+		var vvv_warning = 'You cannot use vvv on dynamic values. Please make sure you only pass in static file paths.';
+		if (TS && TS.warn) {
+			TS.warn(vvv_warning);
+		} else {
+			console.warn(vvv_warning);
+		}
+
+		return v;
+	}
+
+	var cdn_url = "https:\/\/slack.global.ssl.fastly.net";
+	var inc_js_setup_data = {
+		emoji_sheets: {
+			apple: 'https://a.slack-edge.com/f360/img/emoji_2016_06_08/sheet_apple_64_indexed_256colors.png',
+			google: 'https://a.slack-edge.com/f360/img/emoji_2016_06_08/sheet_google_64_indexed_128colors.png',
+			twitter: 'https://a.slack-edge.com/f360/img/emoji_2016_06_08/sheet_twitter_64_indexed_128colors.png',
+			emojione: 'https://a.slack-edge.com/f360/img/emoji_2016_06_08/sheet_emojione_64_indexed_128colors.png',
+		},
+	};
+</script>
+			<script type="text/javascript">
+<!--
+	// common boot_data
+	var boot_data = {
+		start_ms: Date.now(),
+		app: 'web',
+		user_id: 'U31B6JNJX',
+		no_login: false,
+		version_ts: '1478930987',
+		version_uid: 'f10d9a385bfd3f07dbd4f1463e6818a9c83bbcba',
+		cache_version: "v13-tiger",
+		cache_ts_version: "v1-cat",
+		redir_domain: 'slack-redir.net',
+		signin_url: 'https://slack.com/signin',
+		abs_root_url: 'https://slack.com/',
+		api_url: '/api/',
+		team_url: 'https://kawaiigamejam.slack.com/',
+		image_proxy_url: 'https://slack-imgs.com/',
+		beacon_timing_url: "https:\/\/slack.com\/beacon\/timing",
+		beacon_error_url: "https:\/\/slack.com\/beacon\/error",
+		clog_url: "clog\/track\/",
+		api_token: 'xoxs-102732447216-103380634643-103535926709-febbbc1e5c',
+		ls_disabled: false,
+
+		notification_sounds: [{"value":"b2.mp3","label":"Ding","url":"https:\/\/slack.global.ssl.fastly.net\/dfc0\/sounds\/push\/b2.mp3"},{"value":"animal_stick.mp3","label":"Boing","url":"https:\/\/slack.global.ssl.fastly.net\/dfc0\/sounds\/push\/animal_stick.mp3"},{"value":"been_tree.mp3","label":"Drop","url":"https:\/\/slack.global.ssl.fastly.net\/dfc0\/sounds\/push\/been_tree.mp3"},{"value":"complete_quest_requirement.mp3","label":"Ta-da","url":"https:\/\/slack.global.ssl.fastly.net\/dfc0\/sounds\/push\/complete_quest_requirement.mp3"},{"value":"confirm_delivery.mp3","label":"Plink","url":"https:\/\/slack.global.ssl.fastly.net\/dfc0\/sounds\/push\/confirm_delivery.mp3"},{"value":"flitterbug.mp3","label":"Wow","url":"https:\/\/slack.global.ssl.fastly.net\/dfc0\/sounds\/push\/flitterbug.mp3"},{"value":"here_you_go_lighter.mp3","label":"Here you go","url":"https:\/\/slack.global.ssl.fastly.net\/dfc0\/sounds\/push\/here_you_go_lighter.mp3"},{"value":"hi_flowers_hit.mp3","label":"Hi","url":"https:\/\/slack.global.ssl.fastly.net\/dfc0\/sounds\/push\/hi_flowers_hit.mp3"},{"value":"item_pickup.mp3","label":"Yoink","url":"https:\/\/slack.global.ssl.fastly.net\/dfc0\/sounds\/push\/item_pickup.mp3"},{"value":"knock_brush.mp3","label":"Knock Brush","url":"https:\/\/slack.global.ssl.fastly.net\/dfc0\/sounds\/push\/knock_brush.mp3"},{"value":"save_and_checkout.mp3","label":"Woah!","url":"https:\/\/slack.global.ssl.fastly.net\/dfc0\/sounds\/push\/save_and_checkout.mp3"},{"value":"none","label":"None"}],
+		alert_sounds: [{"value":"frog.mp3","label":"Frog","url":"https:\/\/slack.global.ssl.fastly.net\/a34a\/sounds\/frog.mp3"}],
+		call_sounds: [{"value":"call\/alert_v2.mp3","label":"Alert","url":"https:\/\/slack.global.ssl.fastly.net\/08f7\/sounds\/call\/alert_v2.mp3"},{"value":"call\/incoming_ring_v2.mp3","label":"Incoming ring","url":"https:\/\/slack.global.ssl.fastly.net\/08f7\/sounds\/call\/incoming_ring_v2.mp3"},{"value":"call\/outgoing_ring_v2.mp3","label":"Outgoing ring","url":"https:\/\/slack.global.ssl.fastly.net\/08f7\/sounds\/call\/outgoing_ring_v2.mp3"},{"value":"call\/pop_v2.mp3","label":"Incoming reaction","url":"https:\/\/slack.global.ssl.fastly.net\/08f7\/sounds\/call\/pop_v2.mp3"},{"value":"call\/they_left_call_v2.mp3","label":"They left call","url":"https:\/\/slack.global.ssl.fastly.net\/08f7\/sounds\/call\/they_left_call_v2.mp3"},{"value":"call\/you_left_call_v2.mp3","label":"You left call","url":"https:\/\/slack.global.ssl.fastly.net\/08f7\/sounds\/call\/you_left_call_v2.mp3"},{"value":"call\/they_joined_call_v2.mp3","label":"They joined call","url":"https:\/\/slack.global.ssl.fastly.net\/08f7\/sounds\/call\/they_joined_call_v2.mp3"},{"value":"call\/you_joined_call_v2.mp3","label":"You joined call","url":"https:\/\/slack.global.ssl.fastly.net\/08f7\/sounds\/call\/you_joined_call_v2.mp3"},{"value":"call\/confirmation_v2.mp3","label":"Confirmation","url":"https:\/\/slack.global.ssl.fastly.net\/08f7\/sounds\/call\/confirmation_v2.mp3"}],
+		call_sounds_version: "v2",
+		max_team_handy_rxns: 5,
+		max_channel_handy_rxns: 5,
+		max_poll_handy_rxns: 7,
+		max_handy_rxns_title_chars: 30,
+		
+		feature_tinyspeck: false,
+		feature_i18n: false,
+		feature_create_team_google_auth: false,
+		feature_api_extended_2fa_backup: false,
+		feature_flannel_fe: false,
+		feature_ms_eventlog_changes: false,
+		feature_frecency_normalization: true,
+		feature_emoji_usage_stats: false,
+		feature_batch_file_deleted_event: false,
+		feature_viewmodel_proto: false,
+		feature_sales_tax: true,
+		feature_message_replies: false,
+		feature_message_replies_rewrite_864: false,
+		feature_message_replies_off: false,
+		feature_message_replies_threads_view: false,
+		feature_no_rollups: false,
+		feature_web_lean: false,
+		feature_web_lean_all_users: false,
+		feature_reminders_v3: true,
+		feature_server_side_emoji_counts: true,
+		feature_a11y_keyboard_shortcuts: false,
+		feature_email_ingestion: false,
+		feature_msg_consistency: false,
+		feature_sli_channel_priority: false,
+		feature_sli_similar_channels: true,
+		feature_sli_clog_selections: true,
+		feature_sli_search_limit_extracts: false,
+		feature_thanks: false,
+		feature_attachments_inline: false,
+		feature_fix_files: true,
+		feature_canonical_avatars_web_client: false,
+		feature_files_list: true,
+		feature_channel_eventlog_client: true,
+		feature_macssb1_banner: true,
+		feature_macssb2_banner: true,
+		feature_macelectron1_banner: true,
+		feature_macelectron2_banner: true,
+		feature_latest_event_ts: true,
+		feature_elide_closed_dms: true,
+		feature_no_redirects_in_ssb: true,
+		feature_referer_policy: true,
+		feature_more_field_in_message_attachments: false,
+		feature_calls: true,
+		feature_calls_no_rtm_start: true,
+		feature_integrations_message_preview: true,
+		feature_paging_api: false,
+		feature_enterprise_api: true,
+		feature_enterprise_create: true,
+		feature_enterprise_api_auth: true,
+		feature_enterprise_profile: true,
+		feature_enterprise_search: true,
+		feature_enterprise_locked_settings: false,
+		feature_frecency_migration: false,
+		feature_enterprise_frecency: false,
+		feature_enterprise_team_overview_page: false,
+		feature_enterprise_conditional_team_removal: false,
+		feature_enterprise_search_ui: false,
+		feature_enterprise_mandatory_2fa: true,
+		feature_enterprise_user_account_settings: true,
+		feature_enterprise_security_auth_refactor: false,
+		feature_enterprise_member_profile_refactor: false,
+		feature_enterprise_context_menu: false,
+		feature_enterprise_profile_menu_deactivate_2fa: false,
+		feature_private_channels: true,
+		feature_mpim_restrictions: false,
+		feature_subteams_hard_delete: false,
+		feature_no_unread_counts: true,
+		feature_js_raf_queue: false,
+		feature_shared_channels: false,
+		feature_external_shared_channels_ui: false,
+		feature_you_autocomplete_me: false,
+		feature_roster_changes: false,
+		feature_allow_shared_general: false,
+		feature_shared_channels_settings: true,
+		feature_fast_files_flexpane: true,
+		feature_no_has_files: true,
+		feature_custom_saml_signin_button_label: true,
+		feature_optimistic_im_close: true,
+		feature_file_reactions_activity: false,
+		feature_admin_approved_apps: true,
+		feature_winssb_beta_channel: false,
+		feature_inline_media_playback: true,
+		feature_branch_io_deeplink: true,
+		feature_policy_effective_date: false,
+		feature_clog_whats_new: true,
+		feature_presence_sub: false,
+		feature_live_support_free_plan: false,
+		feature_dm_yahself: true,
+		feature_slackbot_goes_to_college: false,
+		feature_newxp_enqueue_message: true,
+		feature_shared_invites: true,
+		feature_lato_2_ssb: true,
+		feature_refactor_buildmsghtml: false,
+		feature_omit_localstorage_users_bots: false,
+		feature_disable_ls_compression: false,
+		feature_force_ls_compression: false,
+		feature_sign_in_with_slack: true,
+		feature_sign_in_with_slack_ui_elements: true,
+		feature_prevent_msg_rebuild: false,
+		feature_app_review_scope_error: true,
+		feature_zendesk_app_submission_improvement: false,
+		feature_react_emoji_picker: false,
+		feature_better_msg_copying: false,
+		feature_name_tagging_client: false,
+		feature_name_tagging_client_extras: false,
+		feature_name_tagging_client_search: false,
+		feature_msg_input_contenteditable: false,
+		feature_new_msg_input: false,
+		feature_browse_date: true,
+		feature_use_imgproxy_resizing: false,
+		feature_always_active_bots: false,
+		feature_single_team_apps: false,
+		feature_multiple_app_ownership: true,
+		feature_update_message_file: true,
+		feature_custom_clogs: true,
+		feature_calls_linux: true,
+		feature_a11y_pref_text_size: false,
+		feature_a11y_pref_no_animation: true,
+		feature_share_mention_comment_cleanup: false,
+		feature_unread_view: true,
+		feature_tw: false,
+		feature_tw_ls_disabled: false,
+		feature_external_files: false,
+		feature_min_web: false,
+		feature_electron_memory_logging: false,
+		feature_channel_name_menu: true,
+		feature_electron_window_gripper: true,
+		feature_no_tokenless_ms_connections: false,
+		feature_simple_file_events: true,
+		feature_devrel_try_it_now: false,
+		feature_wait_for_all_mentions_in_client: false,
+		feature_prev_next_button: false,
+		feature_free_inactive_domains: true,
+		feature_platform_calls: true,
+		feature_a11y_tab: false,
+		feature_admin_billing_refactor: false,
+		feature_pdf_viewer: true,
+		feature_wrapped_mention_parsing: false,
+		feature_measure_css_usage: false,
+		feature_take_profile_photo: false,
+		feature_ajax_billing_history: false,
+		feature_update_coachmarks_cta: true,
+		feature_multnomah: false,
+		feature_texty: false,
+		feature_sales_tax_address: true,
+		feature_toggle_id_translation: false,
+		feature_can_edit_app: true,
+		feature_gdrive_1_dot_5: true,
+		feature_mention_non_members: false,
+		feature_hide_email_pref: true,
+		feature_ent_pricing_lp: true,
+		feature_file_id_from_url_update: false,
+		feature_pin_update: true,
+		feature_tos_oct2016: false,
+		feature_flexbox_client: false,
+		feature_emoji_menu_tuning: false,
+		feature_discoverable_teams: false,
+		feature_discoverable_teams_client: false,
+		feature_reveal_channel_renames: false,
+		feature_app_info_youtube_url: false,
+		feature_api_metadata_token_allow: false,
+		feature_app_cards_and_profs_frontend: false,
+		feature_user_removed_from_team: false,
+		feature_user_added_to_team: false,
+		feature_a11y_ui_zoom: false,
+		feature_file_comment_help_text: false,
+		feature_refactored_message_template: false,
+		feature_message_inputs: false,
+		feature_contact_us_form: true,
+		feature_app_cards_and_profs_set_card_color: false,
+		feature_cdn_load_tracking: false,
+		feature_fresh_team_directory: false,
+		feature_move_star_in_channel_header: false,
+		feature_team_to_org_directory: true,
+		feature_reposition_search_dropdown: false,
+
+	client_logs: {"0":{"numbers":[0],"whitelisted":false},"@scott":{"numbers":[2,4,37,58,67,389,390,481,488,529,667,773,888,999],"owner":"@scott"},"@eric":{"numbers":[2,23,47,48,65,66,72,73,82,91,93,96,222,365,438,528,552,777,794],"owner":"@eric"},"2":{"owner":"@scott \/ @eric","numbers":[2],"whitelisted":false},"4":{"owner":"@scott","numbers":[4],"whitelisted":false},"5":{"channels":"#dhtml","numbers":[5],"whitelisted":false},"23":{"owner":"@eric","numbers":[23],"whitelisted":false},"sounds":{"owner":"@scott","name":"sounds","numbers":[37]},"37":{"owner":"@scott","name":"sounds","numbers":[37],"whitelisted":true},"47":{"owner":"@eric","numbers":[47],"whitelisted":false},"48":{"owner":"@eric","numbers":[48],"whitelisted":false},"58":{"owner":"@scott","numbers":[58],"whitelisted":false},"65":{"owner":"@eric","numbers":[65],"whitelisted":false},"66":{"owner":"@eric","numbers":[66],"whitelisted":false},"67":{"owner":"@scott","numbers":[67],"whitelisted":false},"72":{"owner":"@eric","numbers":[72],"whitelisted":false},"73":{"owner":"@eric","numbers":[73],"whitelisted":false},"82":{"owner":"@eric","numbers":[82],"whitelisted":false},"@shinypb":{"owner":"@shinypb","numbers":[88,1000,1989,1996]},"88":{"owner":"@shinypb","numbers":[88],"whitelisted":false},"91":{"owner":"@eric","numbers":[91],"whitelisted":false},"93":{"owner":"@eric","numbers":[93],"whitelisted":false},"96":{"owner":"@eric","numbers":[96],"whitelisted":false},"@steveb":{"owner":"@steveb","numbers":[99]},"99":{"owner":"@steveb","numbers":[99],"whitelisted":false},"222":{"owner":"@eric","numbers":[222],"whitelisted":false},"365":{"owner":"@eric","numbers":[365],"whitelisted":false},"389":{"owner":"@scott","numbers":[389],"whitelisted":false},"390":{"owner":"@scott","numbers":[390],"whitelisted":false},"438":{"owner":"@eric","numbers":[438],"whitelisted":false},"@rowan":{"numbers":[444,666],"owner":"@rowan"},"444":{"owner":"@rowan","numbers":[444],"whitelisted":false},"481":{"owner":"@scott","numbers":[481],"whitelisted":false},"488":{"owner":"@scott","numbers":[488],"whitelisted":false},"528":{"owner":"@eric","numbers":[528],"whitelisted":false},"529":{"owner":"@scott","numbers":[529],"whitelisted":false},"552":{"owner":"@eric","numbers":[552],"whitelisted":false},"dashboard":{"owner":"@ac \/ @bruce \/ @kylestetz \/ @nic \/ @rowan","channels":"#devel-enterprise-fe, #feat-enterprise-dash","name":"dashboard","numbers":[666]},"@ac":{"channels":"#devel-enterprise-fe, #feat-enterprise-dash","name":"dashboard","numbers":[666],"owner":"@ac"},"@bruce":{"channels":"#devel-enterprise-fe, #feat-enterprise-dash","name":"dashboard","numbers":[666],"owner":"@bruce"},"@kylestetz":{"channels":"#devel-enterprise-fe, #feat-enterprise-dash","name":"dashboard","numbers":[666],"owner":"@kylestetz"},"@nic":{"channels":"#devel-enterprise-fe, #feat-enterprise-dash","name":"dashboard","numbers":[666],"owner":"@nic"},"666":{"owner":"@ac \/ @bruce \/ @kylestetz \/ @nic \/ @rowan","channels":"#devel-enterprise-fe, #feat-enterprise-dash","name":"dashboard","numbers":[666],"whitelisted":false},"667":{"owner":"@scott","numbers":[667],"whitelisted":false},"773":{"owner":"@scott","numbers":[773],"whitelisted":false},"777":{"owner":"@eric","numbers":[777],"whitelisted":false},"794":{"owner":"@eric","numbers":[794],"whitelisted":false},"888":{"owner":"@scott","numbers":[888],"whitelisted":false},"999":{"owner":"@scott","numbers":[999],"whitelisted":false},"1000":{"owner":"@shinypb","numbers":[1000],"whitelisted":false},"minweb":{"owner":"@johnnyrodgers","features":["feature_min_web"],"channels":"#feat-minweb","name":"minweb","numbers":[1983]},"@johnnyrodgers":{"owner":"@johnnyrodgers","features":["feature_min_web"],"channels":"#feat-minweb","name":"minweb","numbers":[1983]},"1983":{"owner":"@johnnyrodgers","features":["feature_min_web"],"channels":"#feat-minweb","name":"minweb","numbers":[1983],"whitelisted":false},"flannel":{"owner":"@shinypb","features":["feature_flannel_fe"],"channels":"#devel-flannel","name":"flannel","numbers":[1989]},"1989":{"owner":"@shinypb","features":["feature_flannel_fe"],"channels":"#devel-flannel","name":"flannel","numbers":[1989],"whitelisted":true},"ms":{"owner":"@shinypb","name":"ms","numbers":[1996]},"1996":{"owner":"@shinypb","name":"ms","numbers":[1996],"whitelisted":true},"@patrick":{"owner":"@patrick","channels":"#dhtml","numbers":[2001,2002,2003,2004]},"2001":{"owner":"@patrick","channels":"#dhtml","numbers":[2001],"whitelisted":false},"dnd":{"owner":"@patrick","channels":"dhtml","name":"dnd","numbers":[2002]},"2002":{"owner":"@patrick","channels":"dhtml","name":"dnd","numbers":[2002],"whitelisted":true},"2003":{"owner":"@patrick","channels":"dhtml","numbers":[2003],"whitelisted":false},"2004":{"owner":"@patrick","channels":"#feature_message_replies, #feat-threads","numbers":[2004],"whitelisted":false},"mc_sibs":{"name":"mc_sibs","numbers":[9999]},"9999":{"name":"mc_sibs","numbers":[9999],"whitelisted":false},"@fearon":{"owner":"@fearon","numbers":[98765]},"98765":{"owner":"@fearon","numbers":[98765],"whitelisted":false}},
+
+
+		img: {
+			app_icon: 'https://a.slack-edge.com/272a/img/slack_growl_icon.png'
+		},
+		page_needs_custom_emoji: false,
+		page_needs_team_profile_fields: false,
+		page_needs_enterprise: false,
+		slackbot_help_enabled: true
+	};
+
+	
+	
+	
+	
+	// client boot data
+	
+	
+	
+//-->
+</script>	
+	
+				<!-- output_js "core" -->
+<script type="text/javascript" src="https://a.slack-edge.com/61a52/js/rollup-core_required_libs.js" crossorigin="anonymous"></script>
+<script type="text/javascript" src="https://a.slack-edge.com/ec3a/js/rollup-core_required_ts.js" crossorigin="anonymous"></script>
+<script type="text/javascript" src="https://a.slack-edge.com/32b0/js/TS.web.js" crossorigin="anonymous"></script>
+
+		<!-- output_js "core_web" -->
+<script type="text/javascript" src="https://a.slack-edge.com/9982f/js/rollup-core_web.js" crossorigin="anonymous"></script>
+
+		<!-- output_js "secondary" -->
+<script type="text/javascript" src="https://a.slack-edge.com/dbd87/js/rollup-secondary_a_required.js" crossorigin="anonymous"></script>
+<script type="text/javascript" src="https://a.slack-edge.com/b52340/js/rollup-secondary_b_required.js" crossorigin="anonymous"></script>
+
+					
+	<!-- output_js "regular" -->
+<script type="text/javascript" src="https://a.slack-edge.com/4016/js/TS.web.comments.js" crossorigin="anonymous"></script>
+<script type="text/javascript" src="https://a.slack-edge.com/c439/js/TS.web.file.js" crossorigin="anonymous"></script>
+<script type="text/javascript" src="https://a.slack-edge.com/cb0fd/js/libs/codemirror.js" crossorigin="anonymous"></script>
+<script type="text/javascript" src="https://a.slack-edge.com/db4a/js/codemirror_load.js" crossorigin="anonymous"></script>
+
+		<script type="text/javascript">
+	<!--
+		boot_data.page_needs_custom_emoji = true;
+
+		boot_data.file = {"id":"F31RRPNMT","created":1478941798,"timestamp":1478941798,"name":"borders.obj","title":"borders.obj","mimetype":"text\/plain","filetype":"text","pretty_type":"Plain Text","user":"U323N69DL","editable":true,"size":45019,"mode":"snippet","is_external":false,"external_type":"","is_public":true,"public_url_shared":false,"display_as_bot":false,"username":"","url_private":"https:\/\/files.slack.com\/files-pri\/T30MJD56C-F31RRPNMT\/borders.obj","url_private_download":"https:\/\/files.slack.com\/files-pri\/T30MJD56C-F31RRPNMT\/download\/borders.obj","permalink":"https:\/\/kawaiigamejam.slack.com\/files\/sertingg\/F31RRPNMT\/borders.obj","permalink_public":"https:\/\/slack-files.com\/T30MJD56C-F31RRPNMT-4b59ecdcd3","edit_link":"https:\/\/kawaiigamejam.slack.com\/files\/sertingg\/F31RRPNMT\/borders.obj\/edit","preview":"# This file uses centimeters as units for non-parametric coordinates.\n\nmtllib borders.mtl\ng default\nv -1.033920 -0.902372 19.999998","preview_highlight":"\u003Cdiv class=\"CodeMirror cm-s-default CodeMirrorServer\" oncopy=\"if(event.clipboardData){event.clipboardData.setData('text\/plain',window.getSelection().toString().replace(\/\\u200b\/g,''));event.preventDefault();event.stopPropagation();}\"\u003E\n\u003Cdiv class=\"CodeMirror-code\"\u003E\n\u003Cdiv\u003E\u003Cpre\u003E# This file uses centimeters as units for non-parametric coordinates.\u003C\/pre\u003E\u003C\/div\u003E\n\u003Cdiv\u003E\u003Cpre\u003E\u003C\/pre\u003E\u003C\/div\u003E\n\u003Cdiv\u003E\u003Cpre\u003Emtllib borders.mtl\u003C\/pre\u003E\u003C\/div\u003E\n\u003Cdiv\u003E\u003Cpre\u003Eg default\u003C\/pre\u003E\u003C\/div\u003E\n\u003Cdiv\u003E\u003Cpre\u003Ev -1.033920 -0.902372 19.999998\u003C\/pre\u003E\u003C\/div\u003E\n\u003C\/div\u003E\n\u003C\/div\u003E\n","lines":1589,"lines_more":1584,"preview_is_truncated":true,"channels":["C31FFUHPX"],"groups":[],"ims":[],"comments_count":0};
+		boot_data.file.comments = [];
+
+		
+
+		var g_editor;
+
+		$(function(){
+
+			var wrap_long_lines = !!TS.model.code_wrap_long_lines;
+
+			g_editor = CodeMirror(function(elt){
+				var content = document.getElementById("file_contents");
+				content.parentNode.replaceChild(elt, content);
+			}, {
+				value: $('#file_contents').text(),
+				lineNumbers: true,
+				matchBrackets: true,
+				indentUnit: 4,
+				indentWithTabs: true,
+				enterMode: "keep",
+				tabMode: "shift",
+				viewportMargin: 10,
+				readOnly: true,
+				lineWrapping: wrap_long_lines
+			});
+
+			// past a certain point, CodeMirror rendering may simply stop working.
+			// start having CodeMirror use its Long List View-style scolling at >= max_lines.
+			var max_lines = 8192;
+
+			var snippet_lines;
+
+			// determine # of lines, limit height accordingly
+			if (g_editor.doc && g_editor.doc.lineCount) {
+				snippet_lines = parseInt(g_editor.doc.lineCount());
+				var new_height;
+				if (snippet_lines) {
+					// we want the CodeMirror container to collapse around short snippets.
+					// however, we want to let it auto-expand only up to a limit, at which point
+					// we specify a fixed height so CM can display huge snippets without dying.
+					// this is because CodeMirror works nicely with no height set, but doesn't
+					// scale (big file performance issue), and doesn't work with min/max-height -
+					// so at some point, we have to set an absolute height to kick it into its
+					// smart / partial "Long List View"-style rendering mode.
+					if (snippet_lines < max_lines) {
+						new_height = 'auto';
+					} else {
+						new_height = (max_lines * 0.875) + 'rem'; // line-to-rem ratio
+					}
+					var line_count = Math.min(snippet_lines, max_lines);
+					TS.info('Applying height of ' + new_height + ' to container for this snippet of ' + snippet_lines + (snippet_lines === 1 ? ' line' : ' lines'));
+					$('#page .CodeMirror').height(new_height);
+				}
+			}
+
+			$('#file_preview_wrap_cb').bind('change', function(e) {
+				TS.model.code_wrap_long_lines = $(this).prop('checked');
+				g_editor.setOption('lineWrapping', TS.model.code_wrap_long_lines);
+			})
+
+			$('#file_preview_wrap_cb').prop('checked', wrap_long_lines);
+
+			CodeMirror.switchSlackMode(g_editor, "text");
+		});
+
+		
+		$('#file_comment').css('overflow', 'hidden').autogrow();
+	//-->
+	</script>
+
+
+		<script type="text/javascript">
+				TS.clog.setTeam('T30MJD56C');
+						TS.clog.setUser('U31B6JNJX');
+			</script>
+
+			<script type="text/javascript">TS.boot(boot_data);</script>
+	
+<style>.color_9f69e7:not(.nuc) {color:#9F69E7;}.color_4bbe2e:not(.nuc) {color:#4BBE2E;}.color_e7392d:not(.nuc) {color:#E7392D;}.color_3c989f:not(.nuc) {color:#3C989F;}.color_674b1b:not(.nuc) {color:#674B1B;}.color_e96699:not(.nuc) {color:#E96699;}.color_e0a729:not(.nuc) {color:#E0A729;}.color_684b6c:not(.nuc) {color:#684B6C;}.color_5b89d5:not(.nuc) {color:#5B89D5;}.color_2b6836:not(.nuc) {color:#2B6836;}.color_99a949:not(.nuc) {color:#99A949;}.color_df3dc0:not(.nuc) {color:#DF3DC0;}.color_4cc091:not(.nuc) {color:#4CC091;}.color_9b3b45:not(.nuc) {color:#9B3B45;}.color_d58247:not(.nuc) {color:#D58247;}.color_bb86b7:not(.nuc) {color:#BB86B7;}.color_5a4592:not(.nuc) {color:#5A4592;}.color_db3150:not(.nuc) {color:#DB3150;}.color_235e5b:not(.nuc) {color:#235E5B;}.color_9e3997:not(.nuc) {color:#9E3997;}.color_53b759:not(.nuc) {color:#53B759;}.color_c386df:not(.nuc) {color:#C386DF;}.color_385a86:not(.nuc) {color:#385A86;}.color_a63024:not(.nuc) {color:#A63024;}.color_5870dd:not(.nuc) {color:#5870DD;}.color_ea2977:not(.nuc) {color:#EA2977;}.color_50a0cf:not(.nuc) {color:#50A0CF;}.color_d55aef:not(.nuc) {color:#D55AEF;}.color_d1707d:not(.nuc) {color:#D1707D;}.color_43761b:not(.nuc) {color:#43761B;}.color_e06b56:not(.nuc) {color:#E06B56;}.color_8f4a2b:not(.nuc) {color:#8F4A2B;}.color_902d59:not(.nuc) {color:#902D59;}.color_de5f24:not(.nuc) {color:#DE5F24;}.color_a2a5dc:not(.nuc) {color:#A2A5DC;}.color_827327:not(.nuc) {color:#827327;}.color_3c8c69:not(.nuc) {color:#3C8C69;}.color_8d4b84:not(.nuc) {color:#8D4B84;}.color_84b22f:not(.nuc) {color:#84B22F;}.color_4ec0d6:not(.nuc) {color:#4EC0D6;}.color_e23f99:not(.nuc) {color:#E23F99;}.color_e475df:not(.nuc) {color:#E475DF;}.color_619a4f:not(.nuc) {color:#619A4F;}.color_a72f79:not(.nuc) {color:#A72F79;}.color_7d414c:not(.nuc) {color:#7D414C;}.color_aba727:not(.nuc) {color:#ABA727;}.color_965d1b:not(.nuc) {color:#965D1B;}.color_4d5e26:not(.nuc) {color:#4D5E26;}.color_dd8527:not(.nuc) {color:#DD8527;}.color_bd9336:not(.nuc) {color:#BD9336;}.color_e85d72:not(.nuc) {color:#E85D72;}.color_dc7dbb:not(.nuc) {color:#DC7DBB;}.color_bc3663:not(.nuc) {color:#BC3663;}.color_9d8eee:not(.nuc) {color:#9D8EEE;}.color_8469bc:not(.nuc) {color:#8469BC;}.color_73769d:not(.nuc) {color:#73769D;}.color_b14cbc:not(.nuc) {color:#B14CBC;}</style>
+
+<!-- slack-www-hhvm232 / 2016-11-12 01:10:59 / vf10d9a385bfd3f07dbd4f1463e6818a9c83bbcba / B:H -->
+
+</body>
+</html>

@@ -9,7 +9,8 @@ public class ParticleShooter : MonoBehaviour
     public GameObject target;
     public GameObject bulletTrail;
 
-    public float initialMag = 20, deceleration = 10f;
+    public float initialMag = 20;
+    public float size = 0.5f;
 
     private DebugHelper.DebugData data;
 
@@ -41,9 +42,9 @@ public class ParticleShooter : MonoBehaviour
 
 	    if (Input.GetMouseButton(0))
         {
-            for (float i = 0.9f; i > Random.value;)
+            for (float i = 0.6f; i > Random.value;)
             {
-                ParticleSystem.Particle p = Helper.CreateParticle(initialMag, 5, Helper.ClickPoint(), data.color, true);
+                ParticleSystem.Particle p = Helper.CreateParticle(initialMag, 5, size, Helper.ClickPoint(), data.color, true);
 
                 ParticleManager.particleQueue.Add(p);
             }

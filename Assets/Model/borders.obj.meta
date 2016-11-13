@@ -1,0 +1,217 @@
+fileFormatVersion: 2
+guid: 040347c407dfe8848afb36196a3eecbc
+timeCreated: 1478941958
+licenseType: Free
+ModelImporter:
+  serializedVersion: 19
+  fileIDToRecycleName:
+    100000: //RootNode
+    100002: group5_group4_pPyramid11
+    100004: group5_group4_pPyramid12
+    100006: group5_group4_pPyramid13
+    100008: group5_group4_pPyramid2
+    100010: group5_group4_pPyramid3
+    100012: group5_group4_pPyramid4
+    100014: group5_group4_pPyramid5
+    100016: group6_pPyramid10
+    100018: group6_pPyramid14
+    100020: group6_pPyramid15
+    100022: group6_pPyramid16
+    100024: group6_pPyramid17
+    100026: group6_pPyramid18
+    100028: group6_pPyramid24
+    100030: group6_pPyramid25
+    100032: group6_pPyramid26
+    100034: group6_pPyramid27
+    100036: group6_pPyramid7
+    100038: group6_pPyramid8
+    100040: group6_pPyramid9
+    100042: group7_group3_pPyramid20
+    100044: group7_group3_pPyramid21
+    100046: group7_group3_pPyramid22
+    100048: group7_group3_pPyramid23
+    100050: pCube1
+    100052: pPyramid19_group7_group3
+    100054: pPyramid1_group5_group4
+    100056: pPyramid6_group6
+    400000: //RootNode
+    400002: group5_group4_pPyramid11
+    400004: group5_group4_pPyramid12
+    400006: group5_group4_pPyramid13
+    400008: group5_group4_pPyramid2
+    400010: group5_group4_pPyramid3
+    400012: group5_group4_pPyramid4
+    400014: group5_group4_pPyramid5
+    400016: group6_pPyramid10
+    400018: group6_pPyramid14
+    400020: group6_pPyramid15
+    400022: group6_pPyramid16
+    400024: group6_pPyramid17
+    400026: group6_pPyramid18
+    400028: group6_pPyramid24
+    400030: group6_pPyramid25
+    400032: group6_pPyramid26
+    400034: group6_pPyramid27
+    400036: group6_pPyramid7
+    400038: group6_pPyramid8
+    400040: group6_pPyramid9
+    400042: group7_group3_pPyramid20
+    400044: group7_group3_pPyramid21
+    400046: group7_group3_pPyramid22
+    400048: group7_group3_pPyramid23
+    400050: pCube1
+    400052: pPyramid19_group7_group3
+    400054: pPyramid1_group5_group4
+    400056: pPyramid6_group6
+    2300000: group5_group4_pPyramid11
+    2300002: group5_group4_pPyramid12
+    2300004: group5_group4_pPyramid13
+    2300006: group5_group4_pPyramid2
+    2300008: group5_group4_pPyramid3
+    2300010: group5_group4_pPyramid4
+    2300012: group5_group4_pPyramid5
+    2300014: group6_pPyramid10
+    2300016: group6_pPyramid14
+    2300018: group6_pPyramid15
+    2300020: group6_pPyramid16
+    2300022: group6_pPyramid17
+    2300024: group6_pPyramid18
+    2300026: group6_pPyramid24
+    2300028: group6_pPyramid25
+    2300030: group6_pPyramid26
+    2300032: group6_pPyramid27
+    2300034: group6_pPyramid7
+    2300036: group6_pPyramid8
+    2300038: group6_pPyramid9
+    2300040: group7_group3_pPyramid20
+    2300042: group7_group3_pPyramid21
+    2300044: group7_group3_pPyramid22
+    2300046: group7_group3_pPyramid23
+    2300048: pCube1
+    2300050: pPyramid19_group7_group3
+    2300052: pPyramid1_group5_group4
+    2300054: pPyramid6_group6
+    3300000: group5_group4_pPyramid11
+    3300002: group5_group4_pPyramid12
+    3300004: group5_group4_pPyramid13
+    3300006: group5_group4_pPyramid2
+    3300008: group5_group4_pPyramid3
+    3300010: group5_group4_pPyramid4
+    3300012: group5_group4_pPyramid5
+    3300014: group6_pPyramid10
+    3300016: group6_pPyramid14
+    3300018: group6_pPyramid15
+    3300020: group6_pPyramid16
+    3300022: group6_pPyramid17
+    3300024: group6_pPyramid18
+    3300026: group6_pPyramid24
+    3300028: group6_pPyramid25
+    3300030: group6_pPyramid26
+    3300032: group6_pPyramid27
+    3300034: group6_pPyramid7
+    3300036: group6_pPyramid8
+    3300038: group6_pPyramid9
+    3300040: group7_group3_pPyramid20
+    3300042: group7_group3_pPyramid21
+    3300044: group7_group3_pPyramid22
+    3300046: group7_group3_pPyramid23
+    3300048: pCube1
+    3300050: pPyramid19_group7_group3
+    3300052: pPyramid1_group5_group4
+    3300054: pPyramid6_group6
+    4300000: group5_group4_pPyramid11
+    4300002: group5_group4_pPyramid12
+    4300004: group5_group4_pPyramid13
+    4300006: group5_group4_pPyramid2
+    4300008: group5_group4_pPyramid3
+    4300010: group5_group4_pPyramid4
+    4300012: group5_group4_pPyramid5
+    4300014: group6_pPyramid10
+    4300016: group6_pPyramid14
+    4300018: group6_pPyramid15
+    4300020: group6_pPyramid16
+    4300022: group6_pPyramid17
+    4300024: group6_pPyramid18
+    4300026: group6_pPyramid24
+    4300028: group6_pPyramid25
+    4300030: group6_pPyramid26
+    4300032: group6_pPyramid27
+    4300034: group6_pPyramid7
+    4300036: group6_pPyramid8
+    4300038: group6_pPyramid9
+    4300040: group7_group3_pPyramid20
+    4300042: group7_group3_pPyramid21
+    4300044: group7_group3_pPyramid22
+    4300046: group7_group3_pPyramid23
+    4300048: pCube1
+    4300050: pPyramid19_group7_group3
+    4300052: pPyramid1_group5_group4
+    4300054: pPyramid6_group6
+  materials:
+    importMaterials: 1
+    materialName: 0
+    materialSearch: 1
+  animations:
+    legacyGenerateAnimations: 4
+    bakeSimulation: 0
+    resampleCurves: 1
+    optimizeGameObjects: 0
+    motionNodeName: 
+    animationImportErrors: 
+    animationImportWarnings: 
+    animationRetargetingWarnings: 
+    animationDoRetargetingWarnings: 0
+    animationCompression: 1
+    animationRotationError: 0.5
+    animationPositionError: 0.5
+    animationScaleError: 0.5
+    animationWrapMode: 0
+    extraExposedTransformPaths: []
+    clipAnimations: []
+    isReadable: 1
+  meshes:
+    lODScreenPercentages: []
+    globalScale: 1
+    meshCompression: 0
+    addColliders: 0
+    importBlendShapes: 1
+    swapUVChannels: 0
+    generateSecondaryUV: 0
+    useFileUnits: 1
+    optimizeMeshForGPU: 1
+    keepQuads: 0
+    weldVertices: 1
+    secondaryUVAngleDistortion: 8
+    secondaryUVAreaDistortion: 15.000001
+    secondaryUVHardAngle: 88
+    secondaryUVPackMargin: 4
+    useFileScale: 1
+  tangentSpace:
+    normalSmoothAngle: 60
+    normalImportMode: 0
+    tangentImportMode: 3
+  importAnimation: 1
+  copyAvatar: 0
+  humanDescription:
+    serializedVersion: 2
+    human: []
+    skeleton: []
+    armTwist: 0.5
+    foreArmTwist: 0.5
+    upperLegTwist: 0.5
+    legTwist: 0.5
+    armStretch: 0.05
+    legStretch: 0.05
+    feetSpacing: 0
+    rootMotionBoneName: 
+    rootMotionBoneRotation: {x: 0, y: 0, z: 0, w: 1}
+    hasTranslationDoF: 0
+    hasExtraRoot: 0
+    skeletonHasParents: 1
+  lastHumanDescriptionAvatarSource: {instanceID: 0}
+  animationType: 0
+  humanoidOversampling: 1
+  additionalBone: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

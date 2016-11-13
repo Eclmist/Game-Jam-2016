@@ -1,0 +1,53 @@
+Mono path[0] = 'C:/Users/Samuel/Documents/Game Jam2/Build2/Vector Tree_Data/Managed'
+Mono path[1] = 'C:/Users/Samuel/Documents/Game Jam2/Build2/Vector Tree_Data/Mono'
+Mono config path = 'C:/Users/Samuel/Documents/Game Jam2/Build2/Vector Tree_Data/Mono/etc'
+PlayerConnection initialized from C:/Users/Samuel/Documents/Game Jam2/Build2/Vector Tree_Data (debug = 0)
+PlayerConnection initialized network socket : 0.0.0.0 55254
+Multi-casting "[IP] 10.175.20.151 [Port] 55254 [Flags] 2 [Guid] 1589519139 [EditorId] 4192766790 [Version] 1048832 [Id] WindowsPlayer(DESKTOP-7A9DME1) [Debug] 0" to [225.0.0.222:54997]...
+Started listening to [0.0.0.0:55254]
+PlayerConnection already initialized - listening to [0.0.0.0:55254]
+Initialize engine version: 5.5.0b11 (03364468e96e)
+GfxDevice: creating device client; threaded=1
+Direct3D:
+    Version:  Direct3D 11.0 [level 11.0]
+    Renderer: NVIDIA GeForce GT 740M (ID=0x1292)
+    Vendor:   NVIDIA
+    VRAM:     2020 MB
+    Driver:   21.21.13.6909
+Begin MonoManager ReloadAssembly
+Platform assembly: C:\Users\Samuel\Documents\Game Jam2\Build2\Vector Tree_Data\Managed\UnityEngine.dll (this message is harmless)
+Loading C:\Users\Samuel\Documents\Game Jam2\Build2\Vector Tree_Data\Managed\UnityEngine.dll into Unity Child Domain
+Platform assembly: C:\Users\Samuel\Documents\Game Jam2\Build2\Vector Tree_Data\Managed\Assembly-CSharp-firstpass.dll (this message is harmless)
+Loading C:\Users\Samuel\Documents\Game Jam2\Build2\Vector Tree_Data\Managed\Assembly-CSharp-firstpass.dll into Unity Child Domain
+Platform assembly: C:\Users\Samuel\Documents\Game Jam2\Build2\Vector Tree_Data\Managed\Assembly-CSharp.dll (this message is harmless)
+Loading C:\Users\Samuel\Documents\Game Jam2\Build2\Vector Tree_Data\Managed\Assembly-CSharp.dll into Unity Child Domain
+Platform assembly: C:\Users\Samuel\Documents\Game Jam2\Build2\Vector Tree_Data\Managed\UnityEngine.UI.dll (this message is harmless)
+Loading C:\Users\Samuel\Documents\Game Jam2\Build2\Vector Tree_Data\Managed\UnityEngine.UI.dll into Unity Child Domain
+Platform assembly: C:\Users\Samuel\Documents\Game Jam2\Build2\Vector Tree_Data\Managed\UnityEngine.Networking.dll (this message is harmless)
+Loading C:\Users\Samuel\Documents\Game Jam2\Build2\Vector Tree_Data\Managed\UnityEngine.Networking.dll into Unity Child Domain
+Platform assembly: C:\Users\Samuel\Documents\Game Jam2\Build2\Vector Tree_Data\Managed\UnityEngine.PlaymodeTestsRunner.dll (this message is harmless)
+Loading C:\Users\Samuel\Documents\Game Jam2\Build2\Vector Tree_Data\Managed\UnityEngine.PlaymodeTestsRunner.dll into Unity Child Domain
+- Completed reload, in  0.044 seconds
+Platform assembly: C:\Users\Samuel\Documents\Game Jam2\Build2\Vector Tree_Data\Managed\System.Core.dll (this message is harmless)
+Platform assembly: C:\Users\Samuel\Documents\Game Jam2\Build2\Vector Tree_Data\Managed\System.dll (this message is harmless)
+desktop: 1366x768 60Hz; virtual: 1366x768 at 0,0
+<RI> Initializing input.
+<RI> Input initialized.
+<RI> Initialized touch support.
+UnloadTime: 1.511440 ms
+Platform assembly: C:\Users\Samuel\Documents\Game Jam2\Build2\Vector Tree_Data\Managed\System.Xml.dll (this message is harmless)
+ArgumentException: Encoding name 'Windows-1252' not supported
+Parameter name: name
+  at System.Text.Encoding.GetEncoding (System.String name) [0x000ed] in /Users/builduser/buildslave/mono/build/mcs/class/corlib/System.Text/Encoding.cs:718 
+  at System.Xml.XmlInputStream.Initialize (System.IO.Stream stream) [0x00265] in /Users/builduser/buildslave/mono/build/mcs/class/System.XML/System.Xml/XmlInputStream.cs:459 
+  at System.Xml.XmlInputStream..ctor (System.IO.Stream stream) [0x00006] in /Users/builduser/buildslave/mono/build/mcs/class/System.XML/System.Xml/XmlInputStream.cs:359 
+  at System.Xml.XmlStreamReader..ctor (System.IO.Stream input) [0x00000] in <filename unknown>:0 
+  at System.Xml.XmlTextReader..ctor (System.IO.Stream input) [0x00000] in <filename unknown>:0 
+  at System.Xml.Serialization.XmlSerializer.Deserialize (System.IO.Stream stream) [0x00000] in /Users/builduser/buildslave/mono/build/mcs/class/System.XML/System.Xml.Serialization/XmlSerializer.cs:327 
+  at ScoreBoard.Load (System.String path) [0x0001c] in C:\Users\Samuel\Documents\Game Jam2\Assets\From YW\_Scripts\Controllers\ScoreBoardController.cs:91 
+  at ScoreBoardController.Awake () [0x00053] in C:\Users\Samuel\Documents\Game Jam2\Assets\From YW\_Scripts\Controllers\ScoreBoardController.cs:27 
+ 
+(Filename: /Users/builduser/buildslave/mono/build/mcs/class/corlib/System.Text/Encoding.cs Line: 718)
+
+Setting up 1 worker threads for Enlighten.
+  Thread -> id: 1048 -> priority: 1 

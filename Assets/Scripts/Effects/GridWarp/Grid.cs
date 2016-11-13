@@ -38,8 +38,6 @@ public class Grid : MonoBehaviour
     public float force3, range3;
 
     [Header("Grid Size")]
-    public float gridWidth;
-    public float gridHeight;
     public int numRows;
     public int numCols;
 
@@ -49,6 +47,10 @@ public class Grid : MonoBehaviour
 
 
     public static Grid Instance;
+
+    private float gridWidth;
+    private float gridHeight;
+
 
     private float rowCellSize;
     private float colCellSize;
@@ -61,6 +63,13 @@ public class Grid : MonoBehaviour
     private bool threadStopped = false;
     private AutoResetEvent resetEvent;
 
+    private Thread thread2;
+    private bool thread2Stopped = false;
+    private AutoResetEvent resetEvent2;
+
+    private Thread thread3;
+    private Thread thread4;
+
     // force object queue
     private List<ForceObject> forceQueue = new List<ForceObject>();
 
@@ -71,6 +80,9 @@ public class Grid : MonoBehaviour
 
     void Start()
     {
+        gridWidth = GameManager.instance.ArenaWidth;
+        gridHeight = GameManager.instance.ArenaHeight;
+
         points = new PointMass[numRows, numCols];
 
         fixedPoints = new PointMass[numRows, numCols];
@@ -121,19 +133,53 @@ public class Grid : MonoBehaviour
         }
 
 
-        thread = new Thread(UpdateGrid);
+        thread = new Thread(CalculateGrid);
         thread.Start();
         resetEvent = new AutoResetEvent(false);
+
+        //thread4 = new Thread(UpdateGrid);
+        //thread4.Start();
+
+        thread3 = new Thread(UpdateGrid);
+        thread3.Start();
+        thread2 = new Thread(UpdateGrid);
+        thread2.Start();
+        resetEvent2 = new AutoResetEvent(false);
 
     }
 
     void UpdateGrid()
     {
+        while (!thread2Stopped)
+        {
+            resetEvent2.WaitOne();
+
+            foreach (Spring s in springs)
+            {
+                s.Update();
+            }
+
+            for (int row = 0; row < numRows; row++)
+            {
+                for (int col = 0; col < numCols; col++)
+                {
+                    points[row, col].Update();
+                }
+            }
+        }
+    }
+
+
+    void CalculateGrid()
+    {
+
+        
+        
         try
         {
-
             while (!threadStopped)
             {
+                
                 resetEvent.WaitOne();
                 List<ForceObject> tempForceQueue;
 
@@ -157,7 +203,7 @@ public class Grid : MonoBehaviour
 
                             float distance = Vector3.SqrMagnitude(points[row, col].position - fo.position);
 
-                            if (distance < fo.range*fo.range)
+                            if (distance < fo.range * fo.range)
                             {
                                 distance = Mathf.Sqrt(distance);
                                 float mod;
@@ -188,28 +234,14 @@ public class Grid : MonoBehaviour
                         }
                     }
                 }
-                
-
-                foreach (Spring s in springs)
-                {
-                    s.Update();
-                }
-
-                for (int row = 0; row < numRows; row++)
-                {
-                    for (int col = 0; col < numCols; col++)
-                    {
-                        points[row, col].Update();
-                    }
-                }
             }
-            
         }
         catch (Exception e)
         {
             print(e);
         }
     }
+
 
     public void ApplyDirectedForce(Vector3 force, Vector3 position, float radius)
     {
@@ -257,37 +289,48 @@ public class Grid : MonoBehaviour
     public void FixedUpdate()
     {
         resetEvent.Set();
+        resetEvent2.Set();
 
         //ApplyDirectedForce(Vector3.down * force1, player.position, range1);
 
-        if (Input.GetMouseButton(1))
-        {
-            float mag;
-            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-            Plane plane = new Plane(Vector3.up, transform.position.y + 1);
-            plane.Raycast(ray, out mag);
+        //if (Input.GetMouseButton(1))
+        //{
+        //    float mag;
+        //    Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        //    Plane plane = new Plane(Vector3.up, transform.position.y + 1);
+        //    plane.Raycast(ray, out mag);
 
-            Vector3 point = ray.origin + ray.direction*mag;
+        //    Vector3 point = ray.origin + ray.direction*mag;
 
-            ApplyForce(force1 * 10, point, range1, ForceType.Explosive);
-        }
+        //    ApplyForce(force1 * 10, point, range1, ForceType.Explosive);
+        //}
 
-        if (Input.GetMouseButton(0))
-        {
-            ApplyDirectedForce(Vector3.up*force1, player.position, range1);
-        }
+        //if (Input.GetMouseButton(0))
+        //{
+        //    ApplyDirectedForce(Vector3.up*force1, player.position, range1);
+        //}
     }
 
     public void OnApplicationQuit()
     {
         threadStopped = true;
         thread.Abort();
+
+        thread2Stopped = true;
+        thread2.Abort();
+        thread3.Abort();
     }
 
     public void OnDestroy()
     {
         threadStopped = true;
         thread.Abort();
+
+        thread2Stopped = true;
+        thread2.Abort();
+        thread3.Abort();
+        //thread4.Abort();
+
     }
 
     public PointMass[,] GetPoints()

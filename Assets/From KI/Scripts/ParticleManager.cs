@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Threading;
 using GenLib.TestingAndProfiling;
 using UnityEngine;
+using UnityEngine.Assertions;
 
 public class ParticleManager : MonoBehaviour
 {
@@ -16,10 +17,13 @@ public class ParticleManager : MonoBehaviour
     
     public float partCount,attPtC;
 
-    public float xBound = 100, zBound = 100;
+    public float xBound = 100, zBound = 100, xBoundL = 0, zBoundL = 0;
+
+    public float perSecondDamping;
 
     bool _threadRunning;
     Thread _thread;
+    public float attrForce;
     //AutoResetEvent are = new AutoResetEvent(false);
 
     void Start()
@@ -87,7 +91,7 @@ public class ParticleManager : MonoBehaviour
 
                     //if (particleList[i] == null || particleList[i].Equals(null)) continue;
 
-                    float newMag = p.velocity.magnitude - deltaTime*50;
+                    float newMag = p.velocity.magnitude - deltaTime*perSecondDamping;
                     p.remainingLifetime -= deltaTime;
                     if (p.remainingLifetime<= 0 || newMag <= 0)
                     {
@@ -111,12 +115,12 @@ public class ParticleManager : MonoBehaviour
                     foreach (var ap in lAttPt)
                     {
                         Vector3 v = ap - p.position;
-                        p.velocity += v.normalized * Mathf.Clamp(Mathf.Pow(0.9f , v.magnitude), 0.1f,2) * 600 * deltaTime;
+                        p.velocity += v.normalized * Mathf.Clamp(Mathf.Pow(0.9f , v.magnitude), 0.1f,2) * 600 * attrForce * deltaTime;
                     }
 
                     //p.velocity = Vector3.ClampMagnitude(p.velocity, 3);
 
-                    Vector3 newPos = new Vector3(Mathf.Clamp(p.position.x, 0, xBound), 0, Mathf.Clamp(p.position.z, 0, zBound));
+                    Vector3 newPos = new Vector3(Mathf.Clamp(p.position.x, xBoundL, xBound), 0, Mathf.Clamp(p.position.z, zBoundL, zBound));
                     p.position = newPos;
                     
                     p.position += p.velocity*deltaTime;

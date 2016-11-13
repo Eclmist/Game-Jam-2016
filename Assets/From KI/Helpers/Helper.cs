@@ -6,8 +6,9 @@ public class Helper : MonoBehaviour
 {
 
     public static GameObject explosion;
+    public static GameObject smallExplosion;
 
-    public static ParticleSystem.Particle CreateParticle(float speed, float lifetime, Vector3 initialPosition, Color color, bool colorDeviation = false)
+    public static ParticleSystem.Particle CreateParticle(float speed, float lifetime, float size, Vector3 initialPosition, Color color, bool colorDeviation = false)
     {
         if (colorDeviation)
         {
@@ -19,7 +20,7 @@ public class Helper : MonoBehaviour
 
         ParticleSystem.Particle p = new ParticleSystem.Particle();
         p.position = initialPosition;
-        p.startSize = 0.5f;
+        p.startSize = size;
         p.startColor = color;
         p.startLifetime = lifetime;
         p.remainingLifetime = lifetime;
@@ -27,9 +28,9 @@ public class Helper : MonoBehaviour
         return p;
     }
 
-    public static ParticleSystem.Particle CreateParticle(float speed, float lifetime, Vector3 initialPosition)
+    public static ParticleSystem.Particle CreateParticle(float speed, float size, float lifetime, Vector3 initialPosition)
     {
-        return CreateParticle(speed, lifetime, initialPosition, Random.ColorHSV(0, 1, 1, 1, 1, 1, 1, 1));
+        return CreateParticle(speed, lifetime, size, initialPosition, Random.ColorHSV(0, 1, 1, 1, 1, 1, 1, 1));
     }
 
     public static Vector3 ClickPoint(float y = 0)
@@ -51,12 +52,37 @@ public class Helper : MonoBehaviour
 
     public static void SpawnExplosion(Vector3 position, Color c)
     {
-        if(explosion == null)
+        
+        float h, s, v;
+        Color.RGBToHSV(c, out h, out s, out v);
+        s = 0.5F;
+        c = Color.HSVToRGB(h, s, v);
+
+        if (explosion == null)
             explosion = Resources.Load<GameObject>("Explosion");
 
-        GameObject ob = Instantiate(explosion, position, Quaternion.identity);
+        GameObject ob = Instantiate(explosion, position, Quaternion.LookRotation(Vector3.up));
         ob.GetComponent<ParticleSystem>().startColor = c;
 
         Destroy(ob, 2);
     }
+
+
+    public static void SpawnSmallExplosion(float scale, Vector3 position, Color c)
+    {
+
+        float h, s, v;
+        Color.RGBToHSV(c, out h, out s, out v);
+        s = 0.5F;
+        c = Color.HSVToRGB(h, s, v);
+
+        if (smallExplosion == null)
+            smallExplosion = Resources.Load<GameObject>("SmallExplosion");
+
+        GameObject ob = Instantiate(smallExplosion, position, Quaternion.LookRotation(Vector3.up));
+        ob.GetComponent<ParticleSystem>().startColor = c;
+        
+        Destroy(ob, 2);
+    }
+
 }

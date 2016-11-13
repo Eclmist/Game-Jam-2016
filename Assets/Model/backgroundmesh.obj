@@ -1,0 +1,2212 @@
+<!DOCTYPE html>
+<html lang="en" >
+
+<head>
+
+	
+	<script>
+window.ts_endpoint_url = "https:\/\/slack.com\/beacon\/timing";
+
+(function(e) {
+	var n=Date.now?Date.now():+new Date,r=e.performance||{},t=[],a={},i=function(e,n){for(var r=0,a=t.length,i=[];a>r;r++)t[r][e]==n&&i.push(t[r]);return i},o=function(e,n){for(var r,a=t.length;a--;)r=t[a],r.entryType!=e||void 0!==n&&r.name!=n||t.splice(a,1)};r.now||(r.now=r.webkitNow||r.mozNow||r.msNow||function(){return(Date.now?Date.now():+new Date)-n}),r.mark||(r.mark=r.webkitMark||function(e){var n={name:e,entryType:"mark",startTime:r.now(),duration:0};t.push(n),a[e]=n}),r.measure||(r.measure=r.webkitMeasure||function(e,n,r){n=a[n].startTime,r=a[r].startTime,t.push({name:e,entryType:"measure",startTime:n,duration:r-n})}),r.getEntriesByType||(r.getEntriesByType=r.webkitGetEntriesByType||function(e){return i("entryType",e)}),r.getEntriesByName||(r.getEntriesByName=r.webkitGetEntriesByName||function(e){return i("name",e)}),r.clearMarks||(r.clearMarks=r.webkitClearMarks||function(e){o("mark",e)}),r.clearMeasures||(r.clearMeasures=r.webkitClearMeasures||function(e){o("measure",e)}),e.performance=r,"function"==typeof define&&(define.amd||define.ajs)&&define("performance",[],function(){return r}) // eslint-disable-line
+})(window);
+
+</script>
+<script>;(function() {
+
+'use strict';
+
+
+window.TSMark = function(mark_label) {
+	if (!window.performance || !window.performance.mark) return;
+	performance.mark(mark_label);
+};
+window.TSMark('start_load');
+
+
+window.TSMeasureAndBeacon = function(measure_label, start_mark_label) {
+	if (start_mark_label === 'start_nav' && window.performance && window.performance.timing) {
+		window.TSBeacon(measure_label, (new Date()).getTime() - performance.timing.navigationStart);
+		return;
+	}
+	if (!window.performance || !window.performance.mark || !window.performance.measure) return;
+	performance.mark(start_mark_label + '_end');
+	try {
+		performance.measure(measure_label, start_mark_label, start_mark_label + '_end');
+		window.TSBeacon(measure_label, performance.getEntriesByName(measure_label)[0].duration);
+	} catch(e) { return; }
+};
+
+
+window.TSBeacon = function(label, value) {
+	var endpoint_url = window.ts_endpoint_url || 'https://slack.com/beacon/timing';
+	(new Image()).src = endpoint_url + '?data=' + encodeURIComponent(label + ':' + value);
+};
+
+})();
+</script>
+ 
+
+<script>
+window.TSMark('step_load');
+</script>	<noscript><meta http-equiv="refresh" content="0; URL=/files/darkdestry/F31PVASA1/backgroundmesh.obj?nojsmode=1" /></noscript>
+<script>(function() {
+        'use strict';
+
+	var start_time = Date.now();
+	var logs = [];
+	var connecting = true;
+	var ever_connected = false;
+	var log_namespace;
+
+	var logWorker = function(ob) {
+		var log_str = ob.secs+' start_label:'+ob.start_label+' measure_label:'+ob.measure_label+' description:'+ob.description;
+
+		if (TS.metrics.getLatestMark(ob.start_label)) {
+			TS.metrics.measure(ob.measure_label, ob.start_label);
+			TS.log(88, log_str);
+
+			if (ob.do_reset) {
+				window.TSMark(ob.start_label);
+			}
+		} else {
+			TS.maybeWarn(88, 'not timing: '+log_str);
+		}
+	}
+
+	var log = function(k, description) {
+		var secs = (Date.now()-start_time)/1000;
+
+		logs.push({
+			k: k,
+			d: description,
+			t: secs,
+			c: !!connecting
+		})
+
+		if (!window.boot_data) return;
+		if (!window.TS) return;
+		if (!TS.metrics) return;
+		if (!connecting) return;
+
+		
+		log_namespace = log_namespace || (function() {
+			if (boot_data.app == 'client') return 'client';
+			if (boot_data.app == 'space') return 'post';
+			if (boot_data.app == 'api') return 'apisite';
+			if (boot_data.app == 'mobile') return 'mobileweb';
+			if (boot_data.app == 'web' || boot_data.app == 'oauth') return 'web';
+			return 'unknown';
+		})();
+
+		var modifier = (TS.boot_data.feature_no_rollups) ? '_no_rollups' : '';
+
+		logWorker({
+			k: k,
+			secs: secs,
+			description: description,
+			start_label: ever_connected ? 'start_reconnect' : 'start_load',
+			measure_label: 'v2_'+log_namespace+modifier+(ever_connected ? '_reconnect__' : '_load__')+k,
+			do_reset: false,
+		});
+	}
+
+	var setConnecting = function(val) {
+		val = !!val;
+		if (val == connecting) return;
+
+		if (val) {
+			log('start');
+			if (ever_connected) {
+				
+				window.TSMark('start_reconnect');
+				window.TSMark('step_reconnect');
+				window.TSMark('step_load');
+			}
+
+			connecting = val;
+			log('start');
+		} else {
+			log('over');
+			ever_connected = true;
+			connecting = val;
+		}
+	}
+
+	window.TSConnLogger = {
+		log: log,
+		logs: logs,
+		start_time: start_time,
+		setConnecting: setConnecting
+	}
+})();</script>
+
+<script type="text/javascript">
+if(self!==top)window.document.write("\u003Cstyle>body * {display:none !important;}\u003C\/style>\u003Ca href=\"#\" onclick="+
+"\"top.location.href=window.location.href\" style=\"display:block !important;padding:10px\">Go to Slack.com\u003C\/a>");
+
+(function() {
+	var timer;
+	if (self !== top) {
+		timer = window.setInterval(function() {
+			if (window.$) {
+				try {
+					$('#page').remove();
+					$('#client-ui').remove();
+					window.TS = null;
+					window.clearInterval(timer);
+				} catch(e) {}
+			}
+		}, 200);
+	}
+}());
+
+</script>
+
+<script>(function() {
+        'use strict';
+
+        window.callSlackAPIUnauthed = function(method, args, callback) {
+                var timestamp = Date.now() / 1000;  
+                var version = (window.TS && TS.boot_data) ? TS.boot_data.version_uid.substring(0, 8) : 'noversion';
+                var url = '/api/' + method + '?_x_id=' + version + '-' + timestamp;
+                var req = new XMLHttpRequest();
+
+                req.onreadystatechange = function() {
+                        if (req.readyState == 4) {
+                                req.onreadystatechange = null;
+                                var obj;
+
+                                if (req.status == 200 || req.status == 429) {
+                                        try {
+                                                obj = JSON.parse(req.responseText);
+                                        } catch (err) {
+                                                console.warn('unable to do anything with api rsp');
+                                        }
+                                }
+
+                                obj = obj || {
+                                        ok: false
+                                }
+
+                                callback(obj.ok, obj, args);
+                        }
+                }
+
+                var async = true;
+                req.open('POST', url, async);
+
+                var form_data = new FormData();
+                var has_data = false;
+                Object.keys(args).map(function(k) {
+                        if (k[0] === '_') return;
+                        form_data.append(k, args[k]);
+                        has_data = true;
+                });
+
+                if (has_data) {
+                        req.send(form_data);
+                } else {
+                        req.send();
+                }
+        }
+})();</script>
+
+						
+	
+		<script>
+			if (window.location.host == 'slack.com' && window.location.search.indexOf('story') < 0) {
+				document.cookie = '__cvo_skip_doc=' + escape(document.URL) + '|' + escape(document.referrer) + ';path=/';
+			}
+		</script>
+	
+
+		<script type="text/javascript">
+		
+		try {
+			if(window.location.hash && !window.location.hash.match(/^(#?[a-zA-Z0-9_]*)$/)) {
+				window.location.hash = '';
+			}
+		} catch(e) {}
+		
+	</script>
+
+	<script type="text/javascript">
+				(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+		(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+		m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+		})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+		ga('create', "UA-106458-17", 'slack.com');
+
+		
+			window.optimizely = [];
+		
+		
+		ga('send', 'pageview');
+	
+		(function(e,c,b,f,d,g,a){e.SlackBeaconObject=d;
+		e[d]=e[d]||function(){(e[d].q=e[d].q||[]).push([1*new Date(),arguments])};
+		e[d].l=1*new Date();g=c.createElement(b);a=c.getElementsByTagName(b)[0];
+		g.async=1;g.src=f;a.parentNode.insertBefore(g,a)
+		})(window,document,"script","https://a.slack-edge.com/dcf8/js/libs/beacon.js","sb");
+		sb('set', 'token', '3307f436963e02d4f9eb85ce5159744c');
+
+					sb('set', 'user_id', "U31B6JNJX");
+							sb('set', 'user_' + "batch", "signup_api");
+							sb('set', 'user_' + "created", "2016-11-11");
+						sb('set', 'name_tag', "kawaiigamejam" + '/' + "eclmist");
+				sb('track', 'pageview');
+
+		function track(a){ga('send','event','web',a);sb('track',a);}
+
+	</script>
+
+
+
+<script type='text/javascript'>
+	
+	/* safety stub */
+	window.mixpanel = {
+		track: function() {},
+		track_links: function() {},
+		track_forms: function() {}
+	};
+
+	function mixpanel_track(){}
+	function mixpanel_track_forms(){}
+	function mixpanel_track_links(){}
+	
+</script>
+	
+	<meta name="referrer" content="no-referrer">
+		<meta name="superfish" content="nofish">
+
+	<script type="text/javascript">
+
+
+
+var TS_last_log_date = null;
+var TSMakeLogDate = function() {
+	var date = new Date();
+
+	var y = date.getFullYear();
+	var mo = date.getMonth()+1;
+	var d = date.getDate();
+
+	var time = {
+	  h: date.getHours(),
+	  mi: date.getMinutes(),
+	  s: date.getSeconds(),
+	  ms: date.getMilliseconds()
+	};
+
+	Object.keys(time).map(function(moment, index) {
+		if (moment == 'ms') {
+			if (time[moment] < 10) {
+				time[moment] = time[moment]+'00';
+			} else if (time[moment] < 100) {
+				time[moment] = time[moment]+'0';
+			}
+		} else if (time[moment] < 10) {
+			time[moment] = '0' + time[moment];
+		}
+	});
+
+	var str = y + '/' + mo + '/' + d + ' ' + time.h + ':' + time.mi + ':' + time.s + '.' + time.ms;
+	if (TS_last_log_date) {
+		var diff = date-TS_last_log_date;
+		//str+= ' ('+diff+'ms)';
+	}
+	TS_last_log_date = date;
+	return str+' ';
+}
+
+var parseDeepLinkRequest = function(code) {
+	var m = code.match(/"id":"([CDG][A-Z0-9]{8})"/);
+	var id = m ? m[1] : null;
+
+	m = code.match(/"team":"(T[A-Z0-9]{8})"/);
+	var team = m ? m[1] : null;
+
+	m = code.match(/"message":"([0-9]+\.[0-9]+)"/);
+	var message = m ? m[1] : null;
+
+	return { id: id, team: team, message: message };
+}
+
+if ('rendererEvalAsync' in window) {
+	var origRendererEvalAsync = window.rendererEvalAsync;
+	window.rendererEvalAsync = function(blob) {
+		try {
+			var data = JSON.parse(decodeURIComponent(atob(blob)));
+			if (data.code.match(/handleDeepLink/)) {
+				var request = parseDeepLinkRequest(data.code);
+				if (!request.id || !request.team || !request.message) return;
+
+				request.cmd = 'channel';
+				TSSSB.handleDeepLinkWithArgs(JSON.stringify(request));
+				return;
+			} else {
+				origRendererEvalAsync(blob);
+			}
+		} catch (e) {
+		}
+	}
+}
+</script>
+
+
+
+<script type="text/javascript">
+
+	var TSSSB = {
+		call: function() {
+			return false;
+		}
+	};
+
+</script>
+<script>TSSSB.env = (function() {
+	'use strict';
+
+	var v = {
+		win_ssb_version: null,
+		win_ssb_version_minor: null,
+		mac_ssb_version: null,
+		mac_ssb_version_minor: null,
+		mac_ssb_build: null,
+		lin_ssb_version: null,
+		lin_ssb_version_minor: null,
+		desktop_app_version: null
+	};
+
+	var is_win = (navigator.appVersion.indexOf("Windows") !== -1);
+	var is_lin = (navigator.appVersion.indexOf("Linux") !== -1);
+	var is_mac = !!(navigator.userAgent.match(/(OS X)/g));
+
+	if (navigator.userAgent.match(/(Slack_SSB)/g) || navigator.userAgent.match(/(Slack_WINSSB)/g)) {
+		
+		var parts = navigator.userAgent.split('/');
+		var version_str = parts[parts.length-1];
+		var version_float = parseFloat(version_str);
+		var version_parts = version_str.split('.');
+		var version_minor = (version_parts.length == 3) ? parseInt(version_parts[2]) : 0;
+
+		if (navigator.userAgent.match(/(AtomShell)/g)) {
+			
+			if (is_lin) {
+				v.lin_ssb_version = version_float;
+				v.lin_ssb_version_minor = version_minor;
+			} else if (is_win) {
+				v.win_ssb_version = version_float;
+				v.win_ssb_version_minor = version_minor;
+			} else if (is_mac) {
+				v.mac_ssb_version = version_float;
+				v.mac_ssb_version_minor = version_minor;
+			}
+
+			if (version_parts.length >= 3) {
+				v.desktop_app_version = {
+					major: parseInt(version_parts[0]),
+					minor: parseInt(version_parts[1]),
+					patch: parseInt(version_parts[2])
+				}
+			}
+		} else {
+			
+			v.mac_ssb_version = version_float;
+			v.mac_ssb_version_minor = version_minor;
+
+			
+			
+			var app_ver = window.macgap && macgap.app && macgap.app.buildVersion && macgap.app.buildVersion();
+			var matches = String(app_ver).match(/(?:\()(.*)(?:\))/);
+			v.mac_ssb_build = (matches && matches.length == 2) ? parseInt(matches[1] || 0) : 0;
+		}
+	}
+
+	return v;
+})();
+</script>
+
+
+	<script type="text/javascript">
+		
+		var was_TS = window.TS;
+		delete window.TS;
+		TSSSB.call('didFinishLoading');
+		if (was_TS) window.TS = was_TS;
+	</script>
+	    <title>backgroundMesh.obj | Kawaii Game Jam Slack</title>
+    <meta name="author" content="Slack">
+
+	
+		
+	
+	
+					
+	
+				
+	
+	
+	
+	
+			<!-- output_css "core" -->
+    <link href="https://a.slack-edge.com/c26e/style/rollup-plastic.css" rel="stylesheet" type="text/css" crossorigin="anonymous">
+
+		<!-- output_css "before_file_pages" -->
+    <link href="https://a.slack-edge.com/74a30/style/libs/codemirror.css" rel="stylesheet" type="text/css" crossorigin="anonymous">
+    <link href="https://a.slack-edge.com/7b37b/style/codemirror_overrides.css" rel="stylesheet" type="text/css" crossorigin="anonymous">
+
+	<!-- output_css "file_pages" -->
+    <link href="https://a.slack-edge.com/98cc/style/rollup-file_pages.css" rel="stylesheet" type="text/css" crossorigin="anonymous">
+
+	<!-- output_css "regular" -->
+    <link href="https://a.slack-edge.com/53d7/style/print.css" rel="stylesheet" type="text/css" crossorigin="anonymous">
+    <link href="https://a.slack-edge.com/1d9c/style/libs/lato-1-compressed.css" rel="stylesheet" type="text/css" crossorigin="anonymous">
+
+	
+
+	
+	
+		<meta name="robots" content="noindex, nofollow" />
+	
+
+	
+<link id="favicon" rel="shortcut icon" href="https://a.slack-edge.com/66f9/img/icons/favicon-32.png" sizes="16x16 32x32 48x48" type="image/png" />
+
+<link rel="icon" href="https://a.slack-edge.com/0180/img/icons/app-256.png" sizes="256x256" type="image/png" />
+
+<link rel="apple-touch-icon-precomposed" sizes="152x152" href="https://a.slack-edge.com/66f9/img/icons/ios-152.png" />
+<link rel="apple-touch-icon-precomposed" sizes="144x144" href="https://a.slack-edge.com/66f9/img/icons/ios-144.png" />
+<link rel="apple-touch-icon-precomposed" sizes="120x120" href="https://a.slack-edge.com/66f9/img/icons/ios-120.png" />
+<link rel="apple-touch-icon-precomposed" sizes="114x114" href="https://a.slack-edge.com/66f9/img/icons/ios-114.png" />
+<link rel="apple-touch-icon-precomposed" sizes="72x72" href="https://a.slack-edge.com/0180/img/icons/ios-72.png" />
+<link rel="apple-touch-icon-precomposed" href="https://a.slack-edge.com/66f9/img/icons/ios-57.png" />
+
+<meta name="msapplication-TileColor" content="#FFFFFF" />
+<meta name="msapplication-TileImage" content="https://a.slack-edge.com/66f9/img/icons/app-144.png" />
+	
+	<!--[if lt IE 9]>
+	<script src="https://a.slack-edge.com/ef0d/js/libs/html5shiv.js"></script>
+	<![endif]-->
+
+</head>
+
+<body class="			">
+
+		  			<script>
+		
+			var w = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
+			if (w > 1440) document.querySelector('body').classList.add('widescreen');
+		
+		</script>
+	
+  	
+	
+
+			<nav id="site_nav" class="no_transition">
+
+	<div id="site_nav_contents">
+
+		<div id="user_menu">
+			<div id="user_menu_contents">
+				<div id="user_menu_avatar">
+										<span class="member_image thumb_48" style="background-image: url('https://secure.gravatar.com/avatar/a2ba7d151a7e317e651b09dd0966b0cc.jpg?s=192&d=https%3A%2F%2Fa.slack-edge.com%2F7fa9%2Fimg%2Favatars%2Fava_0008-192.png')" data-thumb-size="48" data-member-id="U31B6JNJX"></span>
+					<span class="member_image thumb_36" style="background-image: url('https://secure.gravatar.com/avatar/a2ba7d151a7e317e651b09dd0966b0cc.jpg?s=72&d=https%3A%2F%2Fa.slack-edge.com%2F66f9%2Fimg%2Favatars%2Fava_0008-72.png')" data-thumb-size="36" data-member-id="U31B6JNJX"></span>
+				</div>
+				<h3>Signed in as</h3>
+				<span id="user_menu_name">eclmist</span>
+			</div>
+		</div>
+
+		<div class="nav_contents">
+
+			<ul class="primary_nav">
+				<li><a href="/home" data-qa="home"><i class="ts_icon ts_icon_home"></i>Home</a></li>
+				<li><a href="/account" data-qa="account_profile"><i class="ts_icon ts_icon_user"></i>Account & Profile</a></li>
+				<li><a href="/apps/manage" data-qa="configure_apps" target="_blank"><i class="ts_icon ts_icon_plug"></i>Configure Apps</a></li>
+				<li><a href="/archives"data-qa="archives"><i class="ts_icon ts_icon_archive" ></i>Message Archives</a></li>
+				<li><a href="/files" data-qa="files"><i class="ts_icon ts_icon_all_files clear_blue"></i>Files</a></li>
+				<li><a href="/team" data-qa="team_directory"><i class="ts_icon ts_icon_team_directory"></i>Team Directory</a></li>
+									<li><a href="/stats" data-qa="statistics"><i class="ts_icon ts_icon_dashboard"></i>Statistics</a></li>
+													<li><a href="/customize" data-qa="customize"><i class="ts_icon ts_icon_magic"></i>Customize</a></li>
+													<li><a href="/account/team" data-qa="team_settings"><i class="ts_icon ts_icon_cog_o"></i>Team Settings</a></li>
+							</ul>
+
+			
+		</div>
+
+		<div id="footer">
+
+			<ul id="footer_nav">
+				<li><a href="/is" data-qa="tour">Tour</a></li>
+				<li><a href="/downloads" data-qa="download_apps">Download Apps</a></li>
+				<li><a href="/brand-guidelines" data-qa="brand_guidelines">Brand Guidelines</a></li>
+				<li><a href="/help" data-qa="help">Help</a></li>
+				<li><a href="https://api.slack.com" target="_blank" data-qa="api">API<i class="ts_icon ts_icon_external_link small_left_margin ts_icon_inherit"></i></a></li>
+								<li><a href="/pricing" data-qa="pricing">Pricing</a></li>
+				<li><a href="/help/requests/new" data-qa="contact">Contact</a></li>
+				<li><a href="/terms-of-service" data-qa="policies">Policies</a></li>
+				<li><a href="http://slackhq.com/" target="_blank" data-qa="our_blog">Our Blog</a></li>
+				<li><a href="https://slack.com/signout/102732447216?crumb=s-1478910850-442e8479c6-%E2%98%83" data-qa="sign_out">Sign Out<i class="ts_icon ts_icon_sign_out small_left_margin ts_icon_inherit"></i></a></li>
+			</ul>
+
+			<p id="footer_signature">Made with <i class="ts_icon ts_icon_heart"></i> by Slack</p>
+
+		</div>
+
+	</div>
+</nav>	
+			<header>
+			<a id="menu_toggle" class="no_transition" data-qa="menu_toggle_hamburger">
+			<span class="menu_icon"></span>
+			<span class="menu_label">Menu</span>
+			<span class="vert_divider"></span>
+		</a>
+		<h1 id="header_team_name" class="inline_block no_transition" data-qa="header_team_name">
+			<a href="/home">
+				<i class="ts_icon ts_icon_home" /></i>
+				Kawaii Game Jam
+			</a>
+		</h1>
+		<div class="header_nav">
+			<div class="header_btns float_right">
+				<a id="team_switcher" data-qa="team_switcher">
+					<i class="ts_icon ts_icon_th_large ts_icon_inherit"></i>
+					<span class="block label">Teams</span>
+				</a>
+				<a href="/help" id="help_link" data-qa="help_link">
+					<i class="ts_icon ts_icon_life_ring ts_icon_inherit"></i>
+					<span class="block label">Help</span>
+				</a>
+									<a href="/messages" data-qa="launch">
+						<img src="https://a.slack-edge.com/66f9/img/icons/ios-64.png" srcset="https://a.slack-edge.com/66f9/img/icons/ios-32.png 1x, https://a.slack-edge.com/66f9/img/icons/ios-64.png 2x" />
+						<span class="block label">Launch</span>
+					</a>
+							</div>
+				                    <ul id="header_team_nav" data-qa="team_switcher_menu">
+	                        	                            <li class="active">
+	                            	<a href="https://kawaiigamejam.slack.com/home" target="https://kawaiigamejam.slack.com/">
+	                            			                            			<i class="ts_icon small ts_icon_check_circle_o active_icon s"></i>
+	                            			                            			                            			<i class="team_icon small default" >KG</i>
+	                            			                            		<span class="switcher_label team_name">Kawaii Game Jam</span>
+	                            	</a>
+	                            </li>
+	                        	                        <li id="add_team_option"><a href="https://slack.com/signin" target="_blank"><i class="ts_icon ts_icon_plus team_icon small"></i> <span class="switcher_label">Sign in to another team...</span></a></li>
+	                    </ul>
+	                		</div>
+	
+	
+</header>	
+	<div id="page" >
+
+		<div id="page_contents" data-qa="page_contents" class="">
+
+<p class="print_only">
+	<strong>Created by darkdestry on November 12, 2016 at 7:12 AM</strong><br />
+	<span class="subtle_silver break_word">https://kawaiigamejam.slack.com/files/darkdestry/F31PVASA1/backgroundmesh.obj</span>
+</p>
+
+<div class="file_header_container no_print"></div>
+
+<div class="alert_container">
+		<div class="file_public_link_shared alert" style="display: none;">
+		
+	<i class="ts_icon ts_icon_link"></i> Public Link: <a class="file_public_link" href="https://slack-files.com/T30MJD56C-F31PVASA1-e23bce46cb" target="new">https://slack-files.com/T30MJD56C-F31PVASA1-e23bce46cb</a>
+</div></div>
+
+<div id="file_page" class="card top_padding">
+
+	<p class="small subtle_silver no_print meta">
+		19KB Plain Text snippet created on <span class="date">November 12th 2016</span>.
+				<span class="file_share_list"></span>
+	</p>
+
+	<a id="file_action_cog" class="action_cog action_cog_snippet float_right no_print">
+		<span>Actions </span><i class="ts_icon ts_icon_cog"></i>
+	</a>
+	<a id="snippet_expand_toggle" class="float_right no_print">
+		<i class="ts_icon ts_icon_expand "></i>
+		<i class="ts_icon ts_icon_compress hidden"></i>
+	</a>
+
+	<div class="large_bottom_margin clearfix">
+		<pre id="file_contents"># Blender v2.77 (sub 0) OBJ File: &#039;&#039;
+# www.blender.org
+mtllib backgroundMesh.mtl
+o Cube
+v -7.828660 -5.821172 8.058353
+v -7.235703 12.291059 15.855143
+v -4.892857 -8.078175 -4.907413
+v -12.654114 10.474176 -13.903411
+v 4.561958 -9.511568 5.421497
+v 4.616926 15.683924 10.948090
+v 5.630601 -11.586105 -9.840619
+v 8.124069 11.237730 -9.513105
+v -7.573305 6.717368 10.176751
+v -8.936969 10.534456 -1.307841
+v -6.956013 1.304598 -1.417752
+v -8.305033 -7.443960 0.137780
+v -0.123846 11.004199 -9.031624
+v 9.773401 2.382185 -8.013995
+v -1.256578 -8.261153 -11.881599
+v 9.370902 6.043246 3.916781
+v 9.204382 -1.048259 13.683266
+v 11.844903 -5.507058 1.337074
+v -3.631908 12.745463 7.231555
+v -3.424834 -5.755583 12.530287
+v 2.430062 12.189561 -2.962446
+v -5.398957 -12.317893 -1.954611
+v -0.741517 4.788493 7.863270
+v 10.789987 -0.378220 0.487382
+v 5.465842 3.569806 -2.788211
+v -9.280091 3.341965 0.514252
+v -8.638039 7.220706 8.817185
+v -13.597475 15.205585 -2.225641
+v -9.652912 0.090708 -8.492058
+v -5.687292 -7.462539 6.001092
+v 4.381132 11.284101 -8.724739
+v 5.742730 -2.858939 -5.078475
+v -1.410845 -11.982715 -9.977825
+v 13.164291 13.817123 0.219621
+v 8.327037 -4.300944 10.015570
+v 9.774623 -5.127372 -7.078219
+v -3.957330 10.269937 9.606763
+v 0.147561 -8.245568 9.521519
+v -9.240390 -4.215261 11.747046
+v -8.868084 11.155674 4.344388
+v -4.157010 10.894245 -13.790419
+v -8.786746 -6.542752 -4.398817
+v -1.837325 5.262741 -5.697295
+v 14.179326 7.776057 -12.779713
+v 9.518707 -3.082436 -5.614021
+v 11.527106 14.482698 -3.847134
+v 4.685653 6.479557 6.402686
+v 5.777880 -2.363363 6.181068
+v 4.467436 13.031744 8.689228
+v 0.927165 -4.173282 9.235823
+v -1.524764 12.851638 4.247147
+v 3.452906 16.571535 -1.786683
+v 3.224449 6.547088 8.094083
+v 4.985355 10.338205 -3.914551
+v 4.560771 -7.070926 -7.400980
+v -4.872231 -1.642401 5.093828
+v 0.230328 -6.594579 5.436144
+v -3.919233 -5.963944 -5.936270
+v -0.259702 -2.218771 8.645377
+v -1.277191 2.673235 11.255569
+v 4.273775 -0.318753 12.982085
+v 0.519902 8.205935 6.268930
+v 13.274376 -3.187865 -0.129544
+v 11.545294 1.323172 -0.437971
+v 14.460770 3.958956 -1.900734
+v 5.271163 1.509275 1.504051
+v 0.381905 -2.759568 -10.417963
+v 2.649163 5.406829 -13.152328
+v -3.175869 4.662345 -11.753637
+v 8.227192 2.022553 -13.638647
+v -5.593272 -4.875923 -3.306972
+v -8.732617 0.887680 4.405463
+v -6.039576 2.670433 2.837579
+v -8.096020 3.103969 -1.509666
+v -11.424612 9.038867 -3.633561
+v -9.327369 6.591887 -1.788700
+v -13.057893 -2.206445 4.121456
+v 1.879729 12.744955 -11.915874
+v -7.914430 7.693912 -6.058546
+v -3.716673 -0.578359 -12.242090
+v 10.186607 4.223832 10.158125
+v 9.258463 7.334525 -4.316545
+v 16.090380 -0.180258 -7.744246
+v -3.609069 6.979191 8.355552
+v 1.372709 4.225331 11.351187
+v -2.565544 -0.986004 12.286281
+v -4.210833 -9.519094 -7.051391
+v 1.063417 -5.576928 10.677358
+v 5.348336 -5.426812 6.288330
+v 7.507083 11.922334 -7.131281
+v 3.399723 11.686317 5.034667
+v -2.598072 10.125390 -2.813969
+v -4.148746 11.730994 -5.900984
+v 2.556484 -7.780524 -4.588061
+v -4.238509 -2.362843 6.528299
+v 8.836087 -1.363003 6.737723
+v 4.762769 -2.997917 -3.149868
+v -10.916364 -2.967179 -1.977404
+v -10.378242 12.543480 11.020719
+v -8.130231 3.442901 -8.085420
+v -10.912409 -1.437555 -4.806869
+v -4.413864 -3.215549 9.962700
+v 5.176842 11.656581 -7.910960
+v 13.409742 -5.748677 -11.109173
+v -8.683784 -7.135532 -9.136795
+v 9.113388 9.364987 2.704802
+v 7.231971 0.122594 11.758606
+v 8.597541 -6.296333 -6.596564
+v -7.137298 9.682182 8.693096
+v 3.892392 -9.704040 11.045601
+v -4.036783 -2.007882 10.112046
+v -3.198911 12.914390 -0.472211
+v -9.796569 5.085347 -9.043135
+v -11.303307 -11.190435 0.692565
+v -1.571179 12.542682 -5.929203
+v 9.844869 1.759109 -3.741034
+v 3.088683 -7.048551 -9.422099
+v 7.791477 10.058187 -1.315657
+v 4.189563 5.023163 10.870961
+v 9.245558 -7.449645 2.501740
+v 1.681498 11.324092 7.596847
+v -3.242650 -8.208784 10.816003
+v -6.590261 10.846295 0.045739
+v 1.784819 11.380687 -0.345592
+v 3.563663 17.751934 6.490232
+v 1.414547 13.753119 -2.213395
+v 7.529101 -3.652175 -0.228713
+v -4.145775 -4.546827 -0.865390
+v 4.676931 -5.703194 2.995435
+v -0.532915 -7.336902 -1.094006
+v 6.751781 -4.104108 13.623902
+v -3.302140 4.315192 6.607604
+v 9.116980 -2.630121 5.524452
+v -7.312212 -0.528389 9.748243
+v 8.504616 -4.724263 -0.294576
+v 9.514721 4.714059 -0.147144
+v 9.901071 2.630183 -8.410414
+v 9.556593 0.412146 1.183716
+v -0.515499 -4.856766 -9.030449
+v -5.700424 4.241544 -6.743941
+v -7.277655 -1.210811 -11.124564
+v 4.229161 1.465069 -10.118312
+v -8.331779 -4.829330 -0.499618
+v -8.353207 5.499245 0.883423
+v -16.529444 2.864109 5.151412
+v -8.198723 2.405344 3.596262
+v -12.809667 3.913786 16.051622
+v -8.758337 16.478899 3.030901
+v -7.824938 -4.906342 -5.671396
+v -10.921187 -6.814067 -0.250293
+v 8.219916 12.427832 -11.212140
+v 8.272818 0.217874 -8.078128
+v -1.923611 -6.518618 -8.481622
+v 8.957198 9.828946 2.219157
+v 10.239518 -1.054900 9.071103
+v 3.496824 -3.635836 1.003862
+v -1.700765 14.305077 3.981557
+v 3.003028 -7.012660 10.366790
+v -7.894742 -4.021875 7.835244
+v -9.097099 7.480309 6.586047
+v -5.319851 10.407359 -9.658274
+v -9.495152 -6.516562 -10.077744
+v -12.215561 8.865249 -14.824019
+v 5.527514 2.217961 -6.023037
+v 12.943566 -8.472207 -7.776007
+v 9.177345 10.936736 -5.222565
+v 8.885031 9.008687 7.780234
+v 10.605775 -3.653521 2.597785
+v 5.812939 14.755708 6.890533
+v -7.920775 -8.965915 7.451411
+v 2.379350 17.096348 0.294652
+v 7.220053 10.519361 0.175878
+v -0.333038 16.134121 -2.215915
+v -0.619006 11.236299 -7.586298
+v -0.900566 -7.389644 -0.584933
+v -9.772815 -1.226560 -0.160627
+v -0.501458 -2.891831 0.577539
+v -2.147576 -4.105231 -8.665471
+v -3.121860 -1.773729 13.729941
+v 2.318901 11.346328 15.241089
+v -5.031502 -0.485568 7.728813
+v -2.159518 1.589144 10.345933
+v 8.569422 -0.018471 -0.772574
+v 3.324066 7.213919 1.159969
+v 9.602966 2.761543 -1.924476
+v 9.374129 3.355110 6.474977
+v 2.161597 -1.943743 -10.562005
+v -0.290209 8.884296 -9.030762
+v -0.321443 -0.487317 -4.244637
+v 5.829356 2.552848 -8.871053
+v -10.904710 -2.817507 2.194475
+v -8.294130 8.421589 0.409344
+v -7.375587 -5.705153 3.885426
+v -9.485209 1.557097 -6.419366
+v -9.586199 5.322193 -4.290501
+v -12.025333 7.575397 -5.964678
+v -10.006764 11.762227 4.044503
+v -6.146049 12.893263 -9.109681
+v -11.652646 3.666814 1.715778
+v -9.894074 7.376195 5.367107
+v -14.054602 6.613170 7.138669
+v -14.144523 3.802720 -0.528475
+v -8.231419 -4.814839 4.788285
+v -8.089232 3.168627 8.094520
+v -3.639452 -3.995614 8.787436
+v -8.056908 -1.338111 3.479747
+v 2.972639 3.511483 -11.237832
+v 8.853066 9.429994 -9.366254
+v 2.173594 6.727116 -12.771340
+v 3.774932 4.513460 -6.566802
+v -5.701316 6.598009 -8.329900
+v -2.879291 8.867625 -10.879657
+v -4.976072 2.735359 -5.634541
+v 0.108540 5.910909 -12.501270
+v -5.597358 -4.549768 -2.988539
+v -9.694576 4.964996 -9.839236
+v -4.484649 -8.540657 -12.618630
+v 1.873430 0.947554 -6.352860
+v 7.334472 7.100208 2.304064
+v 4.174899 5.745556 3.993228
+v 7.595366 6.428276 1.039197
+v 9.610900 5.114487 13.694142
+v 12.686633 3.322473 -1.913989
+v 12.958696 5.830153 0.489076
+v 12.534131 11.029758 -12.656256
+v 8.261720 6.788637 -3.712135
+v 2.298635 -0.714214 -0.865464
+v 9.794556 -0.499011 -7.870419
+v 14.036469 4.055582 -6.918508
+v 9.264474 -2.399837 -1.838536
+v -11.378016 6.866753 4.996248
+v 2.385878 6.217326 8.985533
+v -1.938910 6.440834 9.269483
+v -6.827457 6.880433 8.606465
+v 4.002286 2.762178 8.025339
+v -1.454315 13.019979 12.883298
+v 2.019767 7.908670 11.005816
+v 0.007008 7.377158 7.130886
+v 3.070816 -10.283457 7.613889
+v 9.152580 1.114656 10.648299
+v 8.839537 2.155010 13.383330
+v 4.260230 -4.106233 13.124085
+v -2.469097 -6.768154 -4.353401
+v -8.130083 -6.725698 -4.470016
+v -6.094262 -6.833824 -6.253929
+v -5.503635 -5.841513 -7.256179
+v -1.291184 -3.171393 7.708720
+v -7.127190 -5.643502 4.605931
+v -3.854157 -5.342798 3.057401
+v -4.170724 -6.656693 1.956556
+v 3.439258 -5.319958 4.989045
+v 2.549479 -6.181227 4.073667
+v 5.376732 -4.466468 5.277479
+v 5.418542 -5.590079 1.985652
+v -4.936642 12.179248 -0.215117
+v 8.295774 9.245268 -3.994855
+v 3.879713 10.531034 -2.165569
+v 2.288990 9.297816 -8.403255
+v 1.581836 12.678926 4.515609
+v 9.176215 9.173829 9.394557
+v 8.124667 13.665768 5.694624
+v -1.899450 15.594679 0.306721
+v -1.820373 5.314305 2.427621
+v 3.079412 7.492894 8.323999
+v -5.138784 8.072849 6.944705
+v -6.837624 6.680717 1.511657
+v -2.611131 10.241304 -9.676299
+v -2.297686 12.599972 -3.548164
+v -3.348492 10.268184 -3.898322
+v -1.927061 16.748701 -12.049528
+v 9.314403 -8.558290 -9.131308
+v -0.455964 -4.178147 1.181644
+v 3.689358 -7.676452 -0.677432
+v 5.865821 -7.248320 -4.649265
+v 0.158455 -0.599383 4.491531
+v -3.880802 1.898383 8.620922
+v -6.384657 -1.919896 5.889918
+v -8.194019 -1.545894 8.924004
+v 8.671634 -4.744570 -2.244090
+v 8.106346 0.364533 4.999996
+v 8.795317 -5.544537 -0.812627
+v 8.837004 -2.178676 6.319567
+v 5.863152 -9.260791 -9.149194
+v 4.371922 2.137601 -7.859080
+v 5.949025 -4.207942 -8.324379
+v 10.624831 1.641056 -10.180926
+v -11.423788 -5.868723 -7.925355
+v -8.128102 -0.540245 -4.351790
+v -11.991248 -0.541621 3.791723
+v -8.850203 -2.003474 -6.721841
+v -8.859988 0.048738 -6.386102
+v -2.695843 1.649203 -3.788476
+v -9.456031 -5.681319 -2.792358
+v 6.990087 5.030577 -8.831025
+v 1.391099 0.961698 -9.427599
+v 2.511513 -4.695698 -8.716498
+v 8.588231 -0.543262 0.710767
+v 8.699423 -0.424218 3.675825
+v 8.636144 -2.283904 0.032842
+v -7.058013 -3.941351 12.062234
+v -2.736184 -1.271306 8.823347
+v -3.042390 -3.887179 7.716204
+v 6.153741 -6.307918 -5.983085
+v 5.076336 -9.651412 3.898258
+v 5.884675 -8.442004 -0.504116
+v -2.278163 5.906915 -3.513117
+v -3.181274 14.314901 -2.171926
+v -10.023470 11.171137 -2.746334
+v -2.840866 15.875428 6.617870
+v -8.903122 11.434444 5.121761
+v -9.350886 12.898319 5.829539
+v 11.982139 6.771924 4.341836
+v 8.255137 10.075653 3.249758
+v 1.247429 10.493919 7.009019
+v 4.193203 13.362742 -9.278783
+v 5.633977 14.399543 3.653848
+v -2.556738 6.401953 -6.034462
+v 2.482666 -7.204692 1.646392
+v 5.035688 -11.390604 12.106398
+v 11.358455 -11.656120 10.001185
+v -6.387789 -8.230709 1.702299
+v -5.529074 -5.922626 7.615544
+v -2.288611 -6.973896 7.118904
+v -4.650175 -4.141476 -0.352441
+v -6.921833 -6.394255 -2.323774
+v -1.956324 -3.038238 3.729475
+v 0.829856 -0.816116 7.553563
+v 7.761929 2.006162 14.014512
+v 8.722787 -3.077813 7.468297
+v 0.774648 8.552992 9.273184
+v 2.485509 10.563999 7.374830
+v 11.229410 3.189302 9.635391
+v -3.353466 12.619769 8.251119
+v -2.142219 9.105386 8.495112
+v -3.896261 3.632351 11.123186
+v 14.909862 -4.086639 -1.785403
+v 6.991082 -6.162903 -8.461664
+v 1.654590 -4.836119 -2.322776
+v 8.855946 9.083046 -2.313163
+v 9.137813 8.643671 -6.705190
+v 8.624941 5.242562 -5.136277
+v 8.981752 6.461012 5.018256
+v 5.139033 3.152564 5.047013
+v 6.879912 3.421986 -0.033200
+v -2.493195 -0.746390 -9.140358
+v -9.922137 5.622232 -8.168572
+v -5.559975 -8.571633 -9.898043
+v -1.471950 6.026628 -10.960463
+v -3.891000 7.667095 -6.474911
+v -9.803617 5.053587 -7.258826
+v 8.372782 8.073657 -11.404565
+v 2.219826 9.143834 -8.953784
+v 1.381130 4.863112 -8.433302
+v -12.303602 -2.150920 -2.438633
+v -10.170861 -0.679692 3.050711
+v -7.235743 -1.799507 5.461636
+v -8.819047 2.737582 -1.603939
+v -10.155818 9.318640 7.329848
+v -10.247905 4.363712 7.678171
+v -11.954693 1.984510 -8.747790
+v -9.318710 8.638901 1.884722
+v -2.633001 7.624598 -5.210494
+v -4.780640 4.621062 -8.196512
+v -9.849469 -0.520060 -1.615321
+v -12.486460 1.295786 -1.653738
+v 6.818036 4.605586 -8.987234
+v -0.841654 8.880610 -7.074722
+v -0.921570 -3.821358 -5.406886
+v 4.218199 2.272372 7.498609
+v 9.394227 -1.024071 1.217646
+v 7.975858 -2.998318 -3.647879
+v -7.041448 4.087156 8.430466
+v 2.138430 8.131797 5.350773
+v 0.643101 -5.039598 9.577961
+v -2.613334 -3.126025 -13.860036
+v -2.436197 -5.850183 2.156270
+v 4.817595 -6.771802 -0.205287
+v -1.669216 7.408621 -2.665025
+v 1.158834 11.071846 1.246044
+v -7.512556 11.499100 4.812425
+v -2.348040 6.321128 -6.935416
+v 6.238533 -3.464617 -11.660175
+v -6.495529 -4.728905 9.867208
+v 8.054735 -2.802681 7.444870
+v 3.604286 -5.816446 -12.397614
+v -10.435828 -9.409593 -9.467758
+l 99 2
+l 100 4
+l 101 3
+l 102 1
+l 103 8
+l 104 7
+l 105 3
+l 106 6
+l 107 5
+l 108 7
+l 109 2
+l 110 5
+l 111 9
+l 112 10
+l 113 11
+l 114 12
+l 115 13
+l 116 14
+l 117 15
+l 118 16
+l 119 17
+l 120 18
+l 121 19
+l 122 20
+l 123 10
+l 124 21
+l 125 19
+l 126 21
+l 127 18
+l 128 22
+l 129 20
+l 130 22
+l 131 20
+l 132 23
+l 133 17
+l 134 23
+l 135 18
+l 136 24
+l 137 14
+l 138 24
+l 139 15
+l 140 25
+l 141 11
+l 142 25
+l 143 12
+l 144 26
+l 145 9
+l 146 26
+l 147 27
+l 148 28
+l 149 29
+l 150 30
+l 151 31
+l 152 32
+l 153 33
+l 154 34
+l 155 35
+l 156 36
+l 157 37
+l 158 38
+l 159 39
+l 160 40
+l 161 41
+l 162 42
+l 163 43
+l 164 44
+l 165 45
+l 166 46
+l 167 47
+l 168 48
+l 169 49
+l 170 50
+l 171 51
+l 172 52
+l 173 53
+l 174 54
+l 175 55
+l 176 56
+l 177 57
+l 178 58
+l 179 59
+l 180 60
+l 181 61
+l 182 62
+l 183 63
+l 184 64
+l 185 65
+l 186 66
+l 187 67
+l 188 68
+l 189 69
+l 190 70
+l 191 71
+l 192 72
+l 193 73
+l 194 74
+l 195 74
+l 196 75
+l 197 72
+l 198 75
+l 199 73
+l 200 76
+l 201 27
+l 202 76
+l 203 30
+l 204 77
+l 205 39
+l 206 77
+l 207 70
+l 208 78
+l 209 68
+l 210 78
+l 211 69
+l 212 79
+l 213 41
+l 214 79
+l 215 33
+l 216 80
+l 217 29
+l 218 80
+l 219 66
+l 220 81
+l 221 64
+l 222 81
+l 223 65
+l 224 82
+l 225 44
+l 226 82
+l 227 36
+l 228 83
+l 229 32
+l 230 83
+l 231 62
+l 232 84
+l 233 60
+l 234 84
+l 235 61
+l 236 85
+l 237 47
+l 238 85
+l 239 38
+l 240 86
+l 241 35
+l 242 86
+l 243 58
+l 244 87
+l 245 56
+l 246 87
+l 247 57
+l 248 88
+l 249 50
+l 250 88
+l 251 48
+l 252 89
+l 253 38
+l 254 89
+l 255 54
+l 256 90
+l 257 52
+l 258 90
+l 259 53
+l 260 91
+l 261 49
+l 262 91
+l 263 40
+l 264 92
+l 265 37
+l 266 92
+l 267 28
+l 268 93
+l 269 51
+l 270 93
+l 271 36
+l 272 94
+l 273 55
+l 274 94
+l 275 50
+l 276 95
+l 277 59
+l 278 95
+l 279 48
+l 280 96
+l 281 63
+l 282 96
+l 283 45
+l 284 97
+l 285 67
+l 286 97
+l 287 42
+l 288 98
+l 289 71
+l 290 98
+l 27 99
+l 28 100
+l 29 101
+l 30 102
+l 31 103
+l 32 104
+l 33 105
+l 34 106
+l 35 107
+l 36 108
+l 37 109
+l 38 110
+l 39 111
+l 40 112
+l 41 113
+l 42 114
+l 43 115
+l 44 116
+l 45 117
+l 46 118
+l 47 119
+l 48 120
+l 49 121
+l 50 122
+l 51 123
+l 52 124
+l 53 125
+l 54 126
+l 55 127
+l 56 128
+l 57 129
+l 58 130
+l 59 131
+l 60 132
+l 61 133
+l 62 134
+l 63 135
+l 64 136
+l 65 137
+l 66 138
+l 67 139
+l 68 140
+l 69 141
+l 70 142
+l 71 143
+l 72 144
+l 73 145
+l 74 146
+l 9 147
+l 10 148
+l 11 149
+l 12 150
+l 13 151
+l 14 152
+l 15 153
+l 16 154
+l 17 155
+l 18 156
+l 19 157
+l 20 158
+l 1 159
+l 2 160
+l 4 161
+l 3 162
+l 4 163
+l 8 164
+l 7 165
+l 8 166
+l 6 167
+l 5 168
+l 6 169
+l 1 170
+l 21 171
+l 16 172
+l 21 173
+l 13 174
+l 22 175
+l 12 176
+l 22 177
+l 15 178
+l 23 179
+l 19 180
+l 23 181
+l 9 182
+l 24 183
+l 16 184
+l 24 185
+l 17 186
+l 25 187
+l 13 188
+l 25 189
+l 14 190
+l 26 191
+l 10 192
+l 26 193
+l 11 194
+l 75 195
+l 28 196
+l 75 197
+l 41 198
+l 76 199
+l 40 200
+l 76 201
+l 72 202
+l 77 203
+l 73 204
+l 77 205
+l 71 206
+l 78 207
+l 31 208
+l 78 209
+l 44 210
+l 79 211
+l 43 212
+l 79 213
+l 68 214
+l 80 215
+l 69 216
+l 80 217
+l 67 218
+l 81 219
+l 34 220
+l 81 221
+l 47 222
+l 82 223
+l 46 224
+l 82 225
+l 64 226
+l 83 227
+l 65 228
+l 83 229
+l 63 230
+l 84 231
+l 37 232
+l 84 233
+l 27 234
+l 85 235
+l 49 236
+l 85 237
+l 60 238
+l 86 239
+l 61 240
+l 86 241
+l 59 242
+l 87 243
+l 42 244
+l 87 245
+l 33 246
+l 88 247
+l 30 248
+l 88 249
+l 56 250
+l 89 251
+l 57 252
+l 89 253
+l 55 254
+l 90 255
+l 46 256
+l 90 257
+l 31 258
+l 91 259
+l 34 260
+l 91 261
+l 52 262
+l 92 263
+l 53 264
+l 92 265
+l 51 266
+l 93 267
+l 54 268
+l 93 269
+l 43 270
+l 94 271
+l 58 272
+l 94 273
+l 45 274
+l 95 275
+l 62 276
+l 95 277
+l 39 278
+l 96 279
+l 66 280
+l 96 281
+l 35 282
+l 97 283
+l 70 284
+l 97 285
+l 32 286
+l 98 287
+l 74 288
+l 98 289
+l 29 290
+l 291 290
+l 194 291
+l 291 288
+l 149 291
+l 292 289
+l 146 292
+l 292 191
+l 288 292
+l 293 114
+l 289 293
+l 293 143
+l 287 293
+l 294 286
+l 190 294
+l 294 284
+l 152 294
+l 295 285
+l 142 295
+l 295 187
+l 284 295
+l 296 117
+l 285 296
+l 296 139
+l 283 296
+l 297 282
+l 186 297
+l 297 280
+l 155 297
+l 298 281
+l 138 298
+l 298 183
+l 280 298
+l 299 120
+l 281 299
+l 299 135
+l 279 299
+l 300 278
+l 182 300
+l 300 276
+l 111 300
+l 301 277
+l 134 301
+l 301 179
+l 276 301
+l 302 122
+l 277 302
+l 302 131
+l 275 302
+l 303 274
+l 178 303
+l 303 272
+l 117 303
+l 304 273
+l 130 304
+l 304 175
+l 272 304
+l 305 156
+l 273 305
+l 305 127
+l 271 305
+l 306 270
+l 174 306
+l 306 268
+l 115 306
+l 307 269
+l 126 307
+l 307 171
+l 268 307
+l 308 148
+l 269 308
+l 308 123
+l 267 308
+l 309 266
+l 173 309
+l 309 264
+l 171 309
+l 310 265
+l 125 310
+l 310 157
+l 264 310
+l 311 160
+l 265 311
+l 311 109
+l 263 311
+l 312 262
+l 154 312
+l 312 260
+l 172 312
+l 313 261
+l 106 313
+l 313 169
+l 260 313
+l 314 125
+l 261 314
+l 314 121
+l 259 314
+l 315 258
+l 166 315
+l 315 256
+l 103 315
+l 316 257
+l 118 316
+l 316 172
+l 256 316
+l 317 126
+l 257 317
+l 317 124
+l 255 317
+l 318 254
+l 177 318
+l 318 252
+l 175 318
+l 319 253
+l 129 319
+l 319 158
+l 252 319
+l 320 168
+l 253 320
+l 320 110
+l 251 320
+l 321 250
+l 150 321
+l 321 248
+l 176 321
+l 322 249
+l 102 322
+l 322 170
+l 248 322
+l 323 129
+l 249 323
+l 323 122
+l 247 323
+l 324 246
+l 162 324
+l 324 244
+l 105 324
+l 325 245
+l 114 325
+l 325 176
+l 244 325
+l 326 130
+l 245 326
+l 326 128
+l 243 326
+l 327 242
+l 181 327
+l 327 240
+l 179 327
+l 328 241
+l 133 328
+l 328 155
+l 240 328
+l 329 110
+l 241 329
+l 329 107
+l 239 329
+l 330 238
+l 121 330
+l 330 236
+l 180 330
+l 331 237
+l 169 331
+l 331 167
+l 236 331
+l 332 133
+l 237 332
+l 332 119
+l 235 332
+l 333 234
+l 109 333
+l 333 232
+l 99 333
+l 334 233
+l 157 334
+l 334 180
+l 232 334
+l 335 134
+l 233 335
+l 335 132
+l 231 335
+l 336 230
+l 185 336
+l 336 228
+l 183 336
+l 337 229
+l 137 337
+l 337 152
+l 228 337
+l 338 108
+l 229 338
+l 338 104
+l 227 338
+l 339 226
+l 118 339
+l 339 224
+l 184 339
+l 340 225
+l 166 340
+l 340 164
+l 224 340
+l 341 137
+l 225 341
+l 341 116
+l 223 341
+l 342 222
+l 106 342
+l 342 220
+l 167 342
+l 343 221
+l 154 343
+l 343 184
+l 220 343
+l 344 138
+l 221 344
+l 344 136
+l 219 344
+l 345 218
+l 189 345
+l 345 216
+l 187 345
+l 346 217
+l 141 346
+l 346 149
+l 216 346
+l 347 105
+l 217 347
+l 347 101
+l 215 347
+l 348 214
+l 115 348
+l 348 212
+l 188 348
+l 349 213
+l 163 349
+l 349 161
+l 212 349
+l 350 141
+l 213 350
+l 350 113
+l 211 350
+l 351 210
+l 103 351
+l 351 208
+l 164 351
+l 352 209
+l 151 352
+l 352 188
+l 208 352
+l 353 142
+l 209 353
+l 353 140
+l 207 353
+l 354 206
+l 193 354
+l 354 204
+l 191 354
+l 355 205
+l 145 355
+l 355 111
+l 204 355
+l 356 102
+l 205 356
+l 356 159
+l 203 356
+l 357 202
+l 112 357
+l 357 200
+l 192 357
+l 358 201
+l 160 358
+l 358 99
+l 200 358
+l 359 145
+l 201 359
+l 359 147
+l 199 359
+l 360 198
+l 100 360
+l 360 196
+l 161 360
+l 361 197
+l 148 361
+l 361 192
+l 196 361
+l 362 146
+l 197 362
+l 362 144
+l 195 362
+l 363 194
+l 198 363
+l 363 195
+l 113 363
+l 364 193
+l 202 364
+l 364 199
+l 144 364
+l 365 150
+l 206 365
+l 365 203
+l 143 365
+l 366 190
+l 210 366
+l 366 207
+l 116 366
+l 367 189
+l 214 367
+l 367 211
+l 140 367
+l 368 153
+l 218 368
+l 368 215
+l 139 368
+l 369 186
+l 222 369
+l 369 219
+l 119 369
+l 370 185
+l 226 370
+l 370 223
+l 136 370
+l 371 156
+l 230 371
+l 371 227
+l 135 371
+l 372 182
+l 234 372
+l 372 231
+l 147 372
+l 373 181
+l 238 373
+l 373 235
+l 132 373
+l 374 158
+l 242 374
+l 374 239
+l 131 374
+l 375 178
+l 246 375
+l 375 243
+l 153 375
+l 376 177
+l 250 376
+l 376 247
+l 128 376
+l 377 120
+l 254 377
+l 377 251
+l 127 377
+l 378 174
+l 258 378
+l 378 255
+l 151 378
+l 379 173
+l 262 379
+l 379 259
+l 124 379
+l 380 112
+l 266 380
+l 380 263
+l 123 380
+l 381 100
+l 270 381
+l 381 267
+l 163 381
+l 382 108
+l 274 382
+l 382 271
+l 165 382
+l 383 170
+l 278 383
+l 383 275
+l 159 383
+l 384 168
+l 282 384
+l 384 279
+l 107 384
+l 385 165
+l 286 385
+l 385 283
+l 104 385
+l 386 162
+l 290 386
+l 386 287
+l 101 386
+</pre>
+
+		<p class="file_page_meta no_print" style="line-height: 1.5rem;">
+			<label class="checkbox normal mini float_right no_top_padding no_min_width">
+				<input type="checkbox" id="file_preview_wrap_cb"> wrap long lines
+			</label>
+		</p>
+
+	</div>
+
+	<div id="comments_holder" class="clearfix clear_both">
+	<div class="col span_1_of_6"></div>
+	<div class="col span_4_of_6 no_right_padding">
+		<div id="file_page_comments">
+					</div>	
+		<form action="https://kawaiigamejam.slack.com/files/darkdestry/F31PVASA1/backgroundmesh.obj"
+		id="file_comment_form"
+					class="comment_form"
+				method="post">
+			<a href="/team/eclmist" class="member_preview_link" data-member-id="U31B6JNJX" >
+			<span class="member_image thumb_36" style="background-image: url('https://secure.gravatar.com/avatar/a2ba7d151a7e317e651b09dd0966b0cc.jpg?s=72&d=https%3A%2F%2Fa.slack-edge.com%2F66f9%2Fimg%2Favatars%2Fava_0008-72.png')" data-thumb-size="36" data-member-id="U31B6JNJX"></span>
+		</a>
+		<input type="hidden" name="addcomment" value="1" />
+	<input type="hidden" name="crumb" value="s-1478910850-b530e337a8-☃" />
+
+	<textarea id="file_comment" data-el-id-to-keep-in-view="file_comment_submit_btn" class="small comment_input small_bottom_margin autogrow-short" name="comment" wrap="virtual" ></textarea>
+	<span class="input_note float_left cloud_silver file_comment_tip">shift+enter to add a new line</span>	<button id="file_comment_submit_btn" type="submit" class="btn float_right  ladda-button" data-style="expand-right"><span class="ladda-label">Add Comment</span></button>
+</form>
+
+<form
+		id="file_edit_comment_form"
+					class="edit_comment_form hidden"
+				method="post">
+		<textarea id="file_edit_comment" class="small comment_input small_bottom_margin" name="comment" wrap="virtual"></textarea><br>
+	<span class="input_note float_left cloud_silver file_comment_tip">shift+enter to add a new line</span>	<input type="submit" class="save btn float_right " value="Save" />
+	<button class="cancel btn btn_outline float_right small_right_margin ">Cancel</button>
+</form>	
+	</div>
+	<div class="col span_1_of_6"></div>
+</div>
+</div>
+
+
+
+
+		
+	</div>
+	<div id="overlay"></div>
+</div>
+
+
+
+
+
+
+
+<script type="text/javascript">
+
+	function vvv(v) {
+
+		var vvv_warning = 'You cannot use vvv on dynamic values. Please make sure you only pass in static file paths.';
+		if (TS && TS.warn) {
+			TS.warn(vvv_warning);
+		} else {
+			console.warn(vvv_warning);
+		}
+
+		return v;
+	}
+
+	var cdn_url = "https:\/\/slack.global.ssl.fastly.net";
+	var inc_js_setup_data = {
+		emoji_sheets: {
+			apple: 'https://a.slack-edge.com/f360/img/emoji_2016_06_08/sheet_apple_64_indexed_256colors.png',
+			google: 'https://a.slack-edge.com/f360/img/emoji_2016_06_08/sheet_google_64_indexed_128colors.png',
+			twitter: 'https://a.slack-edge.com/f360/img/emoji_2016_06_08/sheet_twitter_64_indexed_128colors.png',
+			emojione: 'https://a.slack-edge.com/f360/img/emoji_2016_06_08/sheet_emojione_64_indexed_128colors.png',
+		},
+	};
+</script>
+			<script type="text/javascript">
+<!--
+	// common boot_data
+	var boot_data = {
+		start_ms: Date.now(),
+		app: 'web',
+		user_id: 'U31B6JNJX',
+		no_login: false,
+		version_ts: '1478910282',
+		version_uid: 'ff6e915cc1f0ea60b8b2a043dc6a25c841e19717',
+		cache_version: "v13-tiger",
+		cache_ts_version: "v1-cat",
+		redir_domain: 'slack-redir.net',
+		signin_url: 'https://slack.com/signin',
+		abs_root_url: 'https://slack.com/',
+		api_url: '/api/',
+		team_url: 'https://kawaiigamejam.slack.com/',
+		image_proxy_url: 'https://slack-imgs.com/',
+		beacon_timing_url: "https:\/\/slack.com\/beacon\/timing",
+		beacon_error_url: "https:\/\/slack.com\/beacon\/error",
+		clog_url: "clog\/track\/",
+		api_token: 'xoxs-102732447216-103380634643-103535926709-febbbc1e5c',
+		ls_disabled: false,
+
+		notification_sounds: [{"value":"b2.mp3","label":"Ding","url":"https:\/\/slack.global.ssl.fastly.net\/dfc0\/sounds\/push\/b2.mp3"},{"value":"animal_stick.mp3","label":"Boing","url":"https:\/\/slack.global.ssl.fastly.net\/dfc0\/sounds\/push\/animal_stick.mp3"},{"value":"been_tree.mp3","label":"Drop","url":"https:\/\/slack.global.ssl.fastly.net\/dfc0\/sounds\/push\/been_tree.mp3"},{"value":"complete_quest_requirement.mp3","label":"Ta-da","url":"https:\/\/slack.global.ssl.fastly.net\/dfc0\/sounds\/push\/complete_quest_requirement.mp3"},{"value":"confirm_delivery.mp3","label":"Plink","url":"https:\/\/slack.global.ssl.fastly.net\/dfc0\/sounds\/push\/confirm_delivery.mp3"},{"value":"flitterbug.mp3","label":"Wow","url":"https:\/\/slack.global.ssl.fastly.net\/dfc0\/sounds\/push\/flitterbug.mp3"},{"value":"here_you_go_lighter.mp3","label":"Here you go","url":"https:\/\/slack.global.ssl.fastly.net\/dfc0\/sounds\/push\/here_you_go_lighter.mp3"},{"value":"hi_flowers_hit.mp3","label":"Hi","url":"https:\/\/slack.global.ssl.fastly.net\/dfc0\/sounds\/push\/hi_flowers_hit.mp3"},{"value":"item_pickup.mp3","label":"Yoink","url":"https:\/\/slack.global.ssl.fastly.net\/dfc0\/sounds\/push\/item_pickup.mp3"},{"value":"knock_brush.mp3","label":"Knock Brush","url":"https:\/\/slack.global.ssl.fastly.net\/dfc0\/sounds\/push\/knock_brush.mp3"},{"value":"save_and_checkout.mp3","label":"Woah!","url":"https:\/\/slack.global.ssl.fastly.net\/dfc0\/sounds\/push\/save_and_checkout.mp3"},{"value":"none","label":"None"}],
+		alert_sounds: [{"value":"frog.mp3","label":"Frog","url":"https:\/\/slack.global.ssl.fastly.net\/a34a\/sounds\/frog.mp3"}],
+		call_sounds: [{"value":"call\/alert_v2.mp3","label":"Alert","url":"https:\/\/slack.global.ssl.fastly.net\/08f7\/sounds\/call\/alert_v2.mp3"},{"value":"call\/incoming_ring_v2.mp3","label":"Incoming ring","url":"https:\/\/slack.global.ssl.fastly.net\/08f7\/sounds\/call\/incoming_ring_v2.mp3"},{"value":"call\/outgoing_ring_v2.mp3","label":"Outgoing ring","url":"https:\/\/slack.global.ssl.fastly.net\/08f7\/sounds\/call\/outgoing_ring_v2.mp3"},{"value":"call\/pop_v2.mp3","label":"Incoming reaction","url":"https:\/\/slack.global.ssl.fastly.net\/08f7\/sounds\/call\/pop_v2.mp3"},{"value":"call\/they_left_call_v2.mp3","label":"They left call","url":"https:\/\/slack.global.ssl.fastly.net\/08f7\/sounds\/call\/they_left_call_v2.mp3"},{"value":"call\/you_left_call_v2.mp3","label":"You left call","url":"https:\/\/slack.global.ssl.fastly.net\/08f7\/sounds\/call\/you_left_call_v2.mp3"},{"value":"call\/they_joined_call_v2.mp3","label":"They joined call","url":"https:\/\/slack.global.ssl.fastly.net\/08f7\/sounds\/call\/they_joined_call_v2.mp3"},{"value":"call\/you_joined_call_v2.mp3","label":"You joined call","url":"https:\/\/slack.global.ssl.fastly.net\/08f7\/sounds\/call\/you_joined_call_v2.mp3"},{"value":"call\/confirmation_v2.mp3","label":"Confirmation","url":"https:\/\/slack.global.ssl.fastly.net\/08f7\/sounds\/call\/confirmation_v2.mp3"}],
+		call_sounds_version: "v2",
+		max_team_handy_rxns: 5,
+		max_channel_handy_rxns: 5,
+		max_poll_handy_rxns: 7,
+		max_handy_rxns_title_chars: 30,
+		
+		feature_tinyspeck: false,
+		feature_i18n: false,
+		feature_create_team_google_auth: false,
+		feature_api_extended_2fa_backup: false,
+		feature_flannel_fe: false,
+		feature_ms_eventlog_changes: false,
+		feature_frecency_normalization: true,
+		feature_emoji_usage_stats: false,
+		feature_batch_file_deleted_event: false,
+		feature_viewmodel_proto: false,
+		feature_sales_tax: true,
+		feature_message_replies: false,
+		feature_message_replies_rewrite_864: false,
+		feature_message_replies_off: false,
+		feature_message_replies_threads_view: false,
+		feature_no_rollups: false,
+		feature_web_lean: false,
+		feature_web_lean_all_users: false,
+		feature_reminders_v3: true,
+		feature_server_side_emoji_counts: true,
+		feature_a11y_keyboard_shortcuts: false,
+		feature_email_ingestion: false,
+		feature_msg_consistency: false,
+		feature_sli_channel_priority: false,
+		feature_sli_similar_channels: true,
+		feature_sli_clog_selections: true,
+		feature_sli_search_limit_extracts: false,
+		feature_thanks: false,
+		feature_attachments_inline: false,
+		feature_fix_files: true,
+		feature_canonical_avatars_web_client: false,
+		feature_files_list: true,
+		feature_channel_eventlog_client: true,
+		feature_macssb1_banner: true,
+		feature_macssb2_banner: true,
+		feature_macelectron1_banner: true,
+		feature_macelectron2_banner: true,
+		feature_latest_event_ts: true,
+		feature_elide_closed_dms: true,
+		feature_no_redirects_in_ssb: true,
+		feature_referer_policy: true,
+		feature_more_field_in_message_attachments: false,
+		feature_calls: true,
+		feature_calls_no_rtm_start: true,
+		feature_integrations_message_preview: true,
+		feature_paging_api: false,
+		feature_enterprise_api: true,
+		feature_enterprise_create: true,
+		feature_enterprise_api_auth: true,
+		feature_enterprise_profile: true,
+		feature_enterprise_search: true,
+		feature_enterprise_locked_settings: false,
+		feature_frecency_migration: false,
+		feature_enterprise_frecency: false,
+		feature_enterprise_team_overview_page: false,
+		feature_enterprise_conditional_team_removal: false,
+		feature_enterprise_search_ui: false,
+		feature_enterprise_mandatory_2fa: true,
+		feature_enterprise_user_account_settings: true,
+		feature_enterprise_security_auth_refactor: false,
+		feature_enterprise_member_profile_refactor: false,
+		feature_enterprise_context_menu: false,
+		feature_enterprise_profile_menu_deactivate_2fa: false,
+		feature_private_channels: true,
+		feature_mpim_restrictions: false,
+		feature_subteams_hard_delete: false,
+		feature_no_unread_counts: true,
+		feature_js_raf_queue: false,
+		feature_shared_channels: false,
+		feature_external_shared_channels_ui: false,
+		feature_you_autocomplete_me: false,
+		feature_roster_changes: false,
+		feature_allow_shared_general: false,
+		feature_shared_channels_settings: true,
+		feature_fast_files_flexpane: true,
+		feature_no_has_files: true,
+		feature_custom_saml_signin_button_label: true,
+		feature_optimistic_im_close: true,
+		feature_file_reactions_activity: false,
+		feature_admin_approved_apps: true,
+		feature_winssb_beta_channel: false,
+		feature_inline_media_playback: true,
+		feature_branch_io_deeplink: true,
+		feature_policy_effective_date: false,
+		feature_clog_whats_new: true,
+		feature_presence_sub: false,
+		feature_live_support_free_plan: false,
+		feature_dm_yahself: true,
+		feature_slackbot_goes_to_college: false,
+		feature_newxp_enqueue_message: true,
+		feature_shared_invites: true,
+		feature_lato_2_ssb: true,
+		feature_refactor_buildmsghtml: false,
+		feature_omit_localstorage_users_bots: false,
+		feature_disable_ls_compression: false,
+		feature_force_ls_compression: false,
+		feature_sign_in_with_slack: true,
+		feature_sign_in_with_slack_ui_elements: true,
+		feature_prevent_msg_rebuild: false,
+		feature_app_review_scope_error: true,
+		feature_zendesk_app_submission_improvement: false,
+		feature_react_emoji_picker: false,
+		feature_better_msg_copying: false,
+		feature_name_tagging_client: false,
+		feature_name_tagging_client_extras: false,
+		feature_name_tagging_client_search: false,
+		feature_msg_input_contenteditable: false,
+		feature_new_msg_input: false,
+		feature_browse_date: true,
+		feature_use_imgproxy_resizing: false,
+		feature_always_active_bots: false,
+		feature_single_team_apps: false,
+		feature_multiple_app_ownership: true,
+		feature_update_message_file: true,
+		feature_custom_clogs: true,
+		feature_calls_linux: true,
+		feature_a11y_pref_text_size: false,
+		feature_a11y_pref_no_animation: true,
+		feature_share_mention_comment_cleanup: false,
+		feature_unread_view: true,
+		feature_tw: false,
+		feature_tw_ls_disabled: false,
+		feature_external_files: false,
+		feature_min_web: false,
+		feature_electron_memory_logging: false,
+		feature_channel_name_menu: true,
+		feature_electron_window_gripper: true,
+		feature_no_tokenless_ms_connections: false,
+		feature_simple_file_events: true,
+		feature_devrel_try_it_now: false,
+		feature_wait_for_all_mentions_in_client: false,
+		feature_prev_next_button: false,
+		feature_free_inactive_domains: true,
+		feature_platform_calls: true,
+		feature_a11y_tab: false,
+		feature_admin_billing_refactor: false,
+		feature_pdf_viewer: true,
+		feature_wrapped_mention_parsing: false,
+		feature_measure_css_usage: false,
+		feature_take_profile_photo: false,
+		feature_ajax_billing_history: false,
+		feature_update_coachmarks_cta: true,
+		feature_multnomah: false,
+		feature_texty: false,
+		feature_sales_tax_address: true,
+		feature_toggle_id_translation: false,
+		feature_can_edit_app: true,
+		feature_gdrive_1_dot_5: true,
+		feature_mention_non_members: false,
+		feature_hide_email_pref: true,
+		feature_ent_pricing_lp: true,
+		feature_file_id_from_url_update: false,
+		feature_pin_update: true,
+		feature_tos_oct2016: false,
+		feature_flexbox_client: false,
+		feature_emoji_menu_tuning: false,
+		feature_discoverable_teams: false,
+		feature_discoverable_teams_client: false,
+		feature_reveal_channel_renames: false,
+		feature_app_info_youtube_url: false,
+		feature_api_metadata_token_allow: false,
+		feature_app_cards_and_profs_frontend: false,
+		feature_user_removed_from_team: false,
+		feature_user_added_to_team: false,
+		feature_a11y_ui_zoom: false,
+		feature_file_comment_help_text: false,
+		feature_refactored_message_template: false,
+		feature_message_inputs: false,
+		feature_contact_us_form: true,
+		feature_app_cards_and_profs_set_card_color: false,
+		feature_cdn_load_tracking: false,
+		feature_fresh_team_directory: false,
+		feature_move_star_in_channel_header: false,
+		feature_team_to_org_directory: true,
+		feature_reposition_search_dropdown: false,
+
+	client_logs: {"0":{"numbers":[0],"whitelisted":false},"@scott":{"numbers":[2,4,37,58,67,389,390,481,488,529,667,773,888,999],"owner":"@scott"},"@eric":{"numbers":[2,23,47,48,65,66,72,73,82,91,93,96,222,365,438,528,552,777,794],"owner":"@eric"},"2":{"owner":"@scott \/ @eric","numbers":[2],"whitelisted":false},"4":{"owner":"@scott","numbers":[4],"whitelisted":false},"5":{"channels":"#dhtml","numbers":[5],"whitelisted":false},"23":{"owner":"@eric","numbers":[23],"whitelisted":false},"sounds":{"owner":"@scott","name":"sounds","numbers":[37]},"37":{"owner":"@scott","name":"sounds","numbers":[37],"whitelisted":true},"47":{"owner":"@eric","numbers":[47],"whitelisted":false},"48":{"owner":"@eric","numbers":[48],"whitelisted":false},"58":{"owner":"@scott","numbers":[58],"whitelisted":false},"65":{"owner":"@eric","numbers":[65],"whitelisted":false},"66":{"owner":"@eric","numbers":[66],"whitelisted":false},"67":{"owner":"@scott","numbers":[67],"whitelisted":false},"72":{"owner":"@eric","numbers":[72],"whitelisted":false},"73":{"owner":"@eric","numbers":[73],"whitelisted":false},"82":{"owner":"@eric","numbers":[82],"whitelisted":false},"@shinypb":{"owner":"@shinypb","numbers":[88,1000,1989,1996]},"88":{"owner":"@shinypb","numbers":[88],"whitelisted":false},"91":{"owner":"@eric","numbers":[91],"whitelisted":false},"93":{"owner":"@eric","numbers":[93],"whitelisted":false},"96":{"owner":"@eric","numbers":[96],"whitelisted":false},"@steveb":{"owner":"@steveb","numbers":[99]},"99":{"owner":"@steveb","numbers":[99],"whitelisted":false},"222":{"owner":"@eric","numbers":[222],"whitelisted":false},"365":{"owner":"@eric","numbers":[365],"whitelisted":false},"389":{"owner":"@scott","numbers":[389],"whitelisted":false},"390":{"owner":"@scott","numbers":[390],"whitelisted":false},"438":{"owner":"@eric","numbers":[438],"whitelisted":false},"@rowan":{"numbers":[444,666],"owner":"@rowan"},"444":{"owner":"@rowan","numbers":[444],"whitelisted":false},"481":{"owner":"@scott","numbers":[481],"whitelisted":false},"488":{"owner":"@scott","numbers":[488],"whitelisted":false},"528":{"owner":"@eric","numbers":[528],"whitelisted":false},"529":{"owner":"@scott","numbers":[529],"whitelisted":false},"552":{"owner":"@eric","numbers":[552],"whitelisted":false},"dashboard":{"owner":"@ac \/ @bruce \/ @kylestetz \/ @nic \/ @rowan","channels":"#devel-enterprise-fe, #feat-enterprise-dash","name":"dashboard","numbers":[666]},"@ac":{"channels":"#devel-enterprise-fe, #feat-enterprise-dash","name":"dashboard","numbers":[666],"owner":"@ac"},"@bruce":{"channels":"#devel-enterprise-fe, #feat-enterprise-dash","name":"dashboard","numbers":[666],"owner":"@bruce"},"@kylestetz":{"channels":"#devel-enterprise-fe, #feat-enterprise-dash","name":"dashboard","numbers":[666],"owner":"@kylestetz"},"@nic":{"channels":"#devel-enterprise-fe, #feat-enterprise-dash","name":"dashboard","numbers":[666],"owner":"@nic"},"666":{"owner":"@ac \/ @bruce \/ @kylestetz \/ @nic \/ @rowan","channels":"#devel-enterprise-fe, #feat-enterprise-dash","name":"dashboard","numbers":[666],"whitelisted":false},"667":{"owner":"@scott","numbers":[667],"whitelisted":false},"773":{"owner":"@scott","numbers":[773],"whitelisted":false},"777":{"owner":"@eric","numbers":[777],"whitelisted":false},"794":{"owner":"@eric","numbers":[794],"whitelisted":false},"888":{"owner":"@scott","numbers":[888],"whitelisted":false},"999":{"owner":"@scott","numbers":[999],"whitelisted":false},"1000":{"owner":"@shinypb","numbers":[1000],"whitelisted":false},"minweb":{"owner":"@johnnyrodgers","features":["feature_min_web"],"channels":"#feat-minweb","name":"minweb","numbers":[1983]},"@johnnyrodgers":{"owner":"@johnnyrodgers","features":["feature_min_web"],"channels":"#feat-minweb","name":"minweb","numbers":[1983]},"1983":{"owner":"@johnnyrodgers","features":["feature_min_web"],"channels":"#feat-minweb","name":"minweb","numbers":[1983],"whitelisted":false},"flannel":{"owner":"@shinypb","features":["feature_flannel_fe"],"channels":"#devel-flannel","name":"flannel","numbers":[1989]},"1989":{"owner":"@shinypb","features":["feature_flannel_fe"],"channels":"#devel-flannel","name":"flannel","numbers":[1989],"whitelisted":true},"ms":{"owner":"@shinypb","name":"ms","numbers":[1996]},"1996":{"owner":"@shinypb","name":"ms","numbers":[1996],"whitelisted":true},"@patrick":{"owner":"@patrick","channels":"#dhtml","numbers":[2001,2002,2003,2004]},"2001":{"owner":"@patrick","channels":"#dhtml","numbers":[2001],"whitelisted":false},"dnd":{"owner":"@patrick","channels":"dhtml","name":"dnd","numbers":[2002]},"2002":{"owner":"@patrick","channels":"dhtml","name":"dnd","numbers":[2002],"whitelisted":true},"2003":{"owner":"@patrick","channels":"dhtml","numbers":[2003],"whitelisted":false},"2004":{"owner":"@patrick","channels":"#feature_message_replies, #feat-threads","numbers":[2004],"whitelisted":false},"mc_sibs":{"name":"mc_sibs","numbers":[9999]},"9999":{"name":"mc_sibs","numbers":[9999],"whitelisted":false},"@fearon":{"owner":"@fearon","numbers":[98765]},"98765":{"owner":"@fearon","numbers":[98765],"whitelisted":false}},
+
+
+		img: {
+			app_icon: 'https://a.slack-edge.com/272a/img/slack_growl_icon.png'
+		},
+		page_needs_custom_emoji: false,
+		page_needs_team_profile_fields: false,
+		page_needs_enterprise: false,
+		slackbot_help_enabled: true
+	};
+
+	
+	
+	
+	
+	// client boot data
+	
+	
+	
+//-->
+</script>	
+	
+				<!-- output_js "core" -->
+<script type="text/javascript" src="https://a.slack-edge.com/61a52/js/rollup-core_required_libs.js" crossorigin="anonymous"></script>
+<script type="text/javascript" src="https://a.slack-edge.com/ec3a/js/rollup-core_required_ts.js" crossorigin="anonymous"></script>
+<script type="text/javascript" src="https://a.slack-edge.com/32b0/js/TS.web.js" crossorigin="anonymous"></script>
+
+		<!-- output_js "core_web" -->
+<script type="text/javascript" src="https://a.slack-edge.com/9982f/js/rollup-core_web.js" crossorigin="anonymous"></script>
+
+		<!-- output_js "secondary" -->
+<script type="text/javascript" src="https://a.slack-edge.com/0463e/js/rollup-secondary_a_required.js" crossorigin="anonymous"></script>
+<script type="text/javascript" src="https://a.slack-edge.com/b52340/js/rollup-secondary_b_required.js" crossorigin="anonymous"></script>
+
+					
+	<!-- output_js "regular" -->
+<script type="text/javascript" src="https://a.slack-edge.com/4016/js/TS.web.comments.js" crossorigin="anonymous"></script>
+<script type="text/javascript" src="https://a.slack-edge.com/c439/js/TS.web.file.js" crossorigin="anonymous"></script>
+<script type="text/javascript" src="https://a.slack-edge.com/cb0fd/js/libs/codemirror.js" crossorigin="anonymous"></script>
+<script type="text/javascript" src="https://a.slack-edge.com/db4a/js/codemirror_load.js" crossorigin="anonymous"></script>
+
+		<script type="text/javascript">
+	<!--
+		boot_data.page_needs_custom_emoji = true;
+
+		boot_data.file = {"id":"F31PVASA1","created":1478905939,"timestamp":1478905939,"name":"backgroundMesh.obj","title":"backgroundMesh.obj","mimetype":"text\/plain","filetype":"text","pretty_type":"Plain Text","user":"U31F4S0MA","editable":true,"size":19301,"mode":"snippet","is_external":false,"external_type":"","is_public":true,"public_url_shared":false,"display_as_bot":false,"username":"","url_private":"https:\/\/files.slack.com\/files-pri\/T30MJD56C-F31PVASA1\/backgroundmesh.obj","url_private_download":"https:\/\/files.slack.com\/files-pri\/T30MJD56C-F31PVASA1\/download\/backgroundmesh.obj","permalink":"https:\/\/kawaiigamejam.slack.com\/files\/darkdestry\/F31PVASA1\/backgroundmesh.obj","permalink_public":"https:\/\/slack-files.com\/T30MJD56C-F31PVASA1-e23bce46cb","edit_link":"https:\/\/kawaiigamejam.slack.com\/files\/darkdestry\/F31PVASA1\/backgroundmesh.obj\/edit","preview":"# Blender v2.77 (sub 0) OBJ File: ''\n# www.blender.org\nmtllib backgroundMesh.mtl\no Cube\nv -7.828660 -5.821172 8.058353","preview_highlight":"\u003Cdiv class=\"CodeMirror cm-s-default CodeMirrorServer\" oncopy=\"if(event.clipboardData){event.clipboardData.setData('text\/plain',window.getSelection().toString().replace(\/\\u200b\/g,''));event.preventDefault();event.stopPropagation();}\"\u003E\n\u003Cdiv class=\"CodeMirror-code\"\u003E\n\u003Cdiv\u003E\u003Cpre\u003E# Blender v2.77 (sub 0) OBJ File: ''\u003C\/pre\u003E\u003C\/div\u003E\n\u003Cdiv\u003E\u003Cpre\u003E# www.blender.org\u003C\/pre\u003E\u003C\/div\u003E\n\u003Cdiv\u003E\u003Cpre\u003Emtllib backgroundMesh.mtl\u003C\/pre\u003E\u003C\/div\u003E\n\u003Cdiv\u003E\u003Cpre\u003Eo Cube\u003C\/pre\u003E\u003C\/div\u003E\n\u003Cdiv\u003E\u003Cpre\u003Ev -7.828660 -5.821172 8.058353\u003C\/pre\u003E\u003C\/div\u003E\n\u003C\/div\u003E\n\u003C\/div\u003E\n","lines":1159,"lines_more":1154,"preview_is_truncated":true,"channels":["C31FFUHPX"],"groups":[],"ims":[],"comments_count":0};
+		boot_data.file.comments = [];
+
+		
+
+		var g_editor;
+
+		$(function(){
+
+			var wrap_long_lines = !!TS.model.code_wrap_long_lines;
+
+			g_editor = CodeMirror(function(elt){
+				var content = document.getElementById("file_contents");
+				content.parentNode.replaceChild(elt, content);
+			}, {
+				value: $('#file_contents').text(),
+				lineNumbers: true,
+				matchBrackets: true,
+				indentUnit: 4,
+				indentWithTabs: true,
+				enterMode: "keep",
+				tabMode: "shift",
+				viewportMargin: 10,
+				readOnly: true,
+				lineWrapping: wrap_long_lines
+			});
+
+			// past a certain point, CodeMirror rendering may simply stop working.
+			// start having CodeMirror use its Long List View-style scolling at >= max_lines.
+			var max_lines = 8192;
+
+			var snippet_lines;
+
+			// determine # of lines, limit height accordingly
+			if (g_editor.doc && g_editor.doc.lineCount) {
+				snippet_lines = parseInt(g_editor.doc.lineCount());
+				var new_height;
+				if (snippet_lines) {
+					// we want the CodeMirror container to collapse around short snippets.
+					// however, we want to let it auto-expand only up to a limit, at which point
+					// we specify a fixed height so CM can display huge snippets without dying.
+					// this is because CodeMirror works nicely with no height set, but doesn't
+					// scale (big file performance issue), and doesn't work with min/max-height -
+					// so at some point, we have to set an absolute height to kick it into its
+					// smart / partial "Long List View"-style rendering mode.
+					if (snippet_lines < max_lines) {
+						new_height = 'auto';
+					} else {
+						new_height = (max_lines * 0.875) + 'rem'; // line-to-rem ratio
+					}
+					var line_count = Math.min(snippet_lines, max_lines);
+					TS.info('Applying height of ' + new_height + ' to container for this snippet of ' + snippet_lines + (snippet_lines === 1 ? ' line' : ' lines'));
+					$('#page .CodeMirror').height(new_height);
+				}
+			}
+
+			$('#file_preview_wrap_cb').bind('change', function(e) {
+				TS.model.code_wrap_long_lines = $(this).prop('checked');
+				g_editor.setOption('lineWrapping', TS.model.code_wrap_long_lines);
+			})
+
+			$('#file_preview_wrap_cb').prop('checked', wrap_long_lines);
+
+			CodeMirror.switchSlackMode(g_editor, "text");
+		});
+
+		
+		$('#file_comment').css('overflow', 'hidden').autogrow();
+	//-->
+	</script>
+
+
+		<script type="text/javascript">
+				TS.clog.setTeam('T30MJD56C');
+						TS.clog.setUser('U31B6JNJX');
+			</script>
+
+			<script type="text/javascript">TS.boot(boot_data);</script>
+	
+<style>.color_9f69e7:not(.nuc) {color:#9F69E7;}.color_4bbe2e:not(.nuc) {color:#4BBE2E;}.color_e7392d:not(.nuc) {color:#E7392D;}.color_3c989f:not(.nuc) {color:#3C989F;}.color_674b1b:not(.nuc) {color:#674B1B;}.color_e96699:not(.nuc) {color:#E96699;}.color_e0a729:not(.nuc) {color:#E0A729;}.color_684b6c:not(.nuc) {color:#684B6C;}.color_5b89d5:not(.nuc) {color:#5B89D5;}.color_2b6836:not(.nuc) {color:#2B6836;}.color_99a949:not(.nuc) {color:#99A949;}.color_df3dc0:not(.nuc) {color:#DF3DC0;}.color_4cc091:not(.nuc) {color:#4CC091;}.color_9b3b45:not(.nuc) {color:#9B3B45;}.color_d58247:not(.nuc) {color:#D58247;}.color_bb86b7:not(.nuc) {color:#BB86B7;}.color_5a4592:not(.nuc) {color:#5A4592;}.color_db3150:not(.nuc) {color:#DB3150;}.color_235e5b:not(.nuc) {color:#235E5B;}.color_9e3997:not(.nuc) {color:#9E3997;}.color_53b759:not(.nuc) {color:#53B759;}.color_c386df:not(.nuc) {color:#C386DF;}.color_385a86:not(.nuc) {color:#385A86;}.color_a63024:not(.nuc) {color:#A63024;}.color_5870dd:not(.nuc) {color:#5870DD;}.color_ea2977:not(.nuc) {color:#EA2977;}.color_50a0cf:not(.nuc) {color:#50A0CF;}.color_d55aef:not(.nuc) {color:#D55AEF;}.color_d1707d:not(.nuc) {color:#D1707D;}.color_43761b:not(.nuc) {color:#43761B;}.color_e06b56:not(.nuc) {color:#E06B56;}.color_8f4a2b:not(.nuc) {color:#8F4A2B;}.color_902d59:not(.nuc) {color:#902D59;}.color_de5f24:not(.nuc) {color:#DE5F24;}.color_a2a5dc:not(.nuc) {color:#A2A5DC;}.color_827327:not(.nuc) {color:#827327;}.color_3c8c69:not(.nuc) {color:#3C8C69;}.color_8d4b84:not(.nuc) {color:#8D4B84;}.color_84b22f:not(.nuc) {color:#84B22F;}.color_4ec0d6:not(.nuc) {color:#4EC0D6;}.color_e23f99:not(.nuc) {color:#E23F99;}.color_e475df:not(.nuc) {color:#E475DF;}.color_619a4f:not(.nuc) {color:#619A4F;}.color_a72f79:not(.nuc) {color:#A72F79;}.color_7d414c:not(.nuc) {color:#7D414C;}.color_aba727:not(.nuc) {color:#ABA727;}.color_965d1b:not(.nuc) {color:#965D1B;}.color_4d5e26:not(.nuc) {color:#4D5E26;}.color_dd8527:not(.nuc) {color:#DD8527;}.color_bd9336:not(.nuc) {color:#BD9336;}.color_e85d72:not(.nuc) {color:#E85D72;}.color_dc7dbb:not(.nuc) {color:#DC7DBB;}.color_bc3663:not(.nuc) {color:#BC3663;}.color_9d8eee:not(.nuc) {color:#9D8EEE;}.color_8469bc:not(.nuc) {color:#8469BC;}.color_73769d:not(.nuc) {color:#73769D;}.color_b14cbc:not(.nuc) {color:#B14CBC;}</style>
+
+<!-- slack-www-hhvm96 / 2016-11-11 16:34:10 / vff6e915cc1f0ea60b8b2a043dc6a25c841e19717 / B:H -->
+
+</body>
+</html>

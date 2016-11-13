@@ -1,0 +1,2013 @@
+<!DOCTYPE html>
+<html lang="en" >
+
+<head>
+
+	
+	<script>
+window.ts_endpoint_url = "https:\/\/slack.com\/beacon\/timing";
+
+(function(e) {
+	var n=Date.now?Date.now():+new Date,r=e.performance||{},t=[],a={},i=function(e,n){for(var r=0,a=t.length,i=[];a>r;r++)t[r][e]==n&&i.push(t[r]);return i},o=function(e,n){for(var r,a=t.length;a--;)r=t[a],r.entryType!=e||void 0!==n&&r.name!=n||t.splice(a,1)};r.now||(r.now=r.webkitNow||r.mozNow||r.msNow||function(){return(Date.now?Date.now():+new Date)-n}),r.mark||(r.mark=r.webkitMark||function(e){var n={name:e,entryType:"mark",startTime:r.now(),duration:0};t.push(n),a[e]=n}),r.measure||(r.measure=r.webkitMeasure||function(e,n,r){n=a[n].startTime,r=a[r].startTime,t.push({name:e,entryType:"measure",startTime:n,duration:r-n})}),r.getEntriesByType||(r.getEntriesByType=r.webkitGetEntriesByType||function(e){return i("entryType",e)}),r.getEntriesByName||(r.getEntriesByName=r.webkitGetEntriesByName||function(e){return i("name",e)}),r.clearMarks||(r.clearMarks=r.webkitClearMarks||function(e){o("mark",e)}),r.clearMeasures||(r.clearMeasures=r.webkitClearMeasures||function(e){o("measure",e)}),e.performance=r,"function"==typeof define&&(define.amd||define.ajs)&&define("performance",[],function(){return r}) // eslint-disable-line
+})(window);
+
+</script>
+<script>;(function() {
+
+'use strict';
+
+
+window.TSMark = function(mark_label) {
+	if (!window.performance || !window.performance.mark) return;
+	performance.mark(mark_label);
+};
+window.TSMark('start_load');
+
+
+window.TSMeasureAndBeacon = function(measure_label, start_mark_label) {
+	if (start_mark_label === 'start_nav' && window.performance && window.performance.timing) {
+		window.TSBeacon(measure_label, (new Date()).getTime() - performance.timing.navigationStart);
+		return;
+	}
+	if (!window.performance || !window.performance.mark || !window.performance.measure) return;
+	performance.mark(start_mark_label + '_end');
+	try {
+		performance.measure(measure_label, start_mark_label, start_mark_label + '_end');
+		window.TSBeacon(measure_label, performance.getEntriesByName(measure_label)[0].duration);
+	} catch(e) { return; }
+};
+
+
+window.TSBeacon = function(label, value) {
+	var endpoint_url = window.ts_endpoint_url || 'https://slack.com/beacon/timing';
+	(new Image()).src = endpoint_url + '?data=' + encodeURIComponent(label + ':' + value);
+};
+
+})();
+</script>
+ 
+
+<script>
+window.TSMark('step_load');
+</script>	<noscript><meta http-equiv="refresh" content="0; URL=/files/sertingg/F31MDV4E6/mdl_char_player1.obj?nojsmode=1" /></noscript>
+<script>(function() {
+        'use strict';
+
+	var start_time = Date.now();
+	var logs = [];
+	var connecting = true;
+	var ever_connected = false;
+	var log_namespace;
+
+	var logWorker = function(ob) {
+		var log_str = ob.secs+' start_label:'+ob.start_label+' measure_label:'+ob.measure_label+' description:'+ob.description;
+
+		if (TS.metrics.getLatestMark(ob.start_label)) {
+			TS.metrics.measure(ob.measure_label, ob.start_label);
+			TS.log(88, log_str);
+
+			if (ob.do_reset) {
+				window.TSMark(ob.start_label);
+			}
+		} else {
+			TS.maybeWarn(88, 'not timing: '+log_str);
+		}
+	}
+
+	var log = function(k, description) {
+		var secs = (Date.now()-start_time)/1000;
+
+		logs.push({
+			k: k,
+			d: description,
+			t: secs,
+			c: !!connecting
+		})
+
+		if (!window.boot_data) return;
+		if (!window.TS) return;
+		if (!TS.metrics) return;
+		if (!connecting) return;
+
+		
+		log_namespace = log_namespace || (function() {
+			if (boot_data.app == 'client') return 'client';
+			if (boot_data.app == 'space') return 'post';
+			if (boot_data.app == 'api') return 'apisite';
+			if (boot_data.app == 'mobile') return 'mobileweb';
+			if (boot_data.app == 'web' || boot_data.app == 'oauth') return 'web';
+			return 'unknown';
+		})();
+
+		var modifier = (TS.boot_data.feature_no_rollups) ? '_no_rollups' : '';
+
+		logWorker({
+			k: k,
+			secs: secs,
+			description: description,
+			start_label: ever_connected ? 'start_reconnect' : 'start_load',
+			measure_label: 'v2_'+log_namespace+modifier+(ever_connected ? '_reconnect__' : '_load__')+k,
+			do_reset: false,
+		});
+	}
+
+	var setConnecting = function(val) {
+		val = !!val;
+		if (val == connecting) return;
+
+		if (val) {
+			log('start');
+			if (ever_connected) {
+				
+				window.TSMark('start_reconnect');
+				window.TSMark('step_reconnect');
+				window.TSMark('step_load');
+			}
+
+			connecting = val;
+			log('start');
+		} else {
+			log('over');
+			ever_connected = true;
+			connecting = val;
+		}
+	}
+
+	window.TSConnLogger = {
+		log: log,
+		logs: logs,
+		start_time: start_time,
+		setConnecting: setConnecting
+	}
+})();</script>
+
+<script type="text/javascript">
+if(self!==top)window.document.write("\u003Cstyle>body * {display:none !important;}\u003C\/style>\u003Ca href=\"#\" onclick="+
+"\"top.location.href=window.location.href\" style=\"display:block !important;padding:10px\">Go to Slack.com\u003C\/a>");
+
+(function() {
+	var timer;
+	if (self !== top) {
+		timer = window.setInterval(function() {
+			if (window.$) {
+				try {
+					$('#page').remove();
+					$('#client-ui').remove();
+					window.TS = null;
+					window.clearInterval(timer);
+				} catch(e) {}
+			}
+		}, 200);
+	}
+}());
+
+</script>
+
+<script>(function() {
+        'use strict';
+
+        window.callSlackAPIUnauthed = function(method, args, callback) {
+                var timestamp = Date.now() / 1000;  
+                var version = (window.TS && TS.boot_data) ? TS.boot_data.version_uid.substring(0, 8) : 'noversion';
+                var url = '/api/' + method + '?_x_id=' + version + '-' + timestamp;
+                var req = new XMLHttpRequest();
+
+                req.onreadystatechange = function() {
+                        if (req.readyState == 4) {
+                                req.onreadystatechange = null;
+                                var obj;
+
+                                if (req.status == 200 || req.status == 429) {
+                                        try {
+                                                obj = JSON.parse(req.responseText);
+                                        } catch (err) {
+                                                console.warn('unable to do anything with api rsp');
+                                        }
+                                }
+
+                                obj = obj || {
+                                        ok: false
+                                }
+
+                                callback(obj.ok, obj, args);
+                        }
+                }
+
+                var async = true;
+                req.open('POST', url, async);
+
+                var form_data = new FormData();
+                var has_data = false;
+                Object.keys(args).map(function(k) {
+                        if (k[0] === '_') return;
+                        form_data.append(k, args[k]);
+                        has_data = true;
+                });
+
+                if (has_data) {
+                        req.send(form_data);
+                } else {
+                        req.send();
+                }
+        }
+})();</script>
+
+						
+	
+		<script>
+			if (window.location.host == 'slack.com' && window.location.search.indexOf('story') < 0) {
+				document.cookie = '__cvo_skip_doc=' + escape(document.URL) + '|' + escape(document.referrer) + ';path=/';
+			}
+		</script>
+	
+
+		<script type="text/javascript">
+		
+		try {
+			if(window.location.hash && !window.location.hash.match(/^(#?[a-zA-Z0-9_]*)$/)) {
+				window.location.hash = '';
+			}
+		} catch(e) {}
+		
+	</script>
+
+	<script type="text/javascript">
+				(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+		(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+		m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+		})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+		ga('create', "UA-106458-17", 'slack.com');
+
+		
+			window.optimizely = [];
+		
+		
+		ga('send', 'pageview');
+	
+		(function(e,c,b,f,d,g,a){e.SlackBeaconObject=d;
+		e[d]=e[d]||function(){(e[d].q=e[d].q||[]).push([1*new Date(),arguments])};
+		e[d].l=1*new Date();g=c.createElement(b);a=c.getElementsByTagName(b)[0];
+		g.async=1;g.src=f;a.parentNode.insertBefore(g,a)
+		})(window,document,"script","https://a.slack-edge.com/dcf8/js/libs/beacon.js","sb");
+		sb('set', 'token', '3307f436963e02d4f9eb85ce5159744c');
+
+					sb('set', 'user_id', "U31B6JNJX");
+							sb('set', 'user_' + "batch", "signup_api");
+							sb('set', 'user_' + "created", "2016-11-11");
+						sb('set', 'name_tag', "kawaiigamejam" + '/' + "eclmist");
+				sb('track', 'pageview');
+
+		function track(a){ga('send','event','web',a);sb('track',a);}
+
+	</script>
+
+
+
+<script type='text/javascript'>
+	
+	/* safety stub */
+	window.mixpanel = {
+		track: function() {},
+		track_links: function() {},
+		track_forms: function() {}
+	};
+
+	function mixpanel_track(){}
+	function mixpanel_track_forms(){}
+	function mixpanel_track_links(){}
+	
+</script>
+	
+	<meta name="referrer" content="no-referrer">
+		<meta name="superfish" content="nofish">
+
+	<script type="text/javascript">
+
+
+
+var TS_last_log_date = null;
+var TSMakeLogDate = function() {
+	var date = new Date();
+
+	var y = date.getFullYear();
+	var mo = date.getMonth()+1;
+	var d = date.getDate();
+
+	var time = {
+	  h: date.getHours(),
+	  mi: date.getMinutes(),
+	  s: date.getSeconds(),
+	  ms: date.getMilliseconds()
+	};
+
+	Object.keys(time).map(function(moment, index) {
+		if (moment == 'ms') {
+			if (time[moment] < 10) {
+				time[moment] = time[moment]+'00';
+			} else if (time[moment] < 100) {
+				time[moment] = time[moment]+'0';
+			}
+		} else if (time[moment] < 10) {
+			time[moment] = '0' + time[moment];
+		}
+	});
+
+	var str = y + '/' + mo + '/' + d + ' ' + time.h + ':' + time.mi + ':' + time.s + '.' + time.ms;
+	if (TS_last_log_date) {
+		var diff = date-TS_last_log_date;
+		//str+= ' ('+diff+'ms)';
+	}
+	TS_last_log_date = date;
+	return str+' ';
+}
+
+var parseDeepLinkRequest = function(code) {
+	var m = code.match(/"id":"([CDG][A-Z0-9]{8})"/);
+	var id = m ? m[1] : null;
+
+	m = code.match(/"team":"(T[A-Z0-9]{8})"/);
+	var team = m ? m[1] : null;
+
+	m = code.match(/"message":"([0-9]+\.[0-9]+)"/);
+	var message = m ? m[1] : null;
+
+	return { id: id, team: team, message: message };
+}
+
+if ('rendererEvalAsync' in window) {
+	var origRendererEvalAsync = window.rendererEvalAsync;
+	window.rendererEvalAsync = function(blob) {
+		try {
+			var data = JSON.parse(decodeURIComponent(atob(blob)));
+			if (data.code.match(/handleDeepLink/)) {
+				var request = parseDeepLinkRequest(data.code);
+				if (!request.id || !request.team || !request.message) return;
+
+				request.cmd = 'channel';
+				TSSSB.handleDeepLinkWithArgs(JSON.stringify(request));
+				return;
+			} else {
+				origRendererEvalAsync(blob);
+			}
+		} catch (e) {
+		}
+	}
+}
+</script>
+
+
+
+<script type="text/javascript">
+
+	var TSSSB = {
+		call: function() {
+			return false;
+		}
+	};
+
+</script>
+<script>TSSSB.env = (function() {
+	'use strict';
+
+	var v = {
+		win_ssb_version: null,
+		win_ssb_version_minor: null,
+		mac_ssb_version: null,
+		mac_ssb_version_minor: null,
+		mac_ssb_build: null,
+		lin_ssb_version: null,
+		lin_ssb_version_minor: null,
+		desktop_app_version: null
+	};
+
+	var is_win = (navigator.appVersion.indexOf("Windows") !== -1);
+	var is_lin = (navigator.appVersion.indexOf("Linux") !== -1);
+	var is_mac = !!(navigator.userAgent.match(/(OS X)/g));
+
+	if (navigator.userAgent.match(/(Slack_SSB)/g) || navigator.userAgent.match(/(Slack_WINSSB)/g)) {
+		
+		var parts = navigator.userAgent.split('/');
+		var version_str = parts[parts.length-1];
+		var version_float = parseFloat(version_str);
+		var version_parts = version_str.split('.');
+		var version_minor = (version_parts.length == 3) ? parseInt(version_parts[2]) : 0;
+
+		if (navigator.userAgent.match(/(AtomShell)/g)) {
+			
+			if (is_lin) {
+				v.lin_ssb_version = version_float;
+				v.lin_ssb_version_minor = version_minor;
+			} else if (is_win) {
+				v.win_ssb_version = version_float;
+				v.win_ssb_version_minor = version_minor;
+			} else if (is_mac) {
+				v.mac_ssb_version = version_float;
+				v.mac_ssb_version_minor = version_minor;
+			}
+
+			if (version_parts.length >= 3) {
+				v.desktop_app_version = {
+					major: parseInt(version_parts[0]),
+					minor: parseInt(version_parts[1]),
+					patch: parseInt(version_parts[2])
+				}
+			}
+		} else {
+			
+			v.mac_ssb_version = version_float;
+			v.mac_ssb_version_minor = version_minor;
+
+			
+			
+			var app_ver = window.macgap && macgap.app && macgap.app.buildVersion && macgap.app.buildVersion();
+			var matches = String(app_ver).match(/(?:\()(.*)(?:\))/);
+			v.mac_ssb_build = (matches && matches.length == 2) ? parseInt(matches[1] || 0) : 0;
+		}
+	}
+
+	return v;
+})();
+</script>
+
+
+	<script type="text/javascript">
+		
+		var was_TS = window.TS;
+		delete window.TS;
+		TSSSB.call('didFinishLoading');
+		if (was_TS) window.TS = was_TS;
+	</script>
+	    <title>MDL_CHAR_Player1.obj | Kawaii Game Jam Slack</title>
+    <meta name="author" content="Slack">
+
+	
+		
+	
+	
+					
+	
+				
+	
+	
+	
+	
+			<!-- output_css "core" -->
+    <link href="https://a.slack-edge.com/c26e/style/rollup-plastic.css" rel="stylesheet" type="text/css" crossorigin="anonymous">
+
+		<!-- output_css "before_file_pages" -->
+    <link href="https://a.slack-edge.com/74a30/style/libs/codemirror.css" rel="stylesheet" type="text/css" crossorigin="anonymous">
+    <link href="https://a.slack-edge.com/7b37b/style/codemirror_overrides.css" rel="stylesheet" type="text/css" crossorigin="anonymous">
+
+	<!-- output_css "file_pages" -->
+    <link href="https://a.slack-edge.com/98cc/style/rollup-file_pages.css" rel="stylesheet" type="text/css" crossorigin="anonymous">
+
+	<!-- output_css "regular" -->
+    <link href="https://a.slack-edge.com/53d7/style/print.css" rel="stylesheet" type="text/css" crossorigin="anonymous">
+    <link href="https://a.slack-edge.com/1d9c/style/libs/lato-1-compressed.css" rel="stylesheet" type="text/css" crossorigin="anonymous">
+
+	
+
+	
+	
+		<meta name="robots" content="noindex, nofollow" />
+	
+
+	
+<link id="favicon" rel="shortcut icon" href="https://a.slack-edge.com/66f9/img/icons/favicon-32.png" sizes="16x16 32x32 48x48" type="image/png" />
+
+<link rel="icon" href="https://a.slack-edge.com/0180/img/icons/app-256.png" sizes="256x256" type="image/png" />
+
+<link rel="apple-touch-icon-precomposed" sizes="152x152" href="https://a.slack-edge.com/66f9/img/icons/ios-152.png" />
+<link rel="apple-touch-icon-precomposed" sizes="144x144" href="https://a.slack-edge.com/66f9/img/icons/ios-144.png" />
+<link rel="apple-touch-icon-precomposed" sizes="120x120" href="https://a.slack-edge.com/66f9/img/icons/ios-120.png" />
+<link rel="apple-touch-icon-precomposed" sizes="114x114" href="https://a.slack-edge.com/66f9/img/icons/ios-114.png" />
+<link rel="apple-touch-icon-precomposed" sizes="72x72" href="https://a.slack-edge.com/0180/img/icons/ios-72.png" />
+<link rel="apple-touch-icon-precomposed" href="https://a.slack-edge.com/66f9/img/icons/ios-57.png" />
+
+<meta name="msapplication-TileColor" content="#FFFFFF" />
+<meta name="msapplication-TileImage" content="https://a.slack-edge.com/66f9/img/icons/app-144.png" />
+	
+	<!--[if lt IE 9]>
+	<script src="https://a.slack-edge.com/ef0d/js/libs/html5shiv.js"></script>
+	<![endif]-->
+
+</head>
+
+<body class="			">
+
+		  			<script>
+		
+			var w = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
+			if (w > 1440) document.querySelector('body').classList.add('widescreen');
+		
+		</script>
+	
+  	
+	
+
+			<nav id="site_nav" class="no_transition">
+
+	<div id="site_nav_contents">
+
+		<div id="user_menu">
+			<div id="user_menu_contents">
+				<div id="user_menu_avatar">
+										<span class="member_image thumb_48" style="background-image: url('https://secure.gravatar.com/avatar/a2ba7d151a7e317e651b09dd0966b0cc.jpg?s=192&d=https%3A%2F%2Fa.slack-edge.com%2F7fa9%2Fimg%2Favatars%2Fava_0008-192.png')" data-thumb-size="48" data-member-id="U31B6JNJX"></span>
+					<span class="member_image thumb_36" style="background-image: url('https://secure.gravatar.com/avatar/a2ba7d151a7e317e651b09dd0966b0cc.jpg?s=72&d=https%3A%2F%2Fa.slack-edge.com%2F66f9%2Fimg%2Favatars%2Fava_0008-72.png')" data-thumb-size="36" data-member-id="U31B6JNJX"></span>
+				</div>
+				<h3>Signed in as</h3>
+				<span id="user_menu_name">eclmist</span>
+			</div>
+		</div>
+
+		<div class="nav_contents">
+
+			<ul class="primary_nav">
+				<li><a href="/home" data-qa="home"><i class="ts_icon ts_icon_home"></i>Home</a></li>
+				<li><a href="/account" data-qa="account_profile"><i class="ts_icon ts_icon_user"></i>Account & Profile</a></li>
+				<li><a href="/apps/manage" data-qa="configure_apps" target="_blank"><i class="ts_icon ts_icon_plug"></i>Configure Apps</a></li>
+				<li><a href="/archives"data-qa="archives"><i class="ts_icon ts_icon_archive" ></i>Message Archives</a></li>
+				<li><a href="/files" data-qa="files"><i class="ts_icon ts_icon_all_files clear_blue"></i>Files</a></li>
+				<li><a href="/team" data-qa="team_directory"><i class="ts_icon ts_icon_team_directory"></i>Team Directory</a></li>
+									<li><a href="/stats" data-qa="statistics"><i class="ts_icon ts_icon_dashboard"></i>Statistics</a></li>
+													<li><a href="/customize" data-qa="customize"><i class="ts_icon ts_icon_magic"></i>Customize</a></li>
+													<li><a href="/account/team" data-qa="team_settings"><i class="ts_icon ts_icon_cog_o"></i>Team Settings</a></li>
+							</ul>
+
+			
+		</div>
+
+		<div id="footer">
+
+			<ul id="footer_nav">
+				<li><a href="/is" data-qa="tour">Tour</a></li>
+				<li><a href="/downloads" data-qa="download_apps">Download Apps</a></li>
+				<li><a href="/brand-guidelines" data-qa="brand_guidelines">Brand Guidelines</a></li>
+				<li><a href="/help" data-qa="help">Help</a></li>
+				<li><a href="https://api.slack.com" target="_blank" data-qa="api">API<i class="ts_icon ts_icon_external_link small_left_margin ts_icon_inherit"></i></a></li>
+								<li><a href="/pricing" data-qa="pricing">Pricing</a></li>
+				<li><a href="/help/requests/new" data-qa="contact">Contact</a></li>
+				<li><a href="/terms-of-service" data-qa="policies">Policies</a></li>
+				<li><a href="http://slackhq.com/" target="_blank" data-qa="our_blog">Our Blog</a></li>
+				<li><a href="https://slack.com/signout/102732447216?crumb=s-1478908730-af305986e9-%E2%98%83" data-qa="sign_out">Sign Out<i class="ts_icon ts_icon_sign_out small_left_margin ts_icon_inherit"></i></a></li>
+			</ul>
+
+			<p id="footer_signature">Made with <i class="ts_icon ts_icon_heart"></i> by Slack</p>
+
+		</div>
+
+	</div>
+</nav>	
+			<header>
+			<a id="menu_toggle" class="no_transition" data-qa="menu_toggle_hamburger">
+			<span class="menu_icon"></span>
+			<span class="menu_label">Menu</span>
+			<span class="vert_divider"></span>
+		</a>
+		<h1 id="header_team_name" class="inline_block no_transition" data-qa="header_team_name">
+			<a href="/home">
+				<i class="ts_icon ts_icon_home" /></i>
+				Kawaii Game Jam
+			</a>
+		</h1>
+		<div class="header_nav">
+			<div class="header_btns float_right">
+				<a id="team_switcher" data-qa="team_switcher">
+					<i class="ts_icon ts_icon_th_large ts_icon_inherit"></i>
+					<span class="block label">Teams</span>
+				</a>
+				<a href="/help" id="help_link" data-qa="help_link">
+					<i class="ts_icon ts_icon_life_ring ts_icon_inherit"></i>
+					<span class="block label">Help</span>
+				</a>
+									<a href="/messages" data-qa="launch">
+						<img src="https://a.slack-edge.com/66f9/img/icons/ios-64.png" srcset="https://a.slack-edge.com/66f9/img/icons/ios-32.png 1x, https://a.slack-edge.com/66f9/img/icons/ios-64.png 2x" />
+						<span class="block label">Launch</span>
+					</a>
+							</div>
+				                    <ul id="header_team_nav" data-qa="team_switcher_menu">
+	                        	                            <li class="active">
+	                            	<a href="https://kawaiigamejam.slack.com/home" target="https://kawaiigamejam.slack.com/">
+	                            			                            			<i class="ts_icon small ts_icon_check_circle_o active_icon s"></i>
+	                            			                            			                            			<i class="team_icon small default" >KG</i>
+	                            			                            		<span class="switcher_label team_name">Kawaii Game Jam</span>
+	                            	</a>
+	                            </li>
+	                        	                        <li id="add_team_option"><a href="https://slack.com/signin" target="_blank"><i class="ts_icon ts_icon_plus team_icon small"></i> <span class="switcher_label">Sign in to another team...</span></a></li>
+	                    </ul>
+	                		</div>
+	
+	
+</header>	
+	<div id="page" >
+
+		<div id="page_contents" data-qa="page_contents" class="">
+
+<p class="print_only">
+	<strong>Created by sertingg on November 12, 2016 at 7:24 AM</strong><br />
+	<span class="subtle_silver break_word">https://kawaiigamejam.slack.com/files/sertingg/F31MDV4E6/mdl_char_player1.obj</span>
+</p>
+
+<div class="file_header_container no_print"></div>
+
+<div class="alert_container">
+		<div class="file_public_link_shared alert" style="display: none;">
+		
+	<i class="ts_icon ts_icon_link"></i> Public Link: <a class="file_public_link" href="https://slack-files.com/T30MJD56C-F31MDV4E6-18ad4fc1f3" target="new">https://slack-files.com/T30MJD56C-F31MDV4E6-18ad4fc1f3</a>
+</div></div>
+
+<div id="file_page" class="card top_padding">
+
+	<p class="small subtle_silver no_print meta">
+		27KB Plain Text snippet created on <span class="date">November 12th 2016</span>.
+				<span class="file_share_list"></span>
+	</p>
+
+	<a id="file_action_cog" class="action_cog action_cog_snippet float_right no_print">
+		<span>Actions </span><i class="ts_icon ts_icon_cog"></i>
+	</a>
+	<a id="snippet_expand_toggle" class="float_right no_print">
+		<i class="ts_icon ts_icon_expand "></i>
+		<i class="ts_icon ts_icon_compress hidden"></i>
+	</a>
+
+	<div class="large_bottom_margin clearfix">
+		<pre id="file_contents"># This file uses centimeters as units for non-parametric coordinates.
+
+mtllib MDL_CHAR_Player1.mtl
+g default
+v -0.342604 0.512324 -0.858143
+v 0.342604 0.512324 -0.858143
+v -0.342604 0.768486 -0.858143
+v 0.342604 0.768486 -0.858143
+v -0.342604 0.768486 -0.600466
+v 0.342604 0.768486 -0.600466
+v 0.342604 -0.256162 -0.600466
+v 0.342604 0.256162 -0.322321
+v 0.342604 0.256162 -0.600466
+v 0.342604 0.512324 -0.322321
+v 0.342604 0.512324 -0.600466
+v -0.342604 -0.256162 -0.600466
+v -0.342604 0.256162 -0.328566
+v -0.342604 0.256162 -0.600466
+v -0.342604 0.512324 -0.322321
+v -0.342604 0.512324 -0.600466
+v -0.342604 0.768486 -0.322321
+v -0.342604 0.768486 0.000000
+v -0.342604 0.512324 0.000000
+v -0.342604 0.256162 0.000000
+v 0.342604 -0.256162 0.000000
+v -0.342604 -0.256162 -0.000000
+v 0.342604 0.768486 0.000000
+v 0.342604 0.512324 0.000000
+v 0.342604 -0.256162 -0.317233
+v -0.342604 -0.256162 -0.318743
+v 0.342604 0.256162 0.000000
+v 0.342604 0.000000 -0.600466
+v 0.342604 0.000000 -0.319777
+v 0.342604 0.000000 0.000000
+v -0.342604 0.000000 0.000000
+v -0.342604 0.000000 -0.327601
+v -0.342604 0.000000 -0.600466
+v -0.342604 -0.512702 -0.858143
+v 0.342604 -0.512702 -0.858143
+v -0.342604 -0.256162 -0.858143
+v 0.342604 -0.256162 -0.858143
+v -0.342604 0.000000 -0.858143
+v 0.342604 0.000000 -0.858143
+v 0.342604 0.768486 -0.322321
+v -0.342604 -0.768486 -0.113466
+v 0.342604 -0.768486 -0.113466
+v -0.342604 -0.768486 -0.600466
+v 0.342604 -0.768486 -0.600466
+v 0.342604 -0.512702 -0.113466
+v 0.342604 -0.512702 -0.600466
+v -0.342604 -0.512702 -0.113466
+v -0.342604 -0.512702 -0.600466
+v -0.342604 0.000000 -1.071397
+v 0.342604 0.000000 -1.071397
+v 0.342604 0.256162 -1.071397
+v -0.342604 0.256162 -1.071397
+v 0.342604 0.512324 -1.071397
+v -0.342604 0.512324 -1.071397
+v -0.342604 0.000000 -1.292882
+v 0.342604 0.000000 -1.292882
+v 0.342604 0.256162 -1.292882
+v -0.342604 0.256162 -1.292882
+v -0.342604 -0.512702 -1.071397
+v 0.342604 -0.512702 -1.071397
+v 0.342604 -0.512702 -1.292882
+v -0.342604 -0.512702 -1.292882
+v -0.342604 1.072661 -0.600466
+v 0.342604 1.072661 -0.600466
+v -0.342604 1.072661 -0.862128
+v 0.342604 1.072661 -0.862128
+v -0.342604 1.072661 -0.322321
+v 0.342604 1.072661 -0.322321
+v -0.342604 1.342080 -0.600466
+v 0.342604 1.342080 -0.600466
+v -0.342604 1.342080 -0.862128
+v 0.342604 1.342080 -0.862128
+v -0.342604 0.256162 -0.858143
+v 0.342604 0.256162 -0.858143
+v -0.342604 0.512324 0.858143
+v 0.342604 0.512324 0.858143
+v -0.342604 0.768486 0.858143
+v 0.342604 0.768486 0.858143
+v -0.342604 0.768486 0.600466
+v 0.342604 0.768486 0.600466
+v 0.342604 -0.256162 0.600466
+v 0.342604 0.256162 0.322321
+v 0.342604 0.256162 0.600466
+v 0.342604 0.512324 0.322321
+v 0.342604 0.512324 0.600466
+v -0.342604 -0.256162 0.600466
+v -0.342604 0.256162 0.328566
+v -0.342604 0.256162 0.600466
+v -0.342604 0.512324 0.322321
+v -0.342604 0.512324 0.600466
+v -0.342604 0.768486 0.322321
+v 0.342604 -0.256162 0.317233
+v -0.342604 -0.256162 0.318743
+v 0.342604 0.000000 0.600466
+v 0.342604 0.000000 0.319777
+v -0.342604 0.000000 0.327601
+v -0.342604 0.000000 0.600466
+v -0.342604 -0.512702 0.858143
+v 0.342604 -0.512702 0.858143
+v -0.342604 -0.256162 0.858143
+v 0.342604 -0.256162 0.858143
+v -0.342604 0.000000 0.858143
+v 0.342604 0.000000 0.858143
+v 0.342604 0.768486 0.322321
+v -0.342604 -0.768486 0.113466
+v 0.342604 -0.768486 0.113466
+v -0.342604 -0.768486 0.600466
+v 0.342604 -0.768486 0.600466
+v 0.342604 -0.512702 0.113466
+v 0.342604 -0.512702 0.600466
+v -0.342604 -0.512702 0.113466
+v -0.342604 -0.512702 0.600466
+v -0.342604 0.000000 1.071397
+v 0.342604 0.000000 1.071397
+v 0.342604 0.256162 1.071397
+v -0.342604 0.256162 1.071397
+v 0.342604 0.512324 1.071397
+v -0.342604 0.512324 1.071397
+v -0.342604 0.000000 1.292882
+v 0.342604 0.000000 1.292882
+v 0.342604 0.256162 1.292882
+v -0.342604 0.256162 1.292882
+v -0.342604 -0.512702 1.071397
+v 0.342604 -0.512702 1.071397
+v 0.342604 -0.512702 1.292882
+v -0.342604 -0.512702 1.292882
+v -0.342604 1.072661 0.600466
+v 0.342604 1.072661 0.600466
+v -0.342604 1.072661 0.862128
+v 0.342604 1.072661 0.862128
+v -0.342604 1.072661 0.322321
+v 0.342604 1.072661 0.322321
+v -0.342604 1.342080 0.600466
+v 0.342604 1.342080 0.600466
+v -0.342604 1.342080 0.862128
+v 0.342604 1.342080 0.862128
+v -0.342604 0.256162 0.858143
+v 0.342604 0.256162 0.858143
+vt 0.375000 0.208333
+vt 0.625000 0.208333
+vt 0.375000 0.250000
+vt 0.625000 0.250000
+vt 0.350000 0.275000
+vt 0.637500 0.287500
+vt 0.675000 0.083333
+vt 0.675000 0.166667
+vt 0.725000 0.208333
+vt 0.675000 0.208333
+vt 0.325000 0.083333
+vt 0.325000 0.166667
+vt 0.275000 0.208333
+vt 0.325000 0.208333
+vt 0.375000 0.350000
+vt 0.775000 0.145833
+vt 0.225000 0.145833
+vt 0.337559 0.337520
+vt 0.250039 0.208333
+vt 0.725337 0.114794
+vt 0.274663 0.114794
+vt 0.698584 0.098074
+vt 0.301541 0.097995
+vt 0.736792 0.121953
+vt 0.733840 0.145974
+vt 0.298966 0.132331
+vt 0.325000 0.125000
+vt 0.625000 0.083333
+vt 0.625000 0.125000
+vt 0.375000 0.125000
+vt 0.375000 0.083333
+vt 0.375000 0.041667
+vt 0.625000 0.041667
+vt 0.625000 0.125000
+vt 0.625000 0.166667
+vt 0.375000 0.166667
+vt 0.375000 0.125000
+vt 0.375000 0.166667
+vt 0.625000 0.166667
+vt 0.625000 0.208333
+vt 0.375000 0.208333
+vt 0.375000 0.208333
+vt 0.625000 0.208333
+vt 0.325000 0.450000
+vt 0.675000 0.450000
+vt 0.650000 0.475000
+vt 0.350000 0.475000
+vt 0.725000 0.041667
+vt 0.675000 0.041667
+vt 0.325000 0.041667
+vt 0.275000 0.041667
+vt 0.375000 0.125000
+vt 0.375000 0.125000
+vt 0.375000 0.125000
+vt 0.375000 0.166667
+vt 0.375000 0.300000
+vt 0.375000 0.350000
+vt 0.325000 0.166667
+vt 0.250039 0.208333
+vt 0.225000 0.156234
+vt 0.337559 0.337520
+vt 0.625000 0.125000
+vt 0.625000 0.125000
+vt 0.625000 0.125000
+vt 0.675000 0.208333
+vt 0.675000 0.166667
+vt 0.625000 0.300000
+vt 0.375000 0.300000
+vt 0.375000 0.250000
+vt 0.625000 0.250000
+vt 0.625000 0.166667
+vt 0.675000 0.125000
+vt 0.650000 0.325000
+vt 0.625000 0.350000
+vt 0.625000 0.300000
+vt 0.736792 0.121953
+vt 0.750845 0.208333
+vt 0.742343 0.177154
+vt 0.625000 0.376023
+vt 0.375000 0.250000
+vt 0.625000 0.250000
+vt 0.625000 0.300000
+vt 0.267266 0.140730
+vt 0.259870 0.166667
+vt 0.296212 0.166667
+vt 0.375000 0.208333
+vt 0.625000 0.208333
+vt 0.625000 0.250000
+vt 0.375000 0.250000
+vt 0.350000 0.275000
+vt 0.325000 0.208333
+vt 0.375000 0.350000
+vt 0.337559 0.337520
+vt 0.250039 0.208333
+vt 0.275000 0.208333
+vt 0.725000 0.208333
+vt 0.675000 0.208333
+vt 0.675000 0.166667
+vt 0.775000 0.145833
+vt 0.225000 0.145833
+vt 0.325000 0.166667
+vt 0.637500 0.287500
+vt 0.274663 0.114794
+vt 0.725337 0.114794
+vt 0.698584 0.098074
+vt 0.301541 0.097995
+vt 0.675000 0.083333
+vt 0.325000 0.083333
+vt 0.733840 0.145974
+vt 0.736792 0.121953
+vt 0.625000 0.125000
+vt 0.625000 0.166667
+vt 0.375000 0.166667
+vt 0.375000 0.125000
+vt 0.375000 0.166667
+vt 0.625000 0.166667
+vt 0.625000 0.208333
+vt 0.375000 0.208333
+vt 0.325000 0.450000
+vt 0.675000 0.450000
+vt 0.650000 0.475000
+vt 0.350000 0.475000
+vt 0.725000 0.041667
+vt 0.675000 0.041667
+vt 0.325000 0.041667
+vt 0.275000 0.041667
+vt 0.375000 0.041667
+vt 0.375000 0.083333
+vt 0.375000 0.125000
+vt 0.325000 0.125000
+vt 0.375000 0.125000
+vt 0.375000 0.125000
+vt 0.375000 0.125000
+vt 0.375000 0.166667
+vt 0.375000 0.208333
+vt 0.325000 0.166667
+vt 0.250039 0.208333
+vt 0.225000 0.156234
+vt 0.625000 0.208333
+vt 0.625000 0.125000
+vt 0.625000 0.125000
+vt 0.625000 0.125000
+vt 0.625000 0.041667
+vt 0.675000 0.208333
+vt 0.675000 0.166667
+vt 0.625000 0.300000
+vt 0.375000 0.300000
+vt 0.375000 0.250000
+vt 0.625000 0.250000
+vt 0.625000 0.125000
+vt 0.625000 0.166667
+vt 0.625000 0.083333
+vt 0.675000 0.125000
+vt 0.650000 0.325000
+vt 0.375000 0.300000
+vt 0.375000 0.250000
+vt 0.625000 0.250000
+vt 0.625000 0.300000
+vt 0.375000 0.350000
+vt 0.625000 0.300000
+vt 0.625000 0.350000
+vt 0.750845 0.208333
+vt 0.625000 0.376023
+vt 0.742343 0.177154
+vt 0.298966 0.132331
+vt 0.296212 0.166667
+vt 0.259870 0.166667
+vt 0.267266 0.140730
+vt 0.337559 0.337520
+vt 0.736792 0.121953
+vn 0.000000 0.000000 -1.000000
+vn 0.000000 0.000000 -1.000000
+vn 0.000000 0.000000 -1.000000
+vn 0.000000 0.000000 -1.000000
+vn -1.000000 0.000000 0.000000
+vn -1.000000 0.000000 0.000000
+vn -1.000000 0.000000 0.000000
+vn -1.000000 0.000000 0.000000
+vn -1.000000 0.000000 -0.000000
+vn -1.000000 0.000000 -0.000000
+vn -1.000000 0.000000 -0.000000
+vn -1.000000 0.000000 -0.000000
+vn -0.000000 1.000000 -0.000000
+vn -0.000000 1.000000 -0.000000
+vn -0.000000 1.000000 -0.000000
+vn -0.000000 1.000000 -0.000000
+vn 1.000000 0.000000 0.000000
+vn 1.000000 0.000000 0.000000
+vn 1.000000 0.000000 0.000000
+vn 1.000000 0.000000 0.000000
+vn 0.000000 1.000000 0.000000
+vn 0.000000 1.000000 0.000000
+vn 0.000000 1.000000 0.000000
+vn 0.000000 1.000000 0.000000
+vn 0.000000 -1.000000 -0.000000
+vn 0.000000 -1.000000 -0.000000
+vn 0.000000 -1.000000 -0.000000
+vn 0.000000 -1.000000 -0.000000
+vn 0.000000 -1.000000 0.000000
+vn 0.000000 -1.000000 0.000000
+vn 1.000000 0.000000 -0.000000
+vn 1.000000 0.000000 -0.000000
+vn 1.000000 0.000000 -0.000000
+vn 1.000000 0.000000 -0.000000
+vn 0.000000 0.000000 -1.000000
+vn 0.000000 0.000000 -1.000000
+vn 0.000000 0.000000 -1.000000
+vn 0.000000 0.000000 -1.000000
+vn 0.000000 0.000000 -1.000000
+vn 0.000000 0.000000 -1.000000
+vn 0.000000 0.000000 -1.000000
+vn 0.000000 0.000000 -1.000000
+vn 0.000000 -1.000000 0.000000
+vn 0.000000 -1.000000 0.000000
+vn 0.000000 -1.000000 0.000000
+vn 0.000000 -1.000000 0.000000
+vn 1.000000 0.000000 0.000000
+vn 1.000000 0.000000 0.000000
+vn 1.000000 0.000000 0.000000
+vn 1.000000 0.000000 0.000000
+vn -1.000000 0.000000 0.000000
+vn -1.000000 0.000000 0.000000
+vn -1.000000 0.000000 0.000000
+vn -1.000000 0.000000 0.000000
+vn -1.000000 0.000000 0.000000
+vn -1.000000 0.000000 0.000000
+vn -1.000000 0.000000 0.000000
+vn -1.000000 0.000000 0.000000
+vn -1.000000 -0.000000 0.000000
+vn -1.000000 -0.000000 0.000000
+vn -1.000000 0.000000 0.000000
+vn -1.000000 0.000000 0.000000
+vn -1.000000 0.000000 0.000000
+vn -1.000000 0.000000 0.000000
+vn -1.000000 0.000000 0.000000
+vn -1.000000 0.000000 0.000000
+vn -1.000000 -0.000000 0.000000
+vn -1.000000 0.000000 0.000000
+vn -1.000000 0.000000 0.000000
+vn -1.000000 -0.000000 0.000000
+vn -1.000000 0.000000 0.000000
+vn -1.000000 0.000000 -0.000000
+vn -1.000000 0.000000 -0.000000
+vn -1.000000 0.000000 -0.000000
+vn -1.000000 0.000000 -0.000000
+vn 0.000000 1.000000 0.000000
+vn 0.000000 1.000000 0.000000
+vn 0.000000 1.000000 0.000000
+vn 0.000000 1.000000 0.000000
+vn 0.000000 -1.000000 0.000000
+vn 0.000000 -1.000000 0.000000
+vn 0.000000 -1.000000 0.000000
+vn 0.000000 -1.000000 0.000000
+vn 0.000000 1.000000 0.000000
+vn 0.000000 1.000000 0.000000
+vn 0.000000 1.000000 0.000000
+vn 0.000000 1.000000 0.000000
+vn 0.000000 0.000000 1.000000
+vn 0.000000 0.000000 1.000000
+vn 0.000000 0.000000 1.000000
+vn 0.000000 0.000000 1.000000
+vn 0.000000 -1.000000 0.000000
+vn 0.000000 -1.000000 0.000000
+vn 0.000000 -1.000000 0.000000
+vn 0.000000 -1.000000 0.000000
+vn 0.000000 0.000000 1.000000
+vn 0.000000 0.000000 1.000000
+vn 0.000000 0.000000 1.000000
+vn 0.000000 0.000000 1.000000
+vn 0.000000 1.000000 0.000000
+vn 0.000000 1.000000 0.000000
+vn 0.000000 1.000000 0.000000
+vn 0.000000 1.000000 0.000000
+vn 0.000000 0.000000 1.000000
+vn 0.000000 0.000000 1.000000
+vn 0.000000 0.000000 1.000000
+vn 0.000000 0.000000 1.000000
+vn 0.000000 0.000000 1.000000
+vn 0.000000 0.000000 1.000000
+vn 0.000000 0.000000 1.000000
+vn 0.000000 0.000000 1.000000
+vn 0.000000 1.000000 0.000000
+vn 0.000000 1.000000 0.000000
+vn 0.000000 1.000000 0.000000
+vn 0.000000 1.000000 0.000000
+vn 1.000000 0.000000 0.000000
+vn 1.000000 0.000000 0.000000
+vn 1.000000 0.000000 0.000000
+vn 1.000000 0.000000 0.000000
+vn 1.000000 0.000000 0.000000
+vn 1.000000 0.000000 0.000000
+vn 1.000000 0.000000 0.000000
+vn 1.000000 0.000000 0.000000
+vn 1.000000 0.000000 0.000000
+vn 1.000000 0.000000 0.000000
+vn 1.000000 0.000000 0.000000
+vn 1.000000 0.000000 0.000000
+vn 1.000000 0.000000 0.000000
+vn 1.000000 0.000000 0.000000
+vn 1.000000 0.000000 0.000000
+vn 1.000000 0.000000 -0.000000
+vn 1.000000 0.000000 0.000000
+vn 1.000000 0.000000 0.000000
+vn -1.000000 0.000000 0.000000
+vn -1.000000 0.000000 0.000000
+vn -1.000000 0.000000 0.000000
+vn -1.000000 0.000000 0.000000
+vn 0.000000 0.000000 -1.000000
+vn 0.000000 0.000000 -1.000000
+vn 0.000000 0.000000 -1.000000
+vn 0.000000 0.000000 -1.000000
+vn 1.000000 0.000000 0.000000
+vn 1.000000 0.000000 0.000000
+vn 1.000000 0.000000 0.000000
+vn 1.000000 0.000000 0.000000
+vn 0.000000 1.000000 0.000000
+vn 0.000000 1.000000 0.000000
+vn 0.000000 1.000000 0.000000
+vn 0.000000 1.000000 0.000000
+vn 0.000000 0.000000 -1.000000
+vn 0.000000 0.000000 -1.000000
+vn 0.000000 0.000000 -1.000000
+vn 0.000000 0.000000 -1.000000
+vn 1.000000 0.000000 -0.000000
+vn 1.000000 0.000000 0.000000
+vn 1.000000 0.000000 -0.000000
+vn 1.000000 0.000000 -0.000000
+vn -1.000000 -0.000000 -0.000000
+vn -1.000000 -0.000000 -0.000000
+vn -1.000000 0.000000 -0.000000
+vn -1.000000 0.000000 -0.000000
+vn 0.000000 0.000000 -1.000000
+vn 0.000000 0.000000 -1.000000
+vn 0.000000 0.000000 1.000000
+vn 0.000000 0.000000 1.000000
+vn 0.000000 0.000000 1.000000
+vn 0.000000 0.000000 1.000000
+vn 0.000000 1.000000 0.000000
+vn 0.000000 1.000000 0.000000
+vn 0.000000 1.000000 0.000000
+vn 0.000000 1.000000 0.000000
+vn 0.000000 0.000000 1.000000
+vn 0.000000 0.000000 1.000000
+vn 0.000000 0.000000 1.000000
+vn 0.000000 0.000000 1.000000
+vn 0.000000 -1.000000 0.000000
+vn 0.000000 -1.000000 0.000000
+vn 0.000000 -1.000000 0.000000
+vn 0.000000 -1.000000 0.000000
+vn -1.000000 0.000000 0.000000
+vn -1.000000 0.000000 0.000000
+vn -1.000000 0.000000 0.000000
+vn -1.000000 0.000000 0.000000
+vn 1.000000 0.000000 0.000000
+vn 1.000000 0.000000 0.000000
+vn 1.000000 0.000000 0.000000
+vn 1.000000 0.000000 0.000000
+vn 1.000000 -0.000000 0.000000
+vn 1.000000 -0.000000 0.000000
+vn 1.000000 0.000000 0.000000
+vn 1.000000 0.000000 0.000000
+vn -1.000000 0.000000 0.000000
+vn -1.000000 0.000000 0.000000
+vn 0.000000 0.000000 -1.000000
+vn 0.000000 0.000000 -1.000000
+vn 0.000000 0.000000 -1.000000
+vn 0.000000 0.000000 -1.000000
+vn 0.000000 0.000000 -1.000000
+vn 0.000000 0.000000 -1.000000
+vn 0.000000 0.000000 -1.000000
+vn 0.000000 0.000000 -1.000000
+vn 0.000000 -1.000000 0.000000
+vn 0.000000 -1.000000 0.000000
+vn 0.000000 -1.000000 0.000000
+vn 0.000000 -1.000000 0.000000
+vn -1.000000 -0.000000 -0.000000
+vn -1.000000 -0.000000 -0.000000
+vn -1.000000 0.000000 0.000000
+vn -1.000000 0.000000 0.000000
+vn 1.000000 0.000000 0.000000
+vn 1.000000 0.000000 0.000000
+vn 1.000000 -0.000000 0.000000
+vn 1.000000 -0.000000 0.000000
+vn 0.000000 0.000000 -1.000000
+vn 0.000000 0.000000 -1.000000
+vn 0.000000 0.000000 -1.000000
+vn 0.000000 0.000000 -1.000000
+vn 0.000000 0.000000 1.000000
+vn 0.000000 0.000000 1.000000
+vn 0.000000 0.000000 1.000000
+vn 0.000000 0.000000 1.000000
+vn -1.000000 0.000000 0.000000
+vn -1.000000 0.000000 0.000000
+vn -1.000000 0.000000 0.000000
+vn -1.000000 0.000000 0.000000
+vn -1.000000 0.000000 0.000000
+vn -1.000000 0.000000 0.000000
+vn -1.000000 0.000000 0.000000
+vn -1.000000 0.000000 0.000000
+vn -0.000000 1.000000 0.000000
+vn -0.000000 1.000000 0.000000
+vn -0.000000 1.000000 0.000000
+vn -0.000000 1.000000 0.000000
+vn 1.000000 0.000000 0.000000
+vn 1.000000 0.000000 0.000000
+vn 1.000000 0.000000 0.000000
+vn 1.000000 0.000000 0.000000
+vn 0.000000 1.000000 0.000000
+vn 0.000000 1.000000 0.000000
+vn 0.000000 1.000000 0.000000
+vn 0.000000 1.000000 0.000000
+vn 0.000000 -1.000000 0.000000
+vn 0.000000 -1.000000 0.000000
+vn 0.000000 -1.000000 0.000000
+vn 0.000000 -1.000000 0.000000
+vn 0.000000 -1.000000 0.000000
+vn 0.000000 -1.000000 0.000000
+vn 1.000000 -0.000000 0.000000
+vn 1.000000 0.000000 0.000000
+vn 1.000000 0.000000 0.000000
+vn 1.000000 0.000000 0.000000
+vn 0.000000 0.000000 1.000000
+vn 0.000000 0.000000 1.000000
+vn 0.000000 0.000000 1.000000
+vn 0.000000 0.000000 1.000000
+vn 0.000000 0.000000 1.000000
+vn 0.000000 0.000000 1.000000
+vn 0.000000 0.000000 1.000000
+vn 0.000000 0.000000 1.000000
+vn 0.000000 -1.000000 0.000000
+vn 0.000000 -1.000000 0.000000
+vn 0.000000 -1.000000 0.000000
+vn 0.000000 -1.000000 0.000000
+vn 1.000000 0.000000 0.000000
+vn 1.000000 0.000000 0.000000
+vn 1.000000 0.000000 0.000000
+vn 1.000000 0.000000 0.000000
+vn -1.000000 0.000000 0.000000
+vn -1.000000 0.000000 0.000000
+vn -1.000000 0.000000 0.000000
+vn -1.000000 0.000000 0.000000
+vn -1.000000 0.000000 0.000000
+vn -1.000000 0.000000 0.000000
+vn -1.000000 0.000000 0.000000
+vn -1.000000 0.000000 0.000000
+vn -1.000000 0.000000 0.000000
+vn -1.000000 0.000000 0.000000
+vn -1.000000 0.000000 0.000000
+vn -1.000000 0.000000 0.000000
+vn -1.000000 0.000000 0.000000
+vn -1.000000 0.000000 0.000000
+vn -1.000000 0.000000 0.000000
+vn -1.000000 0.000000 0.000000
+vn -1.000000 0.000000 0.000000
+vn -1.000000 0.000000 0.000000
+vn -1.000000 0.000000 0.000000
+vn -1.000000 0.000000 0.000000
+vn -1.000000 0.000000 0.000000
+vn -1.000000 0.000000 0.000000
+vn -1.000000 0.000000 0.000000
+vn -1.000000 0.000000 0.000000
+vn -1.000000 0.000000 0.000000
+vn 0.000000 1.000000 0.000000
+vn 0.000000 1.000000 0.000000
+vn 0.000000 1.000000 0.000000
+vn 0.000000 1.000000 0.000000
+vn 0.000000 -1.000000 0.000000
+vn 0.000000 -1.000000 0.000000
+vn 0.000000 -1.000000 0.000000
+vn 0.000000 -1.000000 0.000000
+vn 0.000000 1.000000 0.000000
+vn 0.000000 1.000000 0.000000
+vn 0.000000 1.000000 0.000000
+vn 0.000000 1.000000 0.000000
+vn 0.000000 0.000000 -1.000000
+vn 0.000000 0.000000 -1.000000
+vn 0.000000 0.000000 -1.000000
+vn 0.000000 0.000000 -1.000000
+vn 0.000000 -1.000000 0.000000
+vn 0.000000 -1.000000 0.000000
+vn 0.000000 -1.000000 0.000000
+vn 0.000000 -1.000000 0.000000
+vn 0.000000 0.000000 -1.000000
+vn 0.000000 0.000000 -1.000000
+vn 0.000000 0.000000 -1.000000
+vn 0.000000 0.000000 -1.000000
+vn 0.000000 1.000000 0.000000
+vn 0.000000 1.000000 0.000000
+vn 0.000000 1.000000 0.000000
+vn 0.000000 1.000000 0.000000
+vn 0.000000 0.000000 -1.000000
+vn 0.000000 0.000000 -1.000000
+vn 0.000000 0.000000 -1.000000
+vn 0.000000 0.000000 -1.000000
+vn 0.000000 0.000000 -1.000000
+vn 0.000000 0.000000 -1.000000
+vn 0.000000 0.000000 -1.000000
+vn 0.000000 0.000000 -1.000000
+vn 0.000000 1.000000 0.000000
+vn 0.000000 1.000000 0.000000
+vn 0.000000 1.000000 0.000000
+vn 0.000000 1.000000 0.000000
+vn 1.000000 0.000000 0.000000
+vn 1.000000 0.000000 0.000000
+vn 1.000000 0.000000 0.000000
+vn 1.000000 0.000000 0.000000
+vn 1.000000 0.000000 0.000000
+vn 1.000000 0.000000 0.000000
+vn 1.000000 0.000000 0.000000
+vn 1.000000 0.000000 0.000000
+vn 1.000000 0.000000 0.000000
+vn 1.000000 0.000000 0.000000
+vn 1.000000 0.000000 0.000000
+vn 1.000000 0.000000 0.000000
+vn 1.000000 0.000000 0.000000
+vn 1.000000 0.000000 0.000000
+vn 1.000000 0.000000 0.000000
+vn 1.000000 0.000000 0.000000
+vn 1.000000 0.000000 0.000000
+vn 1.000000 0.000000 0.000000
+vn -1.000000 0.000000 0.000000
+vn -1.000000 0.000000 0.000000
+vn -1.000000 0.000000 0.000000
+vn -1.000000 0.000000 0.000000
+vn 0.000000 0.000000 1.000000
+vn 0.000000 0.000000 1.000000
+vn 0.000000 0.000000 1.000000
+vn 0.000000 0.000000 1.000000
+vn 1.000000 0.000000 0.000000
+vn 1.000000 0.000000 0.000000
+vn 1.000000 0.000000 0.000000
+vn 1.000000 0.000000 0.000000
+vn 0.000000 1.000000 0.000000
+vn 0.000000 1.000000 0.000000
+vn 0.000000 1.000000 0.000000
+vn 0.000000 1.000000 0.000000
+vn 0.000000 0.000000 1.000000
+vn 0.000000 0.000000 1.000000
+vn 0.000000 0.000000 1.000000
+vn 0.000000 0.000000 1.000000
+vn 1.000000 0.000000 0.000000
+vn 1.000000 0.000000 0.000000
+vn 1.000000 -0.000000 0.000000
+vn 1.000000 -0.000000 0.000000
+vn -1.000000 0.000000 0.000000
+vn -1.000000 0.000000 0.000000
+vn -1.000000 0.000000 0.000000
+vn -1.000000 0.000000 0.000000
+vn 0.000000 0.000000 1.000000
+vn 0.000000 0.000000 1.000000
+vn 0.000000 0.000000 -1.000000
+vn 0.000000 0.000000 -1.000000
+vn 0.000000 0.000000 -1.000000
+vn 0.000000 0.000000 -1.000000
+vn 0.000000 1.000000 0.000000
+vn 0.000000 1.000000 0.000000
+vn 0.000000 1.000000 0.000000
+vn 0.000000 1.000000 0.000000
+vn 0.000000 0.000000 -1.000000
+vn 0.000000 0.000000 -1.000000
+vn 0.000000 0.000000 -1.000000
+vn 0.000000 0.000000 -1.000000
+vn 0.000000 -1.000000 0.000000
+vn 0.000000 -1.000000 0.000000
+vn 0.000000 -1.000000 0.000000
+vn 0.000000 -1.000000 0.000000
+vn -1.000000 0.000000 0.000000
+vn -1.000000 0.000000 0.000000
+vn -1.000000 0.000000 0.000000
+vn -1.000000 0.000000 0.000000
+vn 1.000000 0.000000 0.000000
+vn 1.000000 0.000000 0.000000
+vn 1.000000 0.000000 0.000000
+vn 1.000000 0.000000 0.000000
+vn 1.000000 -0.000000 0.000000
+vn 1.000000 -0.000000 0.000000
+vn 1.000000 0.000000 0.000000
+vn 1.000000 0.000000 0.000000
+vn -1.000000 0.000000 0.000000
+vn -1.000000 0.000000 0.000000
+vn 0.000000 0.000000 1.000000
+vn 0.000000 0.000000 1.000000
+vn 0.000000 0.000000 1.000000
+vn 0.000000 0.000000 1.000000
+vn 0.000000 0.000000 1.000000
+vn 0.000000 0.000000 1.000000
+vn 0.000000 0.000000 1.000000
+vn 0.000000 0.000000 1.000000
+vn 0.000000 -1.000000 0.000000
+vn 0.000000 -1.000000 0.000000
+vn 0.000000 -1.000000 0.000000
+vn 0.000000 -1.000000 0.000000
+vn -1.000000 0.000000 0.000000
+vn -1.000000 0.000000 0.000000
+vn -1.000000 -0.000000 0.000000
+vn -1.000000 -0.000000 0.000000
+vn 1.000000 0.000000 0.000000
+vn 1.000000 0.000000 0.000000
+vn 1.000000 -0.000000 0.000000
+vn 1.000000 -0.000000 0.000000
+vn 0.000000 0.000000 1.000000
+vn 0.000000 0.000000 1.000000
+vn 0.000000 0.000000 1.000000
+vn 0.000000 0.000000 1.000000
+vn 0.000000 -1.000000 0.000000
+vn 0.000000 -1.000000 0.000000
+vn 0.000000 -1.000000 0.000000
+vn 0.000000 -1.000000 0.000000
+vn 0.004556 0.012188 -0.999915
+vn 0.004556 0.012188 -0.999915
+vn 0.004556 0.012188 -0.999915
+vn 0.004556 0.012188 -0.999915
+vn 0.004556 0.012188 0.999915
+vn 0.004556 0.012188 0.999915
+vn 0.004556 0.012188 0.999915
+vn 0.004556 0.012188 0.999915
+vn 0.000000 -1.000000 -0.000000
+vn 0.000000 -1.000000 -0.000000
+vn 0.000000 -1.000000 -0.000000
+vn 0.000000 -1.000000 -0.000000
+s off
+g pCube6
+usemtl initialShadingGroup
+f 1/1/1 3/3/2 4/4/3 2/2/4
+s 1
+f 1/1/5 16/14/6 5/5/7 3/3/8
+f 17/15/9 15/13/10 19/19/11 18/18/12
+f 5/5/7 16/14/6 15/13/10 17/15/9
+s off
+f 9/8/13 14/12/14 13/17/15 8/16/16
+f 6/6/17 11/10/18 2/2/19 4/4/20
+f 5/5/21 6/6/22 4/4/23 3/3/24
+s 2
+f 22/21/25 26/23/26 25/22/27 21/20/28
+f 26/23/26 12/11/29 7/7/30 25/22/27
+s 3
+f 30/25/31 21/20/32 25/22/33 29/24/34
+s 4
+f 56/34/35 55/37/36 58/36/37 57/35/38
+s off
+f 52/38/39 54/41/40 53/40/41 51/39/42
+f 41/44/43 43/47/44 44/46/45 42/45/46
+f 44/46/47 46/49/48 45/48/49 42/45/50
+f 41/44/51 47/51/52 48/50/53 43/47/54
+s 5
+f 12/11/55 36/31/56 34/32/57 48/50/58
+f 12/11/55 33/27/59 38/30/60 36/31/56
+f 49/52/61 55/37/62 62/54/63 59/53/64
+f 49/52/61 52/38/65 58/36/66 55/37/62
+f 38/30/60 73/55/67 52/38/65 49/52/61
+f 52/38/65 73/55/67 1/42/68 54/41/69
+f 14/58/70 73/55/67 38/30/60 33/27/59
+f 14/58/70 16/14/71 1/42/68 73/55/67
+s off
+f 19/59/72 15/13/73 13/17/74 20/60/75
+f 2/43/76 53/40/77 54/41/78 1/42/79
+f 59/53/80 62/54/81 61/64/82 60/63/83
+f 51/39/84 57/35/85 58/36/86 52/38/87
+f 49/52/88 59/53/89 60/63/90 50/62/91
+f 46/49/92 48/50/93 34/32/94 35/33/95
+f 7/7/96 12/11/97 48/50/98 46/49/99
+f 46/49/100 48/50/101 47/51/102 45/48/103
+f 45/48/104 47/51/105 41/44/106 42/45/107
+f 11/65/108 16/14/109 14/58/110 9/66/111
+f 70/67/112 72/70/113 71/69/114 69/68/115
+s 7
+f 51/39/116 50/62/117 56/34/118 57/35/119
+f 56/34/118 50/62/117 60/63/120 61/64/121
+f 51/39/116 74/71/122 39/29/123 50/62/117
+s 3
+f 37/28/124 7/7/125 46/49/126 35/33/127
+f 39/29/128 28/72/129 7/7/125 37/28/124
+f 40/73/130 10/9/131 11/65/132 6/6/133
+s off
+f 63/56/134 69/68/135 71/69/136 65/80/137
+f 65/80/138 71/69/139 72/70/140 66/81/141
+f 66/81/142 72/70/143 70/67/144 64/82/145
+f 67/57/146 68/74/147 64/75/148 63/56/149
+f 44/46/150 43/47/151 48/50/152 46/49/153
+s 3
+f 24/77/154 10/9/131 40/73/130 23/79/155
+f 8/16/156 10/9/131 24/77/154 27/78/157
+s 10
+f 32/26/158 31/83/159 20/84/160 13/85/161
+s 4
+f 56/34/35 61/64/162 62/54/163 55/37/36
+s off
+f 17/15/164 40/73/165 68/74/166 67/57/167
+f 40/73/168 17/15/169 18/61/170 23/79/171
+f 63/56/172 64/82/173 70/67/174 69/68/175
+f 65/80/176 66/81/177 64/82/178 63/56/179
+s 11
+f 14/12/180 33/27/181 32/26/182 13/17/183
+s 12
+f 9/66/184 74/71/185 2/43/186 11/65/187
+s 7
+f 74/71/122 9/66/188 28/72/189 39/29/123
+s 3
+f 68/74/190 40/73/130 6/6/133 64/75/191
+s 1
+f 17/15/9 67/57/192 63/56/193 5/5/7
+s off
+f 37/28/194 35/33/195 34/32/196 36/31/197
+f 38/30/198 39/29/199 37/28/200 36/31/201
+f 49/52/202 50/62/203 39/29/204 38/30/205
+s 10
+f 22/21/206 31/83/159 32/26/158 26/23/207
+s 11
+f 26/23/208 32/26/182 33/27/181 12/11/209
+s 12
+f 53/40/210 2/43/186 74/71/185 51/39/211
+s 7
+f 29/76/212 28/72/189 9/66/188 8/16/213
+s 3
+f 28/72/129 29/24/34 25/22/33 7/7/125
+f 29/24/34 8/16/156 27/78/157 30/25/31
+s off
+f 6/6/214 5/5/215 63/56/216 64/75/217
+f 75/86/218 76/87/219 78/88/220 77/89/221
+s 13
+f 75/86/222 77/89/223 79/90/224 90/91/225
+f 91/92/226 18/93/227 19/94/228 89/95/229
+f 79/90/224 91/92/226 89/95/229 90/91/225
+s off
+f 83/98/230 82/99/231 87/100/232 88/101/233
+f 80/102/234 78/88/235 76/87/236 85/97/237
+f 79/90/238 77/89/239 78/88/240 80/102/241
+s 14
+f 22/103/242 21/104/243 92/105/244 93/106/245
+f 93/106/245 92/105/244 81/107/246 86/108/247
+s 15
+f 30/109/248 95/110/249 92/105/250 21/104/251
+s 16
+f 120/111/252 121/112/253 122/113/254 119/114/255
+s off
+f 116/115/256 115/116/257 117/117/258 118/118/259
+f 105/119/260 106/120/261 108/121/262 107/122/263
+f 108/121/264 106/120/265 109/123/266 110/124/267
+f 105/119/268 107/122/269 112/125/270 111/126/271
+s 17
+f 86/108/272 112/125/273 98/127/274 100/128/275
+f 86/108/272 100/128/275 102/129/276 97/130/277
+f 113/131/278 123/132/279 126/133/280 119/114/281
+f 113/131/278 119/114/281 122/113/282 116/115/283
+f 102/129/276 113/131/278 116/115/283 137/134/284
+f 116/115/283 118/118/285 75/135/286 137/134/284
+f 88/136/287 97/130/277 102/129/276 137/134/284
+f 88/136/287 137/134/284 75/135/286 90/91/288
+s off
+f 19/137/289 20/138/290 87/100/291 89/95/292
+f 76/139/293 75/135/294 118/118/295 117/117/296
+f 123/132/297 124/140/298 125/141/299 126/133/300
+f 115/116/301 116/115/302 122/113/303 121/112/304
+f 113/131/305 114/142/306 124/140/307 123/132/308
+f 110/124/309 99/143/310 98/127/311 112/125/312
+f 81/107/313 110/124/314 112/125/315 86/108/316
+f 110/124/317 109/123/318 111/126/319 112/125/320
+f 109/123/321 106/120/322 105/119/323 111/126/324
+f 85/144/325 83/145/326 88/136/327 90/91/328
+f 134/146/329 133/147/330 135/148/331 136/149/332
+s 19
+f 115/116/333 121/112/334 120/111/335 114/142/336
+f 120/111/335 125/141/337 124/140/338 114/142/336
+f 115/116/333 114/142/336 103/150/339 138/151/340
+s 15
+f 101/152/341 99/143/342 110/124/343 81/107/344
+f 103/150/345 101/152/341 81/107/344 94/153/346
+f 104/154/347 80/102/348 85/144/349 84/96/350
+s off
+f 127/155/351 129/156/352 135/148/353 133/147/354
+f 129/156/355 130/157/356 136/149/357 135/148/358
+f 130/157/359 128/158/360 134/146/361 136/149/362
+f 131/159/363 127/155/364 128/160/365 132/161/366
+f 108/121/367 110/124/368 112/125/369 107/122/370
+s 15
+f 24/162/371 23/163/372 104/154/347 84/96/350
+f 82/99/373 27/164/374 24/162/371 84/96/350
+s 22
+f 96/165/375 87/166/376 20/167/377 31/168/378
+s 16
+f 120/111/252 119/114/255 126/133/379 125/141/380
+s off
+f 91/92/381 131/159/382 132/161/383 104/154/384
+f 104/154/385 23/163/386 18/169/387 91/92/388
+f 127/155/389 133/147/390 134/146/391 128/158/392
+f 129/156/393 127/155/394 128/158/395 130/157/396
+s 23
+f 88/101/397 87/100/398 96/165/399 97/130/400
+s 24
+f 83/145/401 85/144/402 76/139/403 138/151/404
+s 19
+f 138/151/340 103/150/339 94/153/405 83/145/406
+s 15
+f 132/161/407 128/160/408 80/102/348 104/154/347
+s 13
+f 91/92/226 79/90/224 127/155/409 131/159/410
+s off
+f 101/152/411 100/128/412 98/127/413 99/143/414
+f 102/129/415 100/128/416 101/152/417 103/150/418
+f 113/131/419 102/129/420 103/150/421 114/142/422
+s 22
+f 22/103/423 93/106/424 96/165/375 31/168/378
+s 23
+f 93/106/425 86/108/426 97/130/400 96/165/399
+s 24
+f 117/117/427 115/116/428 138/151/404 76/139/403
+s 19
+f 95/170/429 82/99/430 83/145/406 94/153/405
+s 15
+f 94/153/346 81/107/344 92/105/250 95/110/249
+f 95/110/249 30/109/248 27/164/374 82/99/373
+s off
+f 80/102/431 128/160/432 127/155/433 79/90/434
+f 11/65/435 10/9/436 15/13/437 16/14/438
+f 13/17/439 15/13/440 10/9/441 8/16/442
+f 89/95/443 87/100/444 82/99/445 84/96/446
+f 84/96/447 85/144/448 90/91/449 89/95/450
+</pre>
+
+		<p class="file_page_meta no_print" style="line-height: 1.5rem;">
+			<label class="checkbox normal mini float_right no_top_padding no_min_width">
+				<input type="checkbox" id="file_preview_wrap_cb"> wrap long lines
+			</label>
+		</p>
+
+	</div>
+
+	<div id="comments_holder" class="clearfix clear_both">
+	<div class="col span_1_of_6"></div>
+	<div class="col span_4_of_6 no_right_padding">
+		<div id="file_page_comments">
+					</div>	
+		<form action="https://kawaiigamejam.slack.com/files/sertingg/F31MDV4E6/mdl_char_player1.obj"
+		id="file_comment_form"
+					class="comment_form"
+				method="post">
+			<a href="/team/eclmist" class="member_preview_link" data-member-id="U31B6JNJX" >
+			<span class="member_image thumb_36" style="background-image: url('https://secure.gravatar.com/avatar/a2ba7d151a7e317e651b09dd0966b0cc.jpg?s=72&d=https%3A%2F%2Fa.slack-edge.com%2F66f9%2Fimg%2Favatars%2Fava_0008-72.png')" data-thumb-size="36" data-member-id="U31B6JNJX"></span>
+		</a>
+		<input type="hidden" name="addcomment" value="1" />
+	<input type="hidden" name="crumb" value="s-1478908730-ca193edcf7-☃" />
+
+	<textarea id="file_comment" data-el-id-to-keep-in-view="file_comment_submit_btn" class="small comment_input small_bottom_margin autogrow-short" name="comment" wrap="virtual" ></textarea>
+	<span class="input_note float_left cloud_silver file_comment_tip">shift+enter to add a new line</span>	<button id="file_comment_submit_btn" type="submit" class="btn float_right  ladda-button" data-style="expand-right"><span class="ladda-label">Add Comment</span></button>
+</form>
+
+<form
+		id="file_edit_comment_form"
+					class="edit_comment_form hidden"
+				method="post">
+		<textarea id="file_edit_comment" class="small comment_input small_bottom_margin" name="comment" wrap="virtual"></textarea><br>
+	<span class="input_note float_left cloud_silver file_comment_tip">shift+enter to add a new line</span>	<input type="submit" class="save btn float_right " value="Save" />
+	<button class="cancel btn btn_outline float_right small_right_margin ">Cancel</button>
+</form>	
+	</div>
+	<div class="col span_1_of_6"></div>
+</div>
+</div>
+
+
+
+
+		
+	</div>
+	<div id="overlay"></div>
+</div>
+
+
+
+
+
+
+
+<script type="text/javascript">
+
+	function vvv(v) {
+
+		var vvv_warning = 'You cannot use vvv on dynamic values. Please make sure you only pass in static file paths.';
+		if (TS && TS.warn) {
+			TS.warn(vvv_warning);
+		} else {
+			console.warn(vvv_warning);
+		}
+
+		return v;
+	}
+
+	var cdn_url = "https:\/\/slack.global.ssl.fastly.net";
+	var inc_js_setup_data = {
+		emoji_sheets: {
+			apple: 'https://a.slack-edge.com/f360/img/emoji_2016_06_08/sheet_apple_64_indexed_256colors.png',
+			google: 'https://a.slack-edge.com/f360/img/emoji_2016_06_08/sheet_google_64_indexed_128colors.png',
+			twitter: 'https://a.slack-edge.com/f360/img/emoji_2016_06_08/sheet_twitter_64_indexed_128colors.png',
+			emojione: 'https://a.slack-edge.com/f360/img/emoji_2016_06_08/sheet_emojione_64_indexed_128colors.png',
+		},
+	};
+</script>
+			<script type="text/javascript">
+<!--
+	// common boot_data
+	var boot_data = {
+		start_ms: Date.now(),
+		app: 'web',
+		user_id: 'U31B6JNJX',
+		no_login: false,
+		version_ts: '1478907988',
+		version_uid: 'c2d6db67905dcc7035f99de86a8cbebcae21909d',
+		cache_version: "v13-tiger",
+		cache_ts_version: "v1-cat",
+		redir_domain: 'slack-redir.net',
+		signin_url: 'https://slack.com/signin',
+		abs_root_url: 'https://slack.com/',
+		api_url: '/api/',
+		team_url: 'https://kawaiigamejam.slack.com/',
+		image_proxy_url: 'https://slack-imgs.com/',
+		beacon_timing_url: "https:\/\/slack.com\/beacon\/timing",
+		beacon_error_url: "https:\/\/slack.com\/beacon\/error",
+		clog_url: "clog\/track\/",
+		api_token: 'xoxs-102732447216-103380634643-103535926709-febbbc1e5c',
+		ls_disabled: false,
+
+		notification_sounds: [{"value":"b2.mp3","label":"Ding","url":"https:\/\/slack.global.ssl.fastly.net\/dfc0\/sounds\/push\/b2.mp3"},{"value":"animal_stick.mp3","label":"Boing","url":"https:\/\/slack.global.ssl.fastly.net\/dfc0\/sounds\/push\/animal_stick.mp3"},{"value":"been_tree.mp3","label":"Drop","url":"https:\/\/slack.global.ssl.fastly.net\/dfc0\/sounds\/push\/been_tree.mp3"},{"value":"complete_quest_requirement.mp3","label":"Ta-da","url":"https:\/\/slack.global.ssl.fastly.net\/dfc0\/sounds\/push\/complete_quest_requirement.mp3"},{"value":"confirm_delivery.mp3","label":"Plink","url":"https:\/\/slack.global.ssl.fastly.net\/dfc0\/sounds\/push\/confirm_delivery.mp3"},{"value":"flitterbug.mp3","label":"Wow","url":"https:\/\/slack.global.ssl.fastly.net\/dfc0\/sounds\/push\/flitterbug.mp3"},{"value":"here_you_go_lighter.mp3","label":"Here you go","url":"https:\/\/slack.global.ssl.fastly.net\/dfc0\/sounds\/push\/here_you_go_lighter.mp3"},{"value":"hi_flowers_hit.mp3","label":"Hi","url":"https:\/\/slack.global.ssl.fastly.net\/dfc0\/sounds\/push\/hi_flowers_hit.mp3"},{"value":"item_pickup.mp3","label":"Yoink","url":"https:\/\/slack.global.ssl.fastly.net\/dfc0\/sounds\/push\/item_pickup.mp3"},{"value":"knock_brush.mp3","label":"Knock Brush","url":"https:\/\/slack.global.ssl.fastly.net\/dfc0\/sounds\/push\/knock_brush.mp3"},{"value":"save_and_checkout.mp3","label":"Woah!","url":"https:\/\/slack.global.ssl.fastly.net\/dfc0\/sounds\/push\/save_and_checkout.mp3"},{"value":"none","label":"None"}],
+		alert_sounds: [{"value":"frog.mp3","label":"Frog","url":"https:\/\/slack.global.ssl.fastly.net\/a34a\/sounds\/frog.mp3"}],
+		call_sounds: [{"value":"call\/alert_v2.mp3","label":"Alert","url":"https:\/\/slack.global.ssl.fastly.net\/08f7\/sounds\/call\/alert_v2.mp3"},{"value":"call\/incoming_ring_v2.mp3","label":"Incoming ring","url":"https:\/\/slack.global.ssl.fastly.net\/08f7\/sounds\/call\/incoming_ring_v2.mp3"},{"value":"call\/outgoing_ring_v2.mp3","label":"Outgoing ring","url":"https:\/\/slack.global.ssl.fastly.net\/08f7\/sounds\/call\/outgoing_ring_v2.mp3"},{"value":"call\/pop_v2.mp3","label":"Incoming reaction","url":"https:\/\/slack.global.ssl.fastly.net\/08f7\/sounds\/call\/pop_v2.mp3"},{"value":"call\/they_left_call_v2.mp3","label":"They left call","url":"https:\/\/slack.global.ssl.fastly.net\/08f7\/sounds\/call\/they_left_call_v2.mp3"},{"value":"call\/you_left_call_v2.mp3","label":"You left call","url":"https:\/\/slack.global.ssl.fastly.net\/08f7\/sounds\/call\/you_left_call_v2.mp3"},{"value":"call\/they_joined_call_v2.mp3","label":"They joined call","url":"https:\/\/slack.global.ssl.fastly.net\/08f7\/sounds\/call\/they_joined_call_v2.mp3"},{"value":"call\/you_joined_call_v2.mp3","label":"You joined call","url":"https:\/\/slack.global.ssl.fastly.net\/08f7\/sounds\/call\/you_joined_call_v2.mp3"},{"value":"call\/confirmation_v2.mp3","label":"Confirmation","url":"https:\/\/slack.global.ssl.fastly.net\/08f7\/sounds\/call\/confirmation_v2.mp3"}],
+		call_sounds_version: "v2",
+		max_team_handy_rxns: 5,
+		max_channel_handy_rxns: 5,
+		max_poll_handy_rxns: 7,
+		max_handy_rxns_title_chars: 30,
+		
+		feature_tinyspeck: false,
+		feature_i18n: false,
+		feature_create_team_google_auth: false,
+		feature_api_extended_2fa_backup: false,
+		feature_flannel_fe: false,
+		feature_ms_eventlog_changes: false,
+		feature_frecency_normalization: true,
+		feature_emoji_usage_stats: false,
+		feature_batch_file_deleted_event: false,
+		feature_viewmodel_proto: false,
+		feature_sales_tax: true,
+		feature_message_replies: false,
+		feature_message_replies_rewrite_864: false,
+		feature_message_replies_off: false,
+		feature_message_replies_threads_view: false,
+		feature_no_rollups: false,
+		feature_web_lean: false,
+		feature_web_lean_all_users: false,
+		feature_reminders_v3: true,
+		feature_server_side_emoji_counts: true,
+		feature_a11y_keyboard_shortcuts: false,
+		feature_email_ingestion: false,
+		feature_msg_consistency: false,
+		feature_sli_channel_priority: false,
+		feature_sli_similar_channels: true,
+		feature_sli_clog_selections: true,
+		feature_sli_search_limit_extracts: false,
+		feature_thanks: false,
+		feature_attachments_inline: false,
+		feature_fix_files: true,
+		feature_canonical_avatars_web_client: false,
+		feature_files_list: true,
+		feature_channel_eventlog_client: true,
+		feature_macssb1_banner: true,
+		feature_macssb2_banner: true,
+		feature_macelectron1_banner: true,
+		feature_macelectron2_banner: true,
+		feature_latest_event_ts: true,
+		feature_elide_closed_dms: true,
+		feature_no_redirects_in_ssb: true,
+		feature_referer_policy: true,
+		feature_more_field_in_message_attachments: false,
+		feature_calls: true,
+		feature_calls_no_rtm_start: true,
+		feature_integrations_message_preview: true,
+		feature_paging_api: false,
+		feature_enterprise_api: true,
+		feature_enterprise_create: true,
+		feature_enterprise_api_auth: true,
+		feature_enterprise_profile: true,
+		feature_enterprise_search: true,
+		feature_enterprise_locked_settings: false,
+		feature_frecency_migration: false,
+		feature_enterprise_frecency: false,
+		feature_enterprise_team_overview_page: false,
+		feature_enterprise_conditional_team_removal: false,
+		feature_enterprise_search_ui: false,
+		feature_enterprise_mandatory_2fa: true,
+		feature_enterprise_user_account_settings: true,
+		feature_enterprise_security_auth_refactor: false,
+		feature_enterprise_member_profile_refactor: false,
+		feature_enterprise_context_menu: false,
+		feature_enterprise_profile_menu_deactivate_2fa: false,
+		feature_private_channels: true,
+		feature_mpim_restrictions: false,
+		feature_subteams_hard_delete: false,
+		feature_no_unread_counts: true,
+		feature_js_raf_queue: false,
+		feature_shared_channels: false,
+		feature_external_shared_channels_ui: false,
+		feature_you_autocomplete_me: false,
+		feature_roster_changes: false,
+		feature_allow_shared_general: false,
+		feature_shared_channels_settings: true,
+		feature_fast_files_flexpane: true,
+		feature_no_has_files: true,
+		feature_custom_saml_signin_button_label: true,
+		feature_optimistic_im_close: true,
+		feature_file_reactions_activity: false,
+		feature_admin_approved_apps: true,
+		feature_winssb_beta_channel: false,
+		feature_inline_media_playback: true,
+		feature_branch_io_deeplink: true,
+		feature_policy_effective_date: false,
+		feature_clog_whats_new: true,
+		feature_presence_sub: false,
+		feature_live_support_free_plan: false,
+		feature_dm_yahself: true,
+		feature_slackbot_goes_to_college: false,
+		feature_newxp_enqueue_message: true,
+		feature_shared_invites: true,
+		feature_lato_2_ssb: true,
+		feature_refactor_buildmsghtml: false,
+		feature_omit_localstorage_users_bots: false,
+		feature_disable_ls_compression: false,
+		feature_force_ls_compression: false,
+		feature_sign_in_with_slack: true,
+		feature_sign_in_with_slack_ui_elements: true,
+		feature_prevent_msg_rebuild: false,
+		feature_app_review_scope_error: true,
+		feature_zendesk_app_submission_improvement: false,
+		feature_react_emoji_picker: false,
+		feature_better_msg_copying: false,
+		feature_name_tagging_client: false,
+		feature_name_tagging_client_extras: false,
+		feature_name_tagging_client_search: false,
+		feature_msg_input_contenteditable: false,
+		feature_new_msg_input: false,
+		feature_browse_date: true,
+		feature_use_imgproxy_resizing: false,
+		feature_always_active_bots: false,
+		feature_single_team_apps: false,
+		feature_multiple_app_ownership: true,
+		feature_update_message_file: true,
+		feature_custom_clogs: true,
+		feature_calls_linux: true,
+		feature_a11y_pref_text_size: false,
+		feature_a11y_pref_no_animation: true,
+		feature_share_mention_comment_cleanup: false,
+		feature_unread_view: true,
+		feature_tw: false,
+		feature_tw_ls_disabled: false,
+		feature_external_files: false,
+		feature_min_web: false,
+		feature_electron_memory_logging: false,
+		feature_channel_name_menu: true,
+		feature_electron_window_gripper: true,
+		feature_no_tokenless_ms_connections: false,
+		feature_simple_file_events: true,
+		feature_devrel_try_it_now: false,
+		feature_wait_for_all_mentions_in_client: false,
+		feature_prev_next_button: false,
+		feature_free_inactive_domains: true,
+		feature_platform_calls: true,
+		feature_a11y_tab: false,
+		feature_admin_billing_refactor: false,
+		feature_pdf_viewer: true,
+		feature_wrapped_mention_parsing: false,
+		feature_measure_css_usage: false,
+		feature_take_profile_photo: false,
+		feature_ajax_billing_history: false,
+		feature_update_coachmarks_cta: true,
+		feature_multnomah: false,
+		feature_texty: false,
+		feature_sales_tax_address: true,
+		feature_toggle_id_translation: false,
+		feature_can_edit_app: true,
+		feature_gdrive_1_dot_5: true,
+		feature_mention_non_members: false,
+		feature_hide_email_pref: true,
+		feature_ent_pricing_lp: true,
+		feature_file_id_from_url_update: false,
+		feature_pin_update: true,
+		feature_tos_oct2016: false,
+		feature_flexbox_client: false,
+		feature_emoji_menu_tuning: false,
+		feature_discoverable_teams: false,
+		feature_discoverable_teams_client: false,
+		feature_reveal_channel_renames: false,
+		feature_app_info_youtube_url: false,
+		feature_api_metadata_token_allow: false,
+		feature_app_cards_and_profs_frontend: false,
+		feature_user_removed_from_team: false,
+		feature_user_added_to_team: false,
+		feature_a11y_ui_zoom: false,
+		feature_file_comment_help_text: false,
+		feature_refactored_message_template: false,
+		feature_message_inputs: false,
+		feature_contact_us_form: true,
+		feature_app_cards_and_profs_set_card_color: false,
+		feature_cdn_load_tracking: false,
+		feature_fresh_team_directory: false,
+		feature_move_star_in_channel_header: false,
+		feature_team_to_org_directory: true,
+		feature_reposition_search_dropdown: false,
+
+	client_logs: {"0":{"numbers":[0],"whitelisted":false},"@scott":{"numbers":[2,4,37,58,67,389,390,481,488,529,667,773,888,999],"owner":"@scott"},"@eric":{"numbers":[2,23,47,48,65,66,72,73,82,91,93,96,222,365,438,528,552,777,794],"owner":"@eric"},"2":{"owner":"@scott \/ @eric","numbers":[2],"whitelisted":false},"4":{"owner":"@scott","numbers":[4],"whitelisted":false},"5":{"channels":"#dhtml","numbers":[5],"whitelisted":false},"23":{"owner":"@eric","numbers":[23],"whitelisted":false},"sounds":{"owner":"@scott","name":"sounds","numbers":[37]},"37":{"owner":"@scott","name":"sounds","numbers":[37],"whitelisted":true},"47":{"owner":"@eric","numbers":[47],"whitelisted":false},"48":{"owner":"@eric","numbers":[48],"whitelisted":false},"58":{"owner":"@scott","numbers":[58],"whitelisted":false},"65":{"owner":"@eric","numbers":[65],"whitelisted":false},"66":{"owner":"@eric","numbers":[66],"whitelisted":false},"67":{"owner":"@scott","numbers":[67],"whitelisted":false},"72":{"owner":"@eric","numbers":[72],"whitelisted":false},"73":{"owner":"@eric","numbers":[73],"whitelisted":false},"82":{"owner":"@eric","numbers":[82],"whitelisted":false},"@shinypb":{"owner":"@shinypb","numbers":[88,1000,1989,1996]},"88":{"owner":"@shinypb","numbers":[88],"whitelisted":false},"91":{"owner":"@eric","numbers":[91],"whitelisted":false},"93":{"owner":"@eric","numbers":[93],"whitelisted":false},"96":{"owner":"@eric","numbers":[96],"whitelisted":false},"@steveb":{"owner":"@steveb","numbers":[99]},"99":{"owner":"@steveb","numbers":[99],"whitelisted":false},"222":{"owner":"@eric","numbers":[222],"whitelisted":false},"365":{"owner":"@eric","numbers":[365],"whitelisted":false},"389":{"owner":"@scott","numbers":[389],"whitelisted":false},"390":{"owner":"@scott","numbers":[390],"whitelisted":false},"438":{"owner":"@eric","numbers":[438],"whitelisted":false},"@rowan":{"numbers":[444,666],"owner":"@rowan"},"444":{"owner":"@rowan","numbers":[444],"whitelisted":false},"481":{"owner":"@scott","numbers":[481],"whitelisted":false},"488":{"owner":"@scott","numbers":[488],"whitelisted":false},"528":{"owner":"@eric","numbers":[528],"whitelisted":false},"529":{"owner":"@scott","numbers":[529],"whitelisted":false},"552":{"owner":"@eric","numbers":[552],"whitelisted":false},"dashboard":{"owner":"@ac \/ @bruce \/ @kylestetz \/ @nic \/ @rowan","channels":"#devel-enterprise-fe, #feat-enterprise-dash","name":"dashboard","numbers":[666]},"@ac":{"channels":"#devel-enterprise-fe, #feat-enterprise-dash","name":"dashboard","numbers":[666],"owner":"@ac"},"@bruce":{"channels":"#devel-enterprise-fe, #feat-enterprise-dash","name":"dashboard","numbers":[666],"owner":"@bruce"},"@kylestetz":{"channels":"#devel-enterprise-fe, #feat-enterprise-dash","name":"dashboard","numbers":[666],"owner":"@kylestetz"},"@nic":{"channels":"#devel-enterprise-fe, #feat-enterprise-dash","name":"dashboard","numbers":[666],"owner":"@nic"},"666":{"owner":"@ac \/ @bruce \/ @kylestetz \/ @nic \/ @rowan","channels":"#devel-enterprise-fe, #feat-enterprise-dash","name":"dashboard","numbers":[666],"whitelisted":false},"667":{"owner":"@scott","numbers":[667],"whitelisted":false},"773":{"owner":"@scott","numbers":[773],"whitelisted":false},"777":{"owner":"@eric","numbers":[777],"whitelisted":false},"794":{"owner":"@eric","numbers":[794],"whitelisted":false},"888":{"owner":"@scott","numbers":[888],"whitelisted":false},"999":{"owner":"@scott","numbers":[999],"whitelisted":false},"1000":{"owner":"@shinypb","numbers":[1000],"whitelisted":false},"minweb":{"owner":"@johnnyrodgers","features":["feature_min_web"],"channels":"#feat-minweb","name":"minweb","numbers":[1983]},"@johnnyrodgers":{"owner":"@johnnyrodgers","features":["feature_min_web"],"channels":"#feat-minweb","name":"minweb","numbers":[1983]},"1983":{"owner":"@johnnyrodgers","features":["feature_min_web"],"channels":"#feat-minweb","name":"minweb","numbers":[1983],"whitelisted":false},"flannel":{"owner":"@shinypb","features":["feature_flannel_fe"],"channels":"#devel-flannel","name":"flannel","numbers":[1989]},"1989":{"owner":"@shinypb","features":["feature_flannel_fe"],"channels":"#devel-flannel","name":"flannel","numbers":[1989],"whitelisted":true},"ms":{"owner":"@shinypb","name":"ms","numbers":[1996]},"1996":{"owner":"@shinypb","name":"ms","numbers":[1996],"whitelisted":true},"@patrick":{"owner":"@patrick","channels":"#dhtml","numbers":[2001,2002,2003,2004]},"2001":{"owner":"@patrick","channels":"#dhtml","numbers":[2001],"whitelisted":false},"dnd":{"owner":"@patrick","channels":"dhtml","name":"dnd","numbers":[2002]},"2002":{"owner":"@patrick","channels":"dhtml","name":"dnd","numbers":[2002],"whitelisted":true},"2003":{"owner":"@patrick","channels":"dhtml","numbers":[2003],"whitelisted":false},"2004":{"owner":"@patrick","channels":"#feature_message_replies, #feat-threads","numbers":[2004],"whitelisted":false},"mc_sibs":{"name":"mc_sibs","numbers":[9999]},"9999":{"name":"mc_sibs","numbers":[9999],"whitelisted":false},"@fearon":{"owner":"@fearon","numbers":[98765]},"98765":{"owner":"@fearon","numbers":[98765],"whitelisted":false}},
+
+
+		img: {
+			app_icon: 'https://a.slack-edge.com/272a/img/slack_growl_icon.png'
+		},
+		page_needs_custom_emoji: false,
+		page_needs_team_profile_fields: false,
+		page_needs_enterprise: false,
+		slackbot_help_enabled: true
+	};
+
+	
+	
+	
+	
+	// client boot data
+	
+	
+	
+//-->
+</script>	
+	
+				<!-- output_js "core" -->
+<script type="text/javascript" src="https://a.slack-edge.com/61a52/js/rollup-core_required_libs.js" crossorigin="anonymous"></script>
+<script type="text/javascript" src="https://a.slack-edge.com/ec3a/js/rollup-core_required_ts.js" crossorigin="anonymous"></script>
+<script type="text/javascript" src="https://a.slack-edge.com/32b0/js/TS.web.js" crossorigin="anonymous"></script>
+
+		<!-- output_js "core_web" -->
+<script type="text/javascript" src="https://a.slack-edge.com/9982f/js/rollup-core_web.js" crossorigin="anonymous"></script>
+
+		<!-- output_js "secondary" -->
+<script type="text/javascript" src="https://a.slack-edge.com/4a448/js/rollup-secondary_a_required.js" crossorigin="anonymous"></script>
+<script type="text/javascript" src="https://a.slack-edge.com/b52340/js/rollup-secondary_b_required.js" crossorigin="anonymous"></script>
+
+					
+	<!-- output_js "regular" -->
+<script type="text/javascript" src="https://a.slack-edge.com/4016/js/TS.web.comments.js" crossorigin="anonymous"></script>
+<script type="text/javascript" src="https://a.slack-edge.com/c439/js/TS.web.file.js" crossorigin="anonymous"></script>
+<script type="text/javascript" src="https://a.slack-edge.com/cb0fd/js/libs/codemirror.js" crossorigin="anonymous"></script>
+<script type="text/javascript" src="https://a.slack-edge.com/db4a/js/codemirror_load.js" crossorigin="anonymous"></script>
+
+		<script type="text/javascript">
+	<!--
+		boot_data.page_needs_custom_emoji = true;
+
+		boot_data.file = {"id":"F31MDV4E6","created":1478906674,"timestamp":1478906674,"name":"MDL_CHAR_Player1.obj","title":"MDL_CHAR_Player1.obj","mimetype":"text\/plain","filetype":"text","pretty_type":"Plain Text","user":"U323N69DL","editable":true,"size":28007,"mode":"snippet","is_external":false,"external_type":"","is_public":true,"public_url_shared":false,"display_as_bot":false,"username":"","url_private":"https:\/\/files.slack.com\/files-pri\/T30MJD56C-F31MDV4E6\/mdl_char_player1.obj","url_private_download":"https:\/\/files.slack.com\/files-pri\/T30MJD56C-F31MDV4E6\/download\/mdl_char_player1.obj","permalink":"https:\/\/kawaiigamejam.slack.com\/files\/sertingg\/F31MDV4E6\/mdl_char_player1.obj","permalink_public":"https:\/\/slack-files.com\/T30MJD56C-F31MDV4E6-18ad4fc1f3","edit_link":"https:\/\/kawaiigamejam.slack.com\/files\/sertingg\/F31MDV4E6\/mdl_char_player1.obj\/edit","preview":"# This file uses centimeters as units for non-parametric coordinates.\n\nmtllib MDL_CHAR_Player1.mtl\ng default\nv -0.342604 0.512324 -0.858143","preview_highlight":"\u003Cdiv class=\"CodeMirror cm-s-default CodeMirrorServer\" oncopy=\"if(event.clipboardData){event.clipboardData.setData('text\/plain',window.getSelection().toString().replace(\/\\u200b\/g,''));event.preventDefault();event.stopPropagation();}\"\u003E\n\u003Cdiv class=\"CodeMirror-code\"\u003E\n\u003Cdiv\u003E\u003Cpre\u003E# This file uses centimeters as units for non-parametric coordinates.\u003C\/pre\u003E\u003C\/div\u003E\n\u003Cdiv\u003E\u003Cpre\u003E\u003C\/pre\u003E\u003C\/div\u003E\n\u003Cdiv\u003E\u003Cpre\u003Emtllib MDL_CHAR_Player1.mtl\u003C\/pre\u003E\u003C\/div\u003E\n\u003Cdiv\u003E\u003Cpre\u003Eg default\u003C\/pre\u003E\u003C\/div\u003E\n\u003Cdiv\u003E\u003Cpre\u003Ev -0.342604 0.512324 -0.858143\u003C\/pre\u003E\u003C\/div\u003E\n\u003C\/div\u003E\n\u003C\/div\u003E\n","lines":960,"lines_more":955,"preview_is_truncated":true,"channels":["C31FFUHPX"],"groups":[],"ims":[],"comments_count":0};
+		boot_data.file.comments = [];
+
+		
+
+		var g_editor;
+
+		$(function(){
+
+			var wrap_long_lines = !!TS.model.code_wrap_long_lines;
+
+			g_editor = CodeMirror(function(elt){
+				var content = document.getElementById("file_contents");
+				content.parentNode.replaceChild(elt, content);
+			}, {
+				value: $('#file_contents').text(),
+				lineNumbers: true,
+				matchBrackets: true,
+				indentUnit: 4,
+				indentWithTabs: true,
+				enterMode: "keep",
+				tabMode: "shift",
+				viewportMargin: 10,
+				readOnly: true,
+				lineWrapping: wrap_long_lines
+			});
+
+			// past a certain point, CodeMirror rendering may simply stop working.
+			// start having CodeMirror use its Long List View-style scolling at >= max_lines.
+			var max_lines = 8192;
+
+			var snippet_lines;
+
+			// determine # of lines, limit height accordingly
+			if (g_editor.doc && g_editor.doc.lineCount) {
+				snippet_lines = parseInt(g_editor.doc.lineCount());
+				var new_height;
+				if (snippet_lines) {
+					// we want the CodeMirror container to collapse around short snippets.
+					// however, we want to let it auto-expand only up to a limit, at which point
+					// we specify a fixed height so CM can display huge snippets without dying.
+					// this is because CodeMirror works nicely with no height set, but doesn't
+					// scale (big file performance issue), and doesn't work with min/max-height -
+					// so at some point, we have to set an absolute height to kick it into its
+					// smart / partial "Long List View"-style rendering mode.
+					if (snippet_lines < max_lines) {
+						new_height = 'auto';
+					} else {
+						new_height = (max_lines * 0.875) + 'rem'; // line-to-rem ratio
+					}
+					var line_count = Math.min(snippet_lines, max_lines);
+					TS.info('Applying height of ' + new_height + ' to container for this snippet of ' + snippet_lines + (snippet_lines === 1 ? ' line' : ' lines'));
+					$('#page .CodeMirror').height(new_height);
+				}
+			}
+
+			$('#file_preview_wrap_cb').bind('change', function(e) {
+				TS.model.code_wrap_long_lines = $(this).prop('checked');
+				g_editor.setOption('lineWrapping', TS.model.code_wrap_long_lines);
+			})
+
+			$('#file_preview_wrap_cb').prop('checked', wrap_long_lines);
+
+			CodeMirror.switchSlackMode(g_editor, "text");
+		});
+
+		
+		$('#file_comment').css('overflow', 'hidden').autogrow();
+	//-->
+	</script>
+
+
+		<script type="text/javascript">
+				TS.clog.setTeam('T30MJD56C');
+						TS.clog.setUser('U31B6JNJX');
+			</script>
+
+			<script type="text/javascript">TS.boot(boot_data);</script>
+	
+<style>.color_9f69e7:not(.nuc) {color:#9F69E7;}.color_4bbe2e:not(.nuc) {color:#4BBE2E;}.color_e7392d:not(.nuc) {color:#E7392D;}.color_3c989f:not(.nuc) {color:#3C989F;}.color_674b1b:not(.nuc) {color:#674B1B;}.color_e96699:not(.nuc) {color:#E96699;}.color_e0a729:not(.nuc) {color:#E0A729;}.color_684b6c:not(.nuc) {color:#684B6C;}.color_5b89d5:not(.nuc) {color:#5B89D5;}.color_2b6836:not(.nuc) {color:#2B6836;}.color_99a949:not(.nuc) {color:#99A949;}.color_df3dc0:not(.nuc) {color:#DF3DC0;}.color_4cc091:not(.nuc) {color:#4CC091;}.color_9b3b45:not(.nuc) {color:#9B3B45;}.color_d58247:not(.nuc) {color:#D58247;}.color_bb86b7:not(.nuc) {color:#BB86B7;}.color_5a4592:not(.nuc) {color:#5A4592;}.color_db3150:not(.nuc) {color:#DB3150;}.color_235e5b:not(.nuc) {color:#235E5B;}.color_9e3997:not(.nuc) {color:#9E3997;}.color_53b759:not(.nuc) {color:#53B759;}.color_c386df:not(.nuc) {color:#C386DF;}.color_385a86:not(.nuc) {color:#385A86;}.color_a63024:not(.nuc) {color:#A63024;}.color_5870dd:not(.nuc) {color:#5870DD;}.color_ea2977:not(.nuc) {color:#EA2977;}.color_50a0cf:not(.nuc) {color:#50A0CF;}.color_d55aef:not(.nuc) {color:#D55AEF;}.color_d1707d:not(.nuc) {color:#D1707D;}.color_43761b:not(.nuc) {color:#43761B;}.color_e06b56:not(.nuc) {color:#E06B56;}.color_8f4a2b:not(.nuc) {color:#8F4A2B;}.color_902d59:not(.nuc) {color:#902D59;}.color_de5f24:not(.nuc) {color:#DE5F24;}.color_a2a5dc:not(.nuc) {color:#A2A5DC;}.color_827327:not(.nuc) {color:#827327;}.color_3c8c69:not(.nuc) {color:#3C8C69;}.color_8d4b84:not(.nuc) {color:#8D4B84;}.color_84b22f:not(.nuc) {color:#84B22F;}.color_4ec0d6:not(.nuc) {color:#4EC0D6;}.color_e23f99:not(.nuc) {color:#E23F99;}.color_e475df:not(.nuc) {color:#E475DF;}.color_619a4f:not(.nuc) {color:#619A4F;}.color_a72f79:not(.nuc) {color:#A72F79;}.color_7d414c:not(.nuc) {color:#7D414C;}.color_aba727:not(.nuc) {color:#ABA727;}.color_965d1b:not(.nuc) {color:#965D1B;}.color_4d5e26:not(.nuc) {color:#4D5E26;}.color_dd8527:not(.nuc) {color:#DD8527;}.color_bd9336:not(.nuc) {color:#BD9336;}.color_e85d72:not(.nuc) {color:#E85D72;}.color_dc7dbb:not(.nuc) {color:#DC7DBB;}.color_bc3663:not(.nuc) {color:#BC3663;}.color_9d8eee:not(.nuc) {color:#9D8EEE;}.color_8469bc:not(.nuc) {color:#8469BC;}.color_73769d:not(.nuc) {color:#73769D;}.color_b14cbc:not(.nuc) {color:#B14CBC;}</style>
+
+<!-- slack-www-hhvm321 / 2016-11-11 15:58:50 / vc2d6db67905dcc7035f99de86a8cbebcae21909d / B:H -->
+
+</body>
+</html>

@@ -1,0 +1,4299 @@
+<!DOCTYPE html>
+<html lang="en" >
+
+<head>
+
+	
+	<script>
+window.ts_endpoint_url = "https:\/\/slack.com\/beacon\/timing";
+
+(function(e) {
+	var n=Date.now?Date.now():+new Date,r=e.performance||{},t=[],a={},i=function(e,n){for(var r=0,a=t.length,i=[];a>r;r++)t[r][e]==n&&i.push(t[r]);return i},o=function(e,n){for(var r,a=t.length;a--;)r=t[a],r.entryType!=e||void 0!==n&&r.name!=n||t.splice(a,1)};r.now||(r.now=r.webkitNow||r.mozNow||r.msNow||function(){return(Date.now?Date.now():+new Date)-n}),r.mark||(r.mark=r.webkitMark||function(e){var n={name:e,entryType:"mark",startTime:r.now(),duration:0};t.push(n),a[e]=n}),r.measure||(r.measure=r.webkitMeasure||function(e,n,r){n=a[n].startTime,r=a[r].startTime,t.push({name:e,entryType:"measure",startTime:n,duration:r-n})}),r.getEntriesByType||(r.getEntriesByType=r.webkitGetEntriesByType||function(e){return i("entryType",e)}),r.getEntriesByName||(r.getEntriesByName=r.webkitGetEntriesByName||function(e){return i("name",e)}),r.clearMarks||(r.clearMarks=r.webkitClearMarks||function(e){o("mark",e)}),r.clearMeasures||(r.clearMeasures=r.webkitClearMeasures||function(e){o("measure",e)}),e.performance=r,"function"==typeof define&&(define.amd||define.ajs)&&define("performance",[],function(){return r}) // eslint-disable-line
+})(window);
+
+</script>
+<script>;(function() {
+
+'use strict';
+
+
+window.TSMark = function(mark_label) {
+	if (!window.performance || !window.performance.mark) return;
+	performance.mark(mark_label);
+};
+window.TSMark('start_load');
+
+
+window.TSMeasureAndBeacon = function(measure_label, start_mark_label) {
+	if (start_mark_label === 'start_nav' && window.performance && window.performance.timing) {
+		window.TSBeacon(measure_label, (new Date()).getTime() - performance.timing.navigationStart);
+		return;
+	}
+	if (!window.performance || !window.performance.mark || !window.performance.measure) return;
+	performance.mark(start_mark_label + '_end');
+	try {
+		performance.measure(measure_label, start_mark_label, start_mark_label + '_end');
+		window.TSBeacon(measure_label, performance.getEntriesByName(measure_label)[0].duration);
+	} catch(e) { return; }
+};
+
+
+window.TSBeacon = function(label, value) {
+	var endpoint_url = window.ts_endpoint_url || 'https://slack.com/beacon/timing';
+	(new Image()).src = endpoint_url + '?data=' + encodeURIComponent(label + ':' + value);
+};
+
+})();
+</script>
+ 
+
+<script>
+window.TSMark('step_load');
+</script>	<noscript><meta http-equiv="refresh" content="0; URL=/files/darkdestry/F32CUQGP9/backgroundmesh.obj?nojsmode=1" /></noscript>
+<script>(function() {
+        'use strict';
+
+	var start_time = Date.now();
+	var logs = [];
+	var connecting = true;
+	var ever_connected = false;
+	var log_namespace;
+
+	var logWorker = function(ob) {
+		var log_str = ob.secs+' start_label:'+ob.start_label+' measure_label:'+ob.measure_label+' description:'+ob.description;
+
+		if (TS.metrics.getLatestMark(ob.start_label)) {
+			TS.metrics.measure(ob.measure_label, ob.start_label);
+			TS.log(88, log_str);
+
+			if (ob.do_reset) {
+				window.TSMark(ob.start_label);
+			}
+		} else {
+			TS.maybeWarn(88, 'not timing: '+log_str);
+		}
+	}
+
+	var log = function(k, description) {
+		var secs = (Date.now()-start_time)/1000;
+
+		logs.push({
+			k: k,
+			d: description,
+			t: secs,
+			c: !!connecting
+		})
+
+		if (!window.boot_data) return;
+		if (!window.TS) return;
+		if (!TS.metrics) return;
+		if (!connecting) return;
+
+		
+		log_namespace = log_namespace || (function() {
+			if (boot_data.app == 'client') return 'client';
+			if (boot_data.app == 'space') return 'post';
+			if (boot_data.app == 'api') return 'apisite';
+			if (boot_data.app == 'mobile') return 'mobileweb';
+			if (boot_data.app == 'web' || boot_data.app == 'oauth') return 'web';
+			return 'unknown';
+		})();
+
+		var modifier = (TS.boot_data.feature_no_rollups) ? '_no_rollups' : '';
+
+		logWorker({
+			k: k,
+			secs: secs,
+			description: description,
+			start_label: ever_connected ? 'start_reconnect' : 'start_load',
+			measure_label: 'v2_'+log_namespace+modifier+(ever_connected ? '_reconnect__' : '_load__')+k,
+			do_reset: false,
+		});
+	}
+
+	var setConnecting = function(val) {
+		val = !!val;
+		if (val == connecting) return;
+
+		if (val) {
+			log('start');
+			if (ever_connected) {
+				
+				window.TSMark('start_reconnect');
+				window.TSMark('step_reconnect');
+				window.TSMark('step_load');
+			}
+
+			connecting = val;
+			log('start');
+		} else {
+			log('over');
+			ever_connected = true;
+			connecting = val;
+		}
+	}
+
+	window.TSConnLogger = {
+		log: log,
+		logs: logs,
+		start_time: start_time,
+		setConnecting: setConnecting
+	}
+})();</script>
+
+<script type="text/javascript">
+if(self!==top)window.document.write("\u003Cstyle>body * {display:none !important;}\u003C\/style>\u003Ca href=\"#\" onclick="+
+"\"top.location.href=window.location.href\" style=\"display:block !important;padding:10px\">Go to Slack.com\u003C\/a>");
+
+(function() {
+	var timer;
+	if (self !== top) {
+		timer = window.setInterval(function() {
+			if (window.$) {
+				try {
+					$('#page').remove();
+					$('#client-ui').remove();
+					window.TS = null;
+					window.clearInterval(timer);
+				} catch(e) {}
+			}
+		}, 200);
+	}
+}());
+
+</script>
+
+<script>(function() {
+        'use strict';
+
+        window.callSlackAPIUnauthed = function(method, args, callback) {
+                var timestamp = Date.now() / 1000;  
+                var version = (window.TS && TS.boot_data) ? TS.boot_data.version_uid.substring(0, 8) : 'noversion';
+                var url = '/api/' + method + '?_x_id=' + version + '-' + timestamp;
+                var req = new XMLHttpRequest();
+
+                req.onreadystatechange = function() {
+                        if (req.readyState == 4) {
+                                req.onreadystatechange = null;
+                                var obj;
+
+                                if (req.status == 200 || req.status == 429) {
+                                        try {
+                                                obj = JSON.parse(req.responseText);
+                                        } catch (err) {
+                                                console.warn('unable to do anything with api rsp');
+                                        }
+                                }
+
+                                obj = obj || {
+                                        ok: false
+                                }
+
+                                callback(obj.ok, obj, args);
+                        }
+                }
+
+                var async = true;
+                req.open('POST', url, async);
+
+                var form_data = new FormData();
+                var has_data = false;
+                Object.keys(args).map(function(k) {
+                        if (k[0] === '_') return;
+                        form_data.append(k, args[k]);
+                        has_data = true;
+                });
+
+                if (has_data) {
+                        req.send(form_data);
+                } else {
+                        req.send();
+                }
+        }
+})();</script>
+
+						
+	
+		<script>
+			if (window.location.host == 'slack.com' && window.location.search.indexOf('story') < 0) {
+				document.cookie = '__cvo_skip_doc=' + escape(document.URL) + '|' + escape(document.referrer) + ';path=/';
+			}
+		</script>
+	
+
+		<script type="text/javascript">
+		
+		try {
+			if(window.location.hash && !window.location.hash.match(/^(#?[a-zA-Z0-9_]*)$/)) {
+				window.location.hash = '';
+			}
+		} catch(e) {}
+		
+	</script>
+
+	<script type="text/javascript">
+				(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+		(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+		m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+		})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+		ga('create', "UA-106458-17", 'slack.com');
+
+		
+			window.optimizely = [];
+		
+		
+		ga('send', 'pageview');
+	
+		(function(e,c,b,f,d,g,a){e.SlackBeaconObject=d;
+		e[d]=e[d]||function(){(e[d].q=e[d].q||[]).push([1*new Date(),arguments])};
+		e[d].l=1*new Date();g=c.createElement(b);a=c.getElementsByTagName(b)[0];
+		g.async=1;g.src=f;a.parentNode.insertBefore(g,a)
+		})(window,document,"script","https://a.slack-edge.com/dcf8/js/libs/beacon.js","sb");
+		sb('set', 'token', '3307f436963e02d4f9eb85ce5159744c');
+
+					sb('set', 'user_id', "U31B6JNJX");
+							sb('set', 'user_' + "batch", "signup_api");
+							sb('set', 'user_' + "created", "2016-11-11");
+						sb('set', 'name_tag', "kawaiigamejam" + '/' + "eclmist");
+				sb('track', 'pageview');
+
+		function track(a){ga('send','event','web',a);sb('track',a);}
+
+	</script>
+
+
+
+<script type='text/javascript'>
+	
+	/* safety stub */
+	window.mixpanel = {
+		track: function() {},
+		track_links: function() {},
+		track_forms: function() {}
+	};
+
+	function mixpanel_track(){}
+	function mixpanel_track_forms(){}
+	function mixpanel_track_links(){}
+	
+</script>
+	
+	<meta name="referrer" content="no-referrer">
+		<meta name="superfish" content="nofish">
+
+	<script type="text/javascript">
+
+
+
+var TS_last_log_date = null;
+var TSMakeLogDate = function() {
+	var date = new Date();
+
+	var y = date.getFullYear();
+	var mo = date.getMonth()+1;
+	var d = date.getDate();
+
+	var time = {
+	  h: date.getHours(),
+	  mi: date.getMinutes(),
+	  s: date.getSeconds(),
+	  ms: date.getMilliseconds()
+	};
+
+	Object.keys(time).map(function(moment, index) {
+		if (moment == 'ms') {
+			if (time[moment] < 10) {
+				time[moment] = time[moment]+'00';
+			} else if (time[moment] < 100) {
+				time[moment] = time[moment]+'0';
+			}
+		} else if (time[moment] < 10) {
+			time[moment] = '0' + time[moment];
+		}
+	});
+
+	var str = y + '/' + mo + '/' + d + ' ' + time.h + ':' + time.mi + ':' + time.s + '.' + time.ms;
+	if (TS_last_log_date) {
+		var diff = date-TS_last_log_date;
+		//str+= ' ('+diff+'ms)';
+	}
+	TS_last_log_date = date;
+	return str+' ';
+}
+
+var parseDeepLinkRequest = function(code) {
+	var m = code.match(/"id":"([CDG][A-Z0-9]{8})"/);
+	var id = m ? m[1] : null;
+
+	m = code.match(/"team":"(T[A-Z0-9]{8})"/);
+	var team = m ? m[1] : null;
+
+	m = code.match(/"message":"([0-9]+\.[0-9]+)"/);
+	var message = m ? m[1] : null;
+
+	return { id: id, team: team, message: message };
+}
+
+if ('rendererEvalAsync' in window) {
+	var origRendererEvalAsync = window.rendererEvalAsync;
+	window.rendererEvalAsync = function(blob) {
+		try {
+			var data = JSON.parse(decodeURIComponent(atob(blob)));
+			if (data.code.match(/handleDeepLink/)) {
+				var request = parseDeepLinkRequest(data.code);
+				if (!request.id || !request.team || !request.message) return;
+
+				request.cmd = 'channel';
+				TSSSB.handleDeepLinkWithArgs(JSON.stringify(request));
+				return;
+			} else {
+				origRendererEvalAsync(blob);
+			}
+		} catch (e) {
+		}
+	}
+}
+</script>
+
+
+
+<script type="text/javascript">
+
+	var TSSSB = {
+		call: function() {
+			return false;
+		}
+	};
+
+</script>
+<script>TSSSB.env = (function() {
+	'use strict';
+
+	var v = {
+		win_ssb_version: null,
+		win_ssb_version_minor: null,
+		mac_ssb_version: null,
+		mac_ssb_version_minor: null,
+		mac_ssb_build: null,
+		lin_ssb_version: null,
+		lin_ssb_version_minor: null,
+		desktop_app_version: null
+	};
+
+	var is_win = (navigator.appVersion.indexOf("Windows") !== -1);
+	var is_lin = (navigator.appVersion.indexOf("Linux") !== -1);
+	var is_mac = !!(navigator.userAgent.match(/(OS X)/g));
+
+	if (navigator.userAgent.match(/(Slack_SSB)/g) || navigator.userAgent.match(/(Slack_WINSSB)/g)) {
+		
+		var parts = navigator.userAgent.split('/');
+		var version_str = parts[parts.length-1];
+		var version_float = parseFloat(version_str);
+		var version_parts = version_str.split('.');
+		var version_minor = (version_parts.length == 3) ? parseInt(version_parts[2]) : 0;
+
+		if (navigator.userAgent.match(/(AtomShell)/g)) {
+			
+			if (is_lin) {
+				v.lin_ssb_version = version_float;
+				v.lin_ssb_version_minor = version_minor;
+			} else if (is_win) {
+				v.win_ssb_version = version_float;
+				v.win_ssb_version_minor = version_minor;
+			} else if (is_mac) {
+				v.mac_ssb_version = version_float;
+				v.mac_ssb_version_minor = version_minor;
+			}
+
+			if (version_parts.length >= 3) {
+				v.desktop_app_version = {
+					major: parseInt(version_parts[0]),
+					minor: parseInt(version_parts[1]),
+					patch: parseInt(version_parts[2])
+				}
+			}
+		} else {
+			
+			v.mac_ssb_version = version_float;
+			v.mac_ssb_version_minor = version_minor;
+
+			
+			
+			var app_ver = window.macgap && macgap.app && macgap.app.buildVersion && macgap.app.buildVersion();
+			var matches = String(app_ver).match(/(?:\()(.*)(?:\))/);
+			v.mac_ssb_build = (matches && matches.length == 2) ? parseInt(matches[1] || 0) : 0;
+		}
+	}
+
+	return v;
+})();
+</script>
+
+
+	<script type="text/javascript">
+		
+		var was_TS = window.TS;
+		delete window.TS;
+		TSSSB.call('didFinishLoading');
+		if (was_TS) window.TS = was_TS;
+	</script>
+	    <title>backgroundMesh.obj | Kawaii Game Jam Slack</title>
+    <meta name="author" content="Slack">
+
+	
+		
+	
+	
+					
+	
+				
+	
+	
+	
+	
+			<!-- output_css "core" -->
+    <link href="https://a.slack-edge.com/c26e/style/rollup-plastic.css" rel="stylesheet" type="text/css" crossorigin="anonymous">
+
+		<!-- output_css "before_file_pages" -->
+    <link href="https://a.slack-edge.com/74a30/style/libs/codemirror.css" rel="stylesheet" type="text/css" crossorigin="anonymous">
+    <link href="https://a.slack-edge.com/7b37b/style/codemirror_overrides.css" rel="stylesheet" type="text/css" crossorigin="anonymous">
+
+	<!-- output_css "file_pages" -->
+    <link href="https://a.slack-edge.com/98cc/style/rollup-file_pages.css" rel="stylesheet" type="text/css" crossorigin="anonymous">
+
+	<!-- output_css "regular" -->
+    <link href="https://a.slack-edge.com/53d7/style/print.css" rel="stylesheet" type="text/css" crossorigin="anonymous">
+    <link href="https://a.slack-edge.com/1d9c/style/libs/lato-1-compressed.css" rel="stylesheet" type="text/css" crossorigin="anonymous">
+
+	
+
+	
+	
+		<meta name="robots" content="noindex, nofollow" />
+	
+
+	
+<link id="favicon" rel="shortcut icon" href="https://a.slack-edge.com/66f9/img/icons/favicon-32.png" sizes="16x16 32x32 48x48" type="image/png" />
+
+<link rel="icon" href="https://a.slack-edge.com/0180/img/icons/app-256.png" sizes="256x256" type="image/png" />
+
+<link rel="apple-touch-icon-precomposed" sizes="152x152" href="https://a.slack-edge.com/66f9/img/icons/ios-152.png" />
+<link rel="apple-touch-icon-precomposed" sizes="144x144" href="https://a.slack-edge.com/66f9/img/icons/ios-144.png" />
+<link rel="apple-touch-icon-precomposed" sizes="120x120" href="https://a.slack-edge.com/66f9/img/icons/ios-120.png" />
+<link rel="apple-touch-icon-precomposed" sizes="114x114" href="https://a.slack-edge.com/66f9/img/icons/ios-114.png" />
+<link rel="apple-touch-icon-precomposed" sizes="72x72" href="https://a.slack-edge.com/0180/img/icons/ios-72.png" />
+<link rel="apple-touch-icon-precomposed" href="https://a.slack-edge.com/66f9/img/icons/ios-57.png" />
+
+<meta name="msapplication-TileColor" content="#FFFFFF" />
+<meta name="msapplication-TileImage" content="https://a.slack-edge.com/66f9/img/icons/app-144.png" />
+	
+	<!--[if lt IE 9]>
+	<script src="https://a.slack-edge.com/ef0d/js/libs/html5shiv.js"></script>
+	<![endif]-->
+
+</head>
+
+<body class="			">
+
+		  			<script>
+		
+			var w = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
+			if (w > 1440) document.querySelector('body').classList.add('widescreen');
+		
+		</script>
+	
+  	
+	
+
+			<nav id="site_nav" class="no_transition">
+
+	<div id="site_nav_contents">
+
+		<div id="user_menu">
+			<div id="user_menu_contents">
+				<div id="user_menu_avatar">
+										<span class="member_image thumb_48" style="background-image: url('https://secure.gravatar.com/avatar/a2ba7d151a7e317e651b09dd0966b0cc.jpg?s=192&d=https%3A%2F%2Fa.slack-edge.com%2F7fa9%2Fimg%2Favatars%2Fava_0008-192.png')" data-thumb-size="48" data-member-id="U31B6JNJX"></span>
+					<span class="member_image thumb_36" style="background-image: url('https://secure.gravatar.com/avatar/a2ba7d151a7e317e651b09dd0966b0cc.jpg?s=72&d=https%3A%2F%2Fa.slack-edge.com%2F66f9%2Fimg%2Favatars%2Fava_0008-72.png')" data-thumb-size="36" data-member-id="U31B6JNJX"></span>
+				</div>
+				<h3>Signed in as</h3>
+				<span id="user_menu_name">eclmist</span>
+			</div>
+		</div>
+
+		<div class="nav_contents">
+
+			<ul class="primary_nav">
+				<li><a href="/home" data-qa="home"><i class="ts_icon ts_icon_home"></i>Home</a></li>
+				<li><a href="/account" data-qa="account_profile"><i class="ts_icon ts_icon_user"></i>Account & Profile</a></li>
+				<li><a href="/apps/manage" data-qa="configure_apps" target="_blank"><i class="ts_icon ts_icon_plug"></i>Configure Apps</a></li>
+				<li><a href="/archives"data-qa="archives"><i class="ts_icon ts_icon_archive" ></i>Message Archives</a></li>
+				<li><a href="/files" data-qa="files"><i class="ts_icon ts_icon_all_files clear_blue"></i>Files</a></li>
+				<li><a href="/team" data-qa="team_directory"><i class="ts_icon ts_icon_team_directory"></i>Team Directory</a></li>
+									<li><a href="/stats" data-qa="statistics"><i class="ts_icon ts_icon_dashboard"></i>Statistics</a></li>
+													<li><a href="/customize" data-qa="customize"><i class="ts_icon ts_icon_magic"></i>Customize</a></li>
+													<li><a href="/account/team" data-qa="team_settings"><i class="ts_icon ts_icon_cog_o"></i>Team Settings</a></li>
+							</ul>
+
+			
+		</div>
+
+		<div id="footer">
+
+			<ul id="footer_nav">
+				<li><a href="/is" data-qa="tour">Tour</a></li>
+				<li><a href="/downloads" data-qa="download_apps">Download Apps</a></li>
+				<li><a href="/brand-guidelines" data-qa="brand_guidelines">Brand Guidelines</a></li>
+				<li><a href="/help" data-qa="help">Help</a></li>
+				<li><a href="https://api.slack.com" target="_blank" data-qa="api">API<i class="ts_icon ts_icon_external_link small_left_margin ts_icon_inherit"></i></a></li>
+								<li><a href="/pricing" data-qa="pricing">Pricing</a></li>
+				<li><a href="/help/requests/new" data-qa="contact">Contact</a></li>
+				<li><a href="/terms-of-service" data-qa="policies">Policies</a></li>
+				<li><a href="http://slackhq.com/" target="_blank" data-qa="our_blog">Our Blog</a></li>
+				<li><a href="https://slack.com/signout/102732447216?crumb=s-1478914013-13e1c7cae4-%E2%98%83" data-qa="sign_out">Sign Out<i class="ts_icon ts_icon_sign_out small_left_margin ts_icon_inherit"></i></a></li>
+			</ul>
+
+			<p id="footer_signature">Made with <i class="ts_icon ts_icon_heart"></i> by Slack</p>
+
+		</div>
+
+	</div>
+</nav>	
+			<header>
+			<a id="menu_toggle" class="no_transition" data-qa="menu_toggle_hamburger">
+			<span class="menu_icon"></span>
+			<span class="menu_label">Menu</span>
+			<span class="vert_divider"></span>
+		</a>
+		<h1 id="header_team_name" class="inline_block no_transition" data-qa="header_team_name">
+			<a href="/home">
+				<i class="ts_icon ts_icon_home" /></i>
+				Kawaii Game Jam
+			</a>
+		</h1>
+		<div class="header_nav">
+			<div class="header_btns float_right">
+				<a id="team_switcher" data-qa="team_switcher">
+					<i class="ts_icon ts_icon_th_large ts_icon_inherit"></i>
+					<span class="block label">Teams</span>
+				</a>
+				<a href="/help" id="help_link" data-qa="help_link">
+					<i class="ts_icon ts_icon_life_ring ts_icon_inherit"></i>
+					<span class="block label">Help</span>
+				</a>
+									<a href="/messages" data-qa="launch">
+						<img src="https://a.slack-edge.com/66f9/img/icons/ios-64.png" srcset="https://a.slack-edge.com/66f9/img/icons/ios-32.png 1x, https://a.slack-edge.com/66f9/img/icons/ios-64.png 2x" />
+						<span class="block label">Launch</span>
+					</a>
+							</div>
+				                    <ul id="header_team_nav" data-qa="team_switcher_menu">
+	                        	                            <li class="active">
+	                            	<a href="https://kawaiigamejam.slack.com/home" target="https://kawaiigamejam.slack.com/">
+	                            			                            			<i class="ts_icon small ts_icon_check_circle_o active_icon s"></i>
+	                            			                            			                            			<i class="team_icon small default" >KG</i>
+	                            			                            		<span class="switcher_label team_name">Kawaii Game Jam</span>
+	                            	</a>
+	                            </li>
+	                        	                        <li id="add_team_option"><a href="https://slack.com/signin" target="_blank"><i class="ts_icon ts_icon_plus team_icon small"></i> <span class="switcher_label">Sign in to another team...</span></a></li>
+	                    </ul>
+	                		</div>
+	
+	
+</header>	
+	<div id="page" >
+
+		<div id="page_contents" data-qa="page_contents" class="">
+
+<p class="print_only">
+	<strong>Created by darkdestry on November 12, 2016 at 9:23 AM</strong><br />
+	<span class="subtle_silver break_word">https://kawaiigamejam.slack.com/files/darkdestry/F32CUQGP9/backgroundmesh.obj</span>
+</p>
+
+<div class="file_header_container no_print"></div>
+
+<div class="alert_container">
+		<div class="file_public_link_shared alert" style="display: none;">
+		
+	<i class="ts_icon ts_icon_link"></i> Public Link: <a class="file_public_link" href="https://slack-files.com/T30MJD56C-F32CUQGP9-c66c3cccd2" target="new">https://slack-files.com/T30MJD56C-F32CUQGP9-c66c3cccd2</a>
+</div></div>
+
+<div id="file_page" class="card top_padding">
+
+	<p class="small subtle_silver no_print meta">
+		99KB Plain Text snippet created on <span class="date">November 12th 2016</span>.
+				<span class="file_share_list"></span>
+	</p>
+
+	<a id="file_action_cog" class="action_cog action_cog_snippet float_right no_print">
+		<span>Actions </span><i class="ts_icon ts_icon_cog"></i>
+	</a>
+	<a id="snippet_expand_toggle" class="float_right no_print">
+		<i class="ts_icon ts_icon_expand "></i>
+		<i class="ts_icon ts_icon_compress hidden"></i>
+	</a>
+
+	<div class="large_bottom_margin clearfix">
+		<pre id="file_contents"># Blender v2.77 (sub 0) OBJ File: &#039;&#039;
+# www.blender.org
+mtllib backgroundMesh.mtl
+o Cube
+v -7.828660 -5.821172 8.058353
+v -7.235703 12.291059 15.855143
+v 4.561958 -9.511568 5.421497
+v 4.616926 15.683924 10.948090
+v -7.573305 6.717368 10.176751
+v 9.370902 6.043246 3.916781
+v 9.204382 -1.048259 13.683266
+v 11.844903 -5.507058 1.337074
+v -3.631908 12.745463 7.231555
+v -3.424834 -5.755583 12.530287
+v -0.741517 4.788493 7.863270
+v 10.789987 -0.378220 0.487382
+v -9.280091 3.341965 0.514252
+v -8.638039 7.220706 8.817185
+v -5.687292 -7.462539 6.001092
+v 8.327037 -4.300944 10.015570
+v -3.957330 10.269937 9.606763
+v 0.147561 -8.245568 9.521519
+v -9.240390 -4.215261 11.747046
+v -8.868084 11.155674 4.344388
+v 4.685653 6.479557 6.402686
+v 5.777880 -2.363363 6.181068
+v 4.467436 13.031744 8.689228
+v 0.927165 -4.173282 9.235823
+v -1.524764 12.851638 4.247147
+v 3.224449 6.547088 8.094083
+v -4.872231 -1.642401 5.093828
+v 0.230328 -6.594579 5.436144
+v -0.259702 -2.218771 8.645377
+v -1.277191 2.673235 11.255569
+v 4.273775 -0.318753 12.982085
+v 0.519902 8.205935 6.268930
+v 5.271163 1.509275 1.504051
+v -8.732617 0.887680 4.405463
+v -6.039576 2.670433 2.837579
+v -13.057893 -2.206445 4.121456
+v 10.186607 4.223832 10.158125
+v -3.609069 6.979191 8.355552
+v 1.372709 4.225331 11.351187
+v -2.565544 -0.986004 12.286281
+v 1.063417 -5.576928 10.677358
+v 5.348336 -5.426812 6.288330
+v 3.399723 11.686317 5.034667
+v -4.238509 -2.362843 6.528299
+v 8.836087 -1.363003 6.737723
+v -10.378242 12.543480 11.020719
+v -4.413864 -3.215549 9.962700
+v 9.113388 9.364987 2.704802
+v 7.231971 0.122594 11.758606
+v -7.137298 9.682182 8.693096
+v 3.892392 -9.704040 11.045601
+v -4.036783 -2.007882 10.112046
+v 4.189563 5.023163 10.870961
+v 9.245558 -7.449645 2.501740
+v 1.681498 11.324092 7.596847
+v -3.242650 -8.208784 10.816003
+v 3.563663 17.751934 6.490232
+v 4.676931 -5.703194 2.995435
+v 6.751781 -4.104108 13.623902
+v -3.302140 4.315192 6.607604
+v 9.116980 -2.630121 5.524452
+v -7.312212 -0.528389 9.748243
+v 9.556593 0.412146 1.183716
+v -8.353207 5.499245 0.883423
+v -16.529444 2.864109 5.151412
+v -8.198723 2.405344 3.596262
+v -12.809667 3.913786 16.051622
+v -8.758337 16.478899 3.030901
+v 8.957198 9.828946 2.219157
+v 10.239518 -1.054900 9.071103
+v 3.496824 -3.635836 1.003862
+v -1.700765 14.305077 3.981557
+v 3.003028 -7.012660 10.366790
+v -7.894742 -4.021875 7.835244
+v -9.097099 7.480309 6.586047
+v 8.885031 9.008687 7.780234
+v 10.605775 -3.653521 2.597785
+v 5.812939 14.755708 6.890533
+v -7.920775 -8.965915 7.451411
+v 2.379350 17.096348 0.294652
+v -0.501458 -2.891831 0.577539
+v -3.121860 -1.773729 13.729941
+v 2.318901 11.346328 15.241089
+v -5.031502 -0.485568 7.728813
+v -2.159518 1.589144 10.345933
+v 3.324066 7.213919 1.159969
+v 9.374129 3.355110 6.474977
+v -10.904710 -2.817507 2.194475
+v -8.294130 8.421589 0.409344
+v -7.375587 -5.705153 3.885426
+v -10.006764 11.762227 4.044503
+v -11.652646 3.666814 1.715778
+v -9.894074 7.376195 5.367107
+v -14.054602 6.613170 7.138669
+v -8.231419 -4.814839 4.788285
+v -8.089232 3.168627 8.094520
+v -3.639452 -3.995614 8.787436
+v -8.056908 -1.338111 3.479747
+v 7.334472 7.100208 2.304064
+v 4.174899 5.745556 3.993228
+v 7.595366 6.428276 1.039197
+v 9.610900 5.114487 13.694142
+v -11.378016 6.866753 4.996248
+v 2.385878 6.217326 8.985533
+v -1.938910 6.440834 9.269483
+v -6.827457 6.880433 8.606465
+v 4.002286 2.762178 8.025339
+v -1.454315 13.019979 12.883298
+v 2.019767 7.908670 11.005816
+v 0.007008 7.377158 7.130886
+v 3.070816 -10.283457 7.613889
+v 9.152580 1.114656 10.648299
+v 8.839537 2.155010 13.383330
+v 4.260230 -4.106233 13.124085
+v -1.291184 -3.171393 7.708720
+v -7.127190 -5.643502 4.605931
+v -3.854157 -5.342798 3.057401
+v -4.170724 -6.656693 1.956556
+v 3.439258 -5.319958 4.989045
+v 2.549479 -6.181227 4.073667
+v 5.376732 -4.466468 5.277479
+v 5.418542 -5.590079 1.985652
+v 1.581836 12.678926 4.515609
+v 9.176215 9.173829 9.394557
+v 8.124667 13.665768 5.694624
+v -1.899450 15.594679 0.306721
+v -1.820373 5.314305 2.427621
+v 3.079412 7.492894 8.323999
+v -5.138784 8.072849 6.944705
+v -6.837624 6.680717 1.511657
+v -0.455964 -4.178147 1.181644
+v 0.158455 -0.599383 4.491531
+v -3.880802 1.898383 8.620922
+v -6.384657 -1.919896 5.889918
+v -8.194019 -1.545894 8.924004
+v 8.106346 0.364533 4.999996
+v 8.837004 -2.178676 6.319567
+v -7.828660 -5.721171 8.058353
+v 8.588231 -0.543262 0.710767
+v 8.699423 -0.424218 3.675825
+v -7.058013 -3.941351 12.062234
+v -2.736184 -1.271306 8.823347
+v -3.042390 -3.887179 7.716204
+v 5.076336 -9.651412 3.898258
+v -2.840866 15.875428 6.617870
+v -8.903122 11.434444 5.121761
+v -9.350886 12.898319 5.829539
+v 11.982139 6.771924 4.341836
+v 8.255137 10.075653 3.249758
+v 1.247429 10.493919 7.009019
+v -7.235703 12.391058 15.855143
+v 2.482666 -7.204692 1.646392
+v 5.035688 -11.390604 12.106398
+v 11.358455 -11.656120 10.001185
+v -6.387789 -8.230709 1.702299
+v -5.529074 -5.922626 7.615544
+v -2.288611 -6.973896 7.118904
+v 4.561958 -9.411569 5.421497
+v 0.829856 -0.816116 7.553563
+v 7.761929 2.006162 14.014512
+v 8.722787 -3.077813 7.468297
+v 0.774648 8.552992 9.273184
+v 2.485509 10.563999 7.374830
+v 11.229410 3.189302 9.635391
+v -3.353466 12.619769 8.251119
+v -2.142219 9.105386 8.495112
+v -3.896261 3.632351 11.123186
+v 8.981752 6.461012 5.018256
+v 5.139033 3.152564 5.047013
+v -10.170861 -0.679692 3.050711
+v -7.235743 -1.799507 5.461636
+v -10.155818 9.318640 7.329848
+v -10.247905 4.363712 7.678171
+v -9.318710 8.638901 1.884722
+v 4.218199 2.272372 7.498609
+v 9.394227 -1.024071 1.217646
+v -7.041448 4.087156 8.430466
+v 2.138430 8.131797 5.350773
+v 0.643101 -5.039598 9.577961
+v -2.436197 -5.850183 2.156270
+v 1.158834 11.071846 1.246044
+v -7.512556 11.499100 4.812425
+v -6.495529 -4.728905 9.867208
+v 8.054735 -2.802681 7.444870
+v 4.616926 15.783924 10.948090
+v -7.573305 6.817368 10.176751
+v 9.370902 6.143246 3.916781
+v 9.204382 -0.948260 13.683266
+v 11.844903 -5.407059 1.337074
+v -3.631908 12.845464 7.231555
+v -3.424834 -5.655582 12.530287
+v -0.741517 4.888494 7.863270
+v 10.789987 -0.278220 0.487382
+v -9.280091 3.441965 0.514252
+v -8.638039 7.320705 8.817185
+v -5.687292 -7.362538 6.001092
+v 8.327037 -4.200945 10.015570
+v -3.957330 10.369936 9.606763
+v 0.147561 -8.145569 9.521519
+v -9.240390 -4.115261 11.747046
+v -8.868084 11.255673 4.344388
+v 4.685653 6.579557 6.402686
+v 5.777880 -2.263363 6.181068
+v 4.467436 13.131744 8.689228
+v 0.927165 -4.073282 9.235823
+v -1.524764 12.951638 4.247147
+v 3.224449 6.647088 8.094083
+v -4.872231 -1.542402 5.093828
+v 0.230328 -6.494579 5.436144
+v -0.259702 -2.118771 8.645377
+v -1.277191 2.773235 11.255569
+v 4.273775 -0.218753 12.982085
+v 0.519902 8.305935 6.268930
+v 5.271163 1.609275 1.504051
+v -8.732617 0.987680 4.405463
+v -6.039576 2.770433 2.837579
+v -13.057893 -2.106445 4.121456
+v 10.186607 4.323833 10.158125
+v -3.609069 7.079190 8.355552
+v 1.372709 4.325331 11.351187
+v -2.565544 -0.886005 12.286281
+v 1.063417 -5.476928 10.677358
+v 5.348336 -5.326813 6.288330
+v 3.399723 11.786317 5.034667
+v -4.238509 -2.262843 6.528299
+v 8.836087 -1.263003 6.737723
+v -10.378242 12.643479 11.020719
+v -4.413864 -3.115549 9.962700
+v 9.113388 9.464987 2.704802
+v 7.231971 0.222594 11.758606
+v -7.137298 9.782183 8.693096
+v 3.892392 -9.604039 11.045601
+v -4.036783 -1.907882 10.112046
+v 4.189563 5.123163 10.870961
+v 9.245558 -7.349646 2.501740
+v 1.681498 11.424092 7.596847
+v -3.242650 -8.108784 10.816003
+v 3.563663 17.851934 6.490232
+v 4.676931 -5.603194 2.995435
+v 6.751781 -4.004108 13.623902
+v -3.302140 4.415193 6.607604
+v 9.116980 -2.530122 5.524452
+v -7.312212 -0.428389 9.748243
+v 9.556593 0.512146 1.183716
+v -8.353207 5.599244 0.883423
+v -16.529444 2.964109 5.151412
+v -8.198723 2.505344 3.596262
+v -12.809667 4.013786 16.051622
+v -8.758337 16.578899 3.030901
+v 8.957198 9.928946 2.219157
+v 10.239518 -0.954900 9.071103
+v 3.496824 -3.535836 1.003862
+v -1.700765 14.405077 3.981557
+v 3.003028 -6.912661 10.366790
+v -7.894742 -3.921875 7.835244
+v -9.097099 7.580309 6.586047
+v 8.885031 9.108686 7.780234
+v 10.605775 -3.553521 2.597785
+v 5.812939 14.855709 6.890533
+v -7.920775 -8.865915 7.451411
+v 2.379350 17.196348 0.294652
+v -0.501458 -2.791831 0.577539
+v -3.121860 -1.673729 13.729941
+v 2.318901 11.446328 15.241089
+v -5.031502 -0.385568 7.728813
+v -2.159518 1.689144 10.345933
+v 3.324066 7.313919 1.159969
+v 9.374129 3.455110 6.474977
+v -10.904710 -2.717508 2.194475
+v -8.294130 8.521588 0.409344
+v -7.375587 -5.605153 3.885426
+v -10.006764 11.862226 4.044503
+v -11.652646 3.766814 1.715778
+v -9.894074 7.476194 5.367107
+v -14.054602 6.713170 7.138669
+v -8.231419 -4.714840 4.788285
+v -8.089232 3.268627 8.094520
+v -3.639452 -3.895614 8.787436
+v -8.056908 -1.238111 3.479747
+v 7.334472 7.200209 2.304064
+v 4.174899 5.845556 3.993228
+v 7.595366 6.528275 1.039197
+v 9.610900 5.214487 13.694142
+v -11.378016 6.966752 4.996248
+v 2.385878 6.317326 8.985533
+v -1.938910 6.540833 9.269483
+v -6.827457 6.980433 8.606465
+v 4.002286 2.862178 8.025339
+v -1.454315 13.119980 12.883298
+v 2.019767 8.008670 11.005816
+v 0.007008 7.477158 7.130886
+v 3.070816 -10.183456 7.613889
+v 9.152580 1.214656 10.648299
+v 8.839537 2.255010 13.383330
+v 4.260230 -4.006233 13.124085
+v -1.291184 -3.071393 7.708720
+v -7.127190 -5.543503 4.605931
+v -3.854157 -5.242799 3.057401
+v -4.170724 -6.556694 1.956556
+v 3.439258 -5.219958 4.989045
+v 2.549479 -6.081226 4.073667
+v 5.376732 -4.366468 5.277479
+v 5.418542 -5.490079 1.985652
+v 1.581836 12.778927 4.515609
+v 9.176215 9.273829 9.394557
+v 8.124667 13.765768 5.694624
+v -1.899450 15.694679 0.306721
+v -1.820373 5.414305 2.427621
+v 3.079412 7.592894 8.323999
+v -5.138784 8.172849 6.944705
+v -6.837624 6.780718 1.511657
+v -0.455964 -4.078148 1.181644
+v 0.158455 -0.499382 4.491531
+v -3.880802 1.998383 8.620922
+v -6.384657 -1.819896 5.889918
+v -8.194019 -1.445895 8.924004
+v 8.106346 0.464533 4.999996
+v 8.837004 -2.078677 6.319567
+v 8.588231 -0.443262 0.710767
+v 8.699423 -0.324218 3.675825
+v -7.058013 -3.841351 12.062234
+v -2.736184 -1.171306 8.823347
+v -3.042390 -3.787179 7.716204
+v 5.076336 -9.551411 3.898258
+v -2.840866 15.975430 6.617870
+v -8.903122 11.534445 5.121761
+v -9.350886 12.998319 5.829539
+v 11.982139 6.871923 4.341836
+v 8.255137 10.175653 3.249758
+v 1.247429 10.593920 7.009019
+v 2.482666 -7.104692 1.646392
+v 5.035688 -11.290604 12.106398
+v 11.358455 -11.556120 10.001185
+v -6.387789 -8.130709 1.702299
+v -5.529074 -5.822627 7.615544
+v -2.288611 -6.873897 7.118904
+v 0.829856 -0.716116 7.553563
+v 7.761929 2.106162 14.014512
+v 8.722787 -2.977813 7.468297
+v 0.774648 8.652991 9.273184
+v 2.485509 10.663999 7.374830
+v 11.229410 3.289302 9.635391
+v -3.353466 12.719769 8.251119
+v -2.142219 9.205386 8.495112
+v -3.896261 3.732351 11.123186
+v 8.981752 6.561011 5.018256
+v 5.139033 3.252564 5.047013
+v -10.170861 -0.579692 3.050711
+v -7.235743 -1.699507 5.461636
+v -10.155818 9.418639 7.329848
+v -10.247905 4.463713 7.678171
+v -9.318710 8.738901 1.884722
+v 4.218199 2.372372 7.498609
+v 9.394227 -0.924071 1.217646
+v -7.041448 4.187156 8.430466
+v 2.138430 8.231796 5.350773
+v 0.643101 -4.939598 9.577961
+v -2.436197 -5.750184 2.156270
+v 1.158834 11.171845 1.246044
+v -7.512556 11.599099 4.812425
+v -6.495529 -4.628905 9.867208
+v 8.054735 -2.702681 7.444870
+v -7.966116 -5.821172 8.110617
+v -7.096345 12.291059 15.808184
+v 4.420526 -9.511568 5.381203
+v 4.519405 15.683924 10.838020
+v -7.426250 6.717368 10.177824
+v 9.284359 6.043246 4.035674
+v 9.149336 -1.048259 13.546901
+v 11.722729 -5.507058 1.255225
+v -3.591610 12.745463 7.372982
+v -3.285641 -5.755583 12.577730
+v -0.596208 4.788493 7.840659
+v 10.717689 -0.378220 0.359325
+v -9.156598 3.341965 0.594099
+v -8.673979 7.220706 8.674586
+v -5.568938 -7.462539 5.913809
+v 8.209948 -4.300944 10.104540
+v -3.822554 10.269937 9.547934
+v 0.258053 -8.245568 9.618559
+v -9.104999 -4.215261 11.804442
+v -8.869202 11.155674 4.491444
+v 4.829123 6.479557 6.370403
+v 5.805199 -2.363363 6.036571
+v 4.518003 13.031744 8.827316
+v 1.067888 -4.173282 9.193132
+v -1.547577 12.851638 4.392425
+v 3.368820 6.547088 8.066104
+v -5.015745 -1.642401 5.061738
+v 0.181750 -6.594579 5.297342
+v -0.212371 -2.218771 8.506145
+v -1.418995 2.673235 11.294521
+v 4.261495 -0.318753 12.835541
+v 0.543500 8.205935 6.414083
+v 5.283056 1.509275 1.357476
+v -8.835690 0.887680 4.300577
+v -6.023921 2.670433 2.691359
+v -12.997579 -2.206445 3.987335
+v 10.041046 4.223832 10.137192
+v -3.683616 6.979191 8.228791
+v 1.314333 4.225331 11.216213
+v -2.711764 -0.986004 12.301944
+v 1.122211 -5.576928 10.542563
+v 5.494243 -5.426812 6.269974
+v 3.298486 11.686317 5.141330
+v -4.373371 -2.362843 6.469663
+v 8.982529 -1.363003 6.724281
+v -10.232008 12.543480 11.005158
+v -4.397626 -3.215549 10.108858
+v 9.251310 9.364987 2.755822
+v 7.227178 0.122594 11.905585
+v -6.990408 9.682182 8.686099
+v 3.844464 -9.704040 11.184628
+v -3.901303 -2.007882 10.054855
+v 4.328527 5.023163 10.822850
+v 9.162942 -7.449645 2.380082
+v 1.810071 11.324092 7.668221
+v -3.107910 -8.208784 10.874917
+v 3.420319 17.751934 6.523067
+v 4.766899 -5.703194 2.879110
+v 6.832755 -4.104108 13.746659
+v -3.430749 4.315192 6.536298
+v 9.256010 -2.630121 5.476528
+v -7.373901 -0.528389 9.614751
+v 9.593623 0.412146 1.041395
+v -8.476645 5.499245 0.963355
+v -16.636166 2.864109 5.050239
+v -8.337489 2.405344 3.644948
+v -12.759742 3.913786 15.913301
+v -8.890451 16.478899 3.095493
+v 8.986937 9.828946 2.363174
+v 10.114759 -1.054900 9.148957
+v 3.490962 -3.635836 1.150801
+v -1.584655 14.305077 3.891311
+v 2.882631 -7.012660 10.451232
+v -7.767169 -4.021875 7.908394
+v -9.226334 7.480309 6.656218
+v 8.737980 9.008687 7.781809
+v 10.467839 -3.653521 2.546800
+v 5.888382 14.755708 7.016764
+v -8.066561 -8.965915 7.432122
+v 2.487907 17.096348 0.393851
+v -0.455855 -2.891831 0.437732
+v -3.176564 -1.773729 13.593437
+v 2.178497 11.346328 15.284825
+v -4.958639 -0.485568 7.601079
+v -2.012755 1.589144 10.355192
+v 3.215190 7.213919 1.258823
+v 9.227281 3.355110 6.467176
+v -10.798989 -2.817507 2.296695
+v -8.156324 8.421589 0.358005
+v -7.296162 -5.705153 3.761663
+v -9.884357 11.762227 3.963000
+v -11.556669 3.666814 1.604357
+v -9.755191 7.376195 5.415457
+v -14.016165 6.613170 6.996722
+v -8.177894 -4.814839 4.651314
+v -8.163926 3.168627 8.221195
+v -3.492778 -3.995614 8.798040
+v -8.038192 -1.338111 3.625608
+v 7.199866 7.100208 2.363280
+v 4.303558 5.745556 3.922007
+v 7.450639 6.428276 1.013108
+v 9.464549 5.114487 13.708522
+v -11.521979 6.866753 5.026259
+v 2.334534 6.217326 9.123338
+v -1.792142 6.440834 9.260238
+v -6.974508 6.880433 8.605190
+v 4.088313 2.762178 7.906069
+v -1.448202 13.019979 12.736368
+v 1.961476 7.908670 10.870807
+v -0.098358 7.377158 7.028303
+v 3.029633 -10.283457 7.472718
+v 9.265590 1.114656 10.554198
+v 8.708418 2.155010 13.316745
+v 4.329193 -4.106233 13.253970
+v -1.415943 -3.171393 7.786570
+v -6.980422 -5.643502 4.615181
+v -3.854440 -5.342798 2.910346
+v -4.133972 -6.656693 1.814163
+v 3.505762 -5.319958 4.857886
+v 2.663476 -6.181227 3.980764
+v 5.232616 -4.466468 5.248221
+v 5.515143 -5.590079 1.874771
+v 1.727123 12.678926 4.538363
+v 9.146873 9.173829 9.538659
+v 8.263707 13.665768 5.742521
+v -1.807992 15.594679 0.191567
+v -1.777507 5.314305 2.568290
+v 3.186457 7.492894 8.424832
+v -5.004605 8.072849 6.884521
+v -6.866585 6.680717 1.655836
+v -0.391148 -4.178147 1.049641
+v 0.249284 -0.599383 4.375879
+v -3.988744 1.898383 8.521049
+v -6.315994 -1.919896 5.759877
+v -8.298658 -1.545894 8.820680
+v 8.222196 0.364533 4.909419
+v 8.963110 -2.178676 6.395218
+v -7.950802 -5.721171 8.140251
+v 8.702219 -0.543262 0.803678
+v 8.845293 -0.424218 3.657164
+v -7.109603 -3.941351 12.199945
+v -2.616291 -1.271306 8.738195
+v -2.902730 -3.887179 7.670147
+v 5.141152 -9.651412 3.766256
+v -2.982760 15.875428 6.656498
+v -8.823689 11.434444 4.998003
+v -9.215110 12.898319 5.886025
+v 12.104451 6.771924 4.423479
+v 8.293896 10.075653 3.391617
+v 1.387546 10.493919 7.053658
+v -7.100708 12.391058 15.796821
+v 2.580492 -7.204692 1.536596
+v 5.182600 -11.390604 12.112906
+v 11.503176 -11.656120 9.975075
+v -6.272100 -8.230709 1.611514
+v -5.601735 -5.922626 7.743395
+v -2.154288 -6.973896 7.059047
+v 4.419817 -9.411569 5.383793
+v 0.852081 -0.816116 7.408195
+v 7.863919 2.006162 13.908571
+v 8.868244 -3.077813 7.446651
+v 0.665027 8.552992 9.371207
+v 2.583362 10.563999 7.265052
+v 11.083791 3.189302 9.614885
+v -3.364758 12.619769 8.104494
+v -1.997335 9.105386 8.520312
+v -3.972352 3.632351 11.249026
+v 9.071751 6.461012 5.134555
+v 4.991978 3.152564 5.046699
+v -10.114491 -0.679692 2.914889
+v -7.094804 -1.799507 5.419659
+v -10.052745 9.318640 7.434738
+v -10.105881 4.363712 7.716311
+v -9.436275 8.638901 1.796380
+v 4.079375 2.272372 7.450093
+v 9.256399 -0.976004 1.199784
+v -7.123831 4.087156 8.308651
+v 2.199081 8.131797 5.216805
+v 0.524037 -5.039598 9.491646
+v -2.390998 -5.850183 2.016332
+v 1.286712 11.071846 1.173428
+v -7.411763 11.499100 4.705345
+v -6.627190 -4.728905 9.801702
+v 7.910978 -2.802681 7.413880
+v 4.487540 15.783924 10.878198
+v -7.438313 6.817368 10.118415
+v 9.248409 6.143246 3.998149
+v 9.144687 -0.948260 13.548871
+v 11.777093 -5.407059 1.467564
+v -3.667624 12.845464 7.374207
+v -3.333466 -5.655582 12.645513
+v -0.642686 4.888494 7.754376
+v 10.717689 -0.278220 0.359325
+v -9.349621 3.441965 0.643835
+v -8.548538 7.320705 8.700500
+v -5.567241 -7.362538 5.916161
+v 8.280990 -4.200945 10.155233
+v -3.817492 10.369936 9.652267
+v 0.218589 -8.145569 9.650285
+v -9.319675 -4.115261 11.623193
+v -8.875444 11.255673 4.491260
+v 4.745981 6.579557 6.536798
+v 5.923069 -2.263363 6.157690
+v 4.550878 13.131744 8.810320
+v 1.063979 -4.073282 9.181903
+v -1.454158 12.951638 4.376147
+v 3.370903 6.647088 8.080793
+v -5.015745 -1.542402 5.061738
+v 0.183872 -6.494579 5.296615
+v -0.229085 -2.118771 8.501545
+v -1.419044 2.773235 11.294337
+v 4.310635 -0.218753 12.839725
+v 0.586594 8.305935 6.137866
+v 5.170842 1.609275 1.611576
+v -8.685008 0.987680 4.266324
+v -5.893866 2.770433 2.857461
+v -13.108100 -2.106445 4.259675
+v 10.040154 4.323833 10.144809
+v -3.727854 7.079190 8.442248
+v 1.337406 4.325331 11.208431
+v -2.605460 -0.886005 12.427815
+v 0.919822 -5.476928 10.709070
+v 5.206173 -5.326813 6.325953
+v 3.479646 11.786317 4.911228
+v -4.381992 -2.262843 6.496066
+v 8.975182 -1.263003 6.689988
+v -10.274721 12.643479 10.916273
+v -4.266840 -3.115549 9.959657
+v 9.229378 9.464987 2.795200
+v 7.172881 0.222594 11.893270
+v -7.013339 9.782183 8.613981
+v 3.966552 -9.604039 11.172591
+v -3.927221 -1.907882 10.210133
+v 4.319542 5.123163 10.939750
+v 9.159338 -7.349646 2.382609
+v 1.690478 11.424092 7.743629
+v -3.106043 -8.108784 10.870452
+v 3.543938 17.851934 6.635959
+v 4.748201 -5.603194 2.866803
+v 6.895000 -4.004108 13.590514
+v -3.384962 4.415193 6.486085
+v 9.141224 -2.530122 5.669497
+v -7.413961 -0.428389 9.854417
+v 9.589629 0.512146 1.040417
+v -8.489298 5.599244 0.939142
+v -16.455198 2.964109 5.278353
+v -8.337489 2.505344 3.644948
+v -12.790004 4.013786 15.905887
+v -8.890451 16.578899 3.095493
+v 9.099308 9.928946 2.181336
+v 10.093087 -0.954900 9.057571
+v 3.490962 -3.535836 1.150801
+v -1.656482 14.405077 3.841323
+v 2.968577 -6.912661 10.223823
+v -7.748283 -3.921875 7.848488
+v -9.129835 7.580309 6.729414
+v 8.787213 9.108686 7.670430
+v 10.458850 -3.553521 2.591537
+v 5.780293 14.855709 7.033922
+v -8.054923 -8.865915 7.511663
+v 2.489415 17.196348 0.392177
+v -0.431956 -2.791831 0.447942
+v -2.993165 -1.673729 13.658783
+v 2.415331 11.446328 15.130064
+v -4.942288 -0.385568 7.845717
+v -2.190131 1.689144 10.202096
+v 3.231163 7.313919 1.273965
+v 9.228228 3.455110 6.456575
+v -10.798989 -2.717508 2.296695
+v -8.397580 8.521588 0.304826
+v -7.353047 -5.605153 3.740107
+v -9.860705 11.862226 4.061616
+v -11.544345 3.766814 1.616296
+v -9.764194 7.476194 5.436084
+v -13.942921 6.713170 7.042998
+v -8.173289 -4.714840 4.653204
+v -8.093469 3.268627 8.241517
+v -3.493729 -3.895614 8.767678
+v -8.038192 -1.238111 3.625608
+v 7.189059 7.200209 2.326002
+v 4.313328 5.845556 4.042857
+v 7.448611 6.528275 1.029754
+v 9.740191 5.214487 13.624074
+v -11.486183 6.966752 4.896622
+v 2.326559 6.317326 8.850967
+v -1.803277 6.540833 9.212655
+v -6.854193 6.980433 8.461860
+v 4.064316 2.862178 7.892004
+v -1.379230 13.119980 13.009745
+v 2.083852 8.008670 10.873454
+v -0.128378 7.477158 7.073475
+v 3.009450 -10.183456 7.480248
+v 9.296346 1.214656 10.617350
+v 8.748612 2.255010 13.267750
+v 4.400293 -4.006233 13.168903
+v -1.411419 -3.071393 7.793387
+v -6.993630 -5.543503 4.544391
+v -3.875646 -5.242799 2.911921
+v -4.195108 -6.556694 1.811533
+v 3.498873 -5.219958 4.854614
+v 2.645151 -6.081226 3.961986
+v 5.235574 -4.366468 5.318715
+v 5.544688 -5.490079 1.910069
+v 1.720314 12.778927 4.565098
+v 9.086244 9.273829 9.510879
+v 8.251616 13.765768 5.768857
+v -1.776998 15.694679 0.225290
+v -1.778082 5.414305 2.568465
+v 3.183468 7.592894 8.220083
+v -4.996087 8.172849 6.909156
+v -6.858413 6.780718 1.657236
+v -0.391148 -4.078148 1.049641
+v 0.194629 -0.499382 4.348991
+v -3.853537 1.998383 8.765429
+v -6.491006 -1.819896 5.991488
+v -8.310664 -1.445895 8.834450
+v 8.227572 0.464533 4.916748
+v 8.983364 -2.078677 6.333898
+v 8.497384 -0.443262 0.826406
+v 8.636087 -0.324218 3.543105
+v -7.137438 -3.841351 12.185997
+v -2.704427 -1.171306 8.679761
+v -2.905280 -3.787179 7.663034
+v 5.141152 -9.551411 3.766256
+v -2.728768 15.975430 6.713052
+v -9.001012 11.534445 5.231503
+v -9.243726 12.998319 5.930251
+v 12.115295 6.871923 4.404247
+v 8.376395 10.175653 3.332954
+v 1.379683 10.593920 6.944715
+v 2.565565 -7.104692 1.524927
+v 5.050023 -11.290604 12.252753
+v 11.399938 -11.556120 9.860099
+v -6.264664 -8.130709 1.621891
+v -5.674684 -5.822627 7.636126
+v -2.176365 -6.873897 7.213912
+v 0.839325 -0.716116 7.406812
+v 7.815000 2.106162 13.877365
+v 8.761936 -2.977813 7.610048
+v 0.828060 8.652991 9.410200
+v 2.360032 10.663999 7.451517
+v 11.203115 3.289302 9.490705
+v -3.383423 12.719769 8.107146
+v -1.995253 9.205386 8.500318
+v -3.782830 3.732351 11.216775
+v 9.082289 6.561011 5.125579
+v 4.994280 3.252564 5.072936
+v -10.208722 -0.579692 2.908610
+v -7.088817 -1.699507 5.467892
+v -10.024591 9.418639 7.396217
+v -10.105871 4.463713 7.640067
+v -9.431050 8.738901 1.979618
+v 4.076552 2.372372 7.459082
+v 9.255955 -0.877324 1.199726
+v -7.173644 4.187156 8.494892
+v 2.103881 8.231796 5.207833
+v 0.518651 -4.939598 9.656308
+v -2.412572 -5.750184 2.011122
+v 1.264244 11.171845 1.143506
+v -7.447816 11.599099 4.680387
+v -6.463955 -4.628905 9.723582
+v 7.907819 -2.702681 7.451333
+vn 0.2582 0.0000 -0.9661
+vn -0.4103 0.0000 0.9120
+vn 0.6352 0.0000 -0.7723
+vn -0.9481 0.0000 0.3181
+vn 0.5181 0.0000 0.8553
+vn 0.6208 0.0000 -0.7839
+vn 0.2559 0.0000 -0.9667
+vn -0.9220 0.0000 0.3872
+vn 0.7974 0.0000 0.6035
+vn -0.7912 0.0000 0.6116
+vn -1.0000 0.0000 -0.0022
+vn -0.3148 0.0000 -0.9492
+vn -0.4117 0.0000 -0.9113
+vn -0.7848 0.0000 -0.6198
+vn 0.6410 0.0000 0.7675
+vn 0.2791 0.0000 -0.9603
+vn -0.9520 0.0000 0.3060
+vn -0.8204 0.0000 0.5717
+vn -0.5744 0.0000 0.8186
+vn -0.8468 0.0000 -0.5320
+vn 0.2251 0.0000 0.9743
+vn -0.8742 0.0000 -0.4855
+vn 0.2761 0.0000 -0.9611
+vn -0.3170 0.0000 0.9484
+vn -0.9986 0.0000 -0.0533
+vn -0.3770 0.0000 0.9262
+vn 0.7001 0.0000 -0.7141
+vn -0.5360 0.0000 -0.8442
+vn 0.2998 0.0000 0.9540
+vn 0.6290 0.0000 0.7774
+vn -0.8305 0.0000 -0.5571
+vn -0.9939 0.0000 -0.1103
+vn 0.5522 0.0000 -0.8337
+vn 0.9890 0.0000 -0.1482
+vn 0.7277 0.0000 0.6859
+vn 0.6322 0.0000 0.7748
+vn 0.2186 0.0000 0.9758
+vn 0.3650 0.0000 -0.9310
+vn -0.1144 0.0000 0.9934
+vn -0.1877 0.0000 -0.9822
+vn -0.3544 0.0000 -0.9351
+vn -0.9794 0.0000 0.2020
+vn -0.8044 0.0000 0.5940
+vn 0.9784 0.0000 0.2069
+vn -0.2936 0.0000 0.9559
+vn -0.9911 0.0000 -0.1329
+vn 0.4812 0.0000 0.8766
+vn -0.9917 0.0000 0.1283
+vn -0.1148 0.0000 0.9934
+vn -0.5790 0.0000 0.8154
+vn -0.9797 0.0000 -0.2003
+vn -0.3372 0.0000 0.9414
+vn 0.9168 0.0000 -0.3994
+vn 0.3864 0.0000 0.9223
+vn -0.9996 0.0000 0.0275
+vn 0.8387 0.0000 0.5447
+vn 0.8613 0.0000 -0.5081
+vn 0.9988 0.0000 0.0499
+vn -0.4060 0.0000 -0.9139
+vn -0.4855 0.0000 0.8742
+vn -0.9992 0.0000 0.0393
+vn 0.0745 0.0000 0.9972
+vn 0.6284 0.0000 0.7779
+vn 0.6502 0.0000 -0.7598
+vn 0.9942 0.0000 0.1071
+vn -0.8236 0.0000 0.5671
+vn -0.9553 0.0000 0.2957
+vn -0.2154 0.0000 -0.9765
+vn 0.8849 0.0000 0.4657
+vn 0.9949 0.0000 -0.1011
+vn -0.7465 0.0000 -0.6654
+vn -0.8211 0.0000 -0.5708
+vn -0.6197 0.0000 0.7848
+vn 0.9716 0.0000 -0.2368
+vn 0.9823 0.0000 0.1874
+vn -0.1385 0.0000 -0.9904
+vn 0.9757 0.0000 0.2190
+vn -0.5348 0.0000 0.8450
+vn 0.0399 0.0000 -0.9992
+vn -0.8384 0.0000 0.5450
+vn -0.1139 0.0000 0.9935
+vn 0.8597 0.0000 0.5108
+vn 0.4871 0.0000 -0.8734
+vn -0.9691 0.0000 -0.2468
+vn 0.3190 0.0000 0.9478
+vn -0.8779 0.0000 -0.4789
+vn 0.9386 0.0000 0.3449
+vn 0.9588 0.0000 -0.2840
+vn 0.9215 0.0000 -0.3883
+vn 0.9032 0.0000 -0.4292
+vn 0.9804 0.0000 -0.1969
+vn -0.9999 0.0000 -0.0137
+vn 0.0685 0.0000 -0.9977
+vn 0.5960 0.0000 0.8030
+vn 0.9930 0.0000 0.1182
+vn -0.8832 0.0000 0.4690
+vn 0.4233 0.0000 0.9060
+vn -0.0183 0.0000 -0.9998
+vn 0.5094 0.0000 0.8605
+vn 0.9592 0.0000 0.2827
+vn -0.4891 0.0000 0.8722
+vn -0.9331 0.0000 0.3597
+vn 0.9887 0.0000 -0.1501
+vn 0.4089 0.0000 0.9126
+vn -0.9683 0.0000 -0.2499
+vn -0.9266 0.0000 -0.3760
+vn 0.0686 0.0000 -0.9976
+vn 0.5090 0.0000 -0.8608
+vn -0.8027 0.0000 0.5964
+vn -0.9944 0.0000 -0.1057
+vn -0.8515 0.0000 0.5244
+vn 0.0313 0.0000 -0.9995
+vn -0.1025 0.0000 -0.9947
+vn 0.0299 0.0000 0.9996
+vn -0.0312 0.0000 0.9995
+vn -0.7621 0.0000 -0.6475
+vn -0.3485 0.0000 0.9373
+vn 0.4148 0.0000 -0.9099
+vn 0.1068 0.0000 -0.9943
+vn 0.8423 0.0000 0.5389
+vn 0.9997 0.0000 0.0235
+vn -0.4403 0.0000 0.8979
+vn 0.5054 0.0000 0.8629
+vn -0.7189 0.0000 -0.6951
+vn -0.9999 0.0000 0.0107
+vn -0.9875 0.0000 -0.1576
+vn -0.8707 0.0000 0.4919
+vn 0.2758 0.0000 0.9612
+vn 0.8940 0.0000 0.4481
+vn -0.7060 0.0000 -0.7082
+vn 0.4916 0.0000 0.8708
+vn -0.9242 0.0000 -0.3818
+vn -0.1369 0.0000 0.9906
+vn 0.3700 0.0000 -0.9290
+vn -0.5951 0.0000 -0.8036
+vn -0.9317 0.0000 -0.3633
+vn -0.4893 0.0000 0.8721
+vn 0.9998 0.0000 -0.0197
+vn -0.4439 0.0000 0.8961
+vn 0.9436 0.0000 -0.3311
+vn -0.9446 0.0000 -0.3282
+vn 0.9399 0.0000 -0.3413
+vn 0.8663 0.0000 0.4995
+vn 0.0258 0.0000 0.9997
+vn 0.9619 0.0000 -0.2733
+vn -0.4428 0.0000 -0.8966
+vn 0.9414 0.0000 -0.3373
+vn -0.8287 0.0000 0.5597
+vn -0.9281 0.0000 -0.3723
+vn -0.8795 0.0000 -0.4758
+vn 0.3969 0.0000 -0.9179
+vn 0.2838 0.0000 -0.9589
+vn -0.8509 0.0000 -0.5254
+vn 0.0975 0.0000 0.9952
+vn -0.9456 0.0000 -0.3253
+vn 0.9681 0.0000 -0.2505
+vn -0.4800 0.0000 0.8772
+vn 0.9948 0.0000 0.1016
+vn -0.9919 0.0000 -0.1272
+vn 0.1156 0.0000 0.9933
+vn 0.3117 0.0000 -0.9502
+vn -0.1440 0.0000 -0.9896
+vn 0.7844 0.0000 0.6202
+vn -0.5960 0.0000 -0.8030
+vn -0.0632 0.0000 0.9980
+vn -0.5780 0.0000 -0.8161
+vn -0.8008 0.0000 -0.5990
+vn 0.8134 0.0000 0.5817
+vn 0.4709 0.0000 0.8822
+vn -0.1977 0.0000 0.9803
+vn 0.8894 0.0000 -0.4570
+vn 0.9548 0.0000 0.2973
+vn -0.7114 0.0000 -0.7027
+vn 0.1472 0.0000 0.9891
+vn 0.6382 0.0000 0.7699
+vn -0.9888 0.0000 0.1489
+vn -0.1729 0.0000 -0.9849
+vn 0.4315 0.0000 0.9021
+vn 0.8714 0.0000 0.4905
+vn -0.2174 0.0000 0.9761
+vn -0.0957 0.0000 0.9954
+vn 0.7424 0.0000 -0.6699
+vn -0.1018 0.0000 -0.9948
+vn -0.7039 0.0000 0.7103
+vn -0.4916 0.0000 0.8708
+vn 0.1160 0.0000 0.9932
+vn 0.7835 0.0000 -0.6214
+vn 0.8357 0.0000 0.5492
+vn -0.1269 0.0000 0.9919
+vn 0.6959 0.0000 -0.7182
+vn 0.7712 0.0000 -0.6366
+vn 0.3668 0.0000 0.9303
+vn 0.8402 0.0000 -0.5422
+vn -0.9940 0.0000 -0.1091
+vn -0.9672 0.0000 0.2539
+vn 0.9759 0.0000 0.2182
+vn 0.6171 0.0000 0.7869
+vn -0.9953 0.0000 -0.0973
+vn 0.5626 0.0000 -0.8267
+vn -0.2726 0.0000 0.9621
+vn -0.8341 0.0000 0.5516
+vn 0.5065 0.0000 0.8622
+vn -0.1960 0.0000 0.9806
+vn 0.1077 0.0000 -0.9942
+vn 0.9996 0.0000 0.0281
+vn -0.2960 0.0000 0.9552
+vn 0.3734 0.0000 -0.9277
+vn 0.2746 0.0000 -0.9616
+vn -0.4303 0.0000 0.9027
+vn -0.6876 0.0000 -0.7261
+vn -0.1383 0.0000 0.9904
+vn 0.6245 0.0000 -0.7810
+vn 0.9915 0.0000 0.1304
+vn -0.8458 0.0000 -0.5335
+vn -0.4672 0.0000 -0.8842
+vn -0.6336 0.0000 0.7737
+vn 0.4578 0.0000 -0.8891
+vn -0.1273 0.0000 -0.9919
+vn -0.9974 0.0000 0.0723
+vn 0.4203 0.0000 0.9074
+vn 0.3615 0.0000 -0.9324
+vn -0.9984 0.0000 -0.0568
+vn -0.4714 0.0000 -0.8819
+vn -0.7159 0.0000 0.6982
+vn 0.2086 0.0000 -0.9780
+vn 0.2851 0.0000 -0.9585
+vn 0.9870 0.0000 0.1607
+vn 0.9994 0.0000 0.0350
+vn 0.9377 0.0000 0.3475
+vn -0.1064 0.0000 0.9943
+vn 0.8526 0.0000 0.5226
+vn -0.7767 0.0000 0.6299
+vn 0.1045 0.0000 -0.9945
+vn -0.5952 0.0000 -0.8036
+vn 0.9906 0.0000 0.1367
+vn -0.9487 0.0000 0.3161
+vn 0.9061 0.0000 -0.4231
+vn -0.9990 0.0000 0.0443
+vn 0.0777 0.0000 0.9970
+vn -0.7378 0.0000 0.6750
+vn 0.9908 0.0000 -0.1351
+vn -0.9985 0.0000 0.0547
+vn -0.6599 0.0000 0.7513
+vn -0.9937 0.0000 -0.1116
+vn 0.4765 0.0000 0.8792
+vn 0.3137 0.0000 0.9495
+vn 0.9810 0.0000 -0.1938
+vn 0.8654 0.0000 0.5012
+vn -0.7549 0.0000 0.6558
+vn -0.9514 0.0000 0.3079
+vn 0.9244 0.0000 -0.3815
+vn 0.9126 0.0000 0.4088
+vn -0.5465 0.0000 -0.8375
+vn -0.8473 0.0000 0.5312
+vn 0.9403 0.0000 -0.3404
+vn -0.1384 0.0000 -0.9904
+vn 0.6790 0.0000 -0.7342
+vn -0.3307 0.0000 -0.9437
+vn 0.9886 0.0000 -0.1504
+vn -0.9636 0.0000 -0.2675
+vn 0.7347 0.0000 0.6783
+vn 0.1218 0.0000 -0.9926
+vn -0.5602 0.0000 0.8284
+vn -0.5423 0.0000 -0.8402
+vn 0.8310 0.0000 0.5563
+vn 0.0490 0.0000 -0.9988
+vn 0.6266 0.0000 -0.7793
+vn -0.5955 0.0000 0.8034
+vn -0.5749 0.0000 -0.8182
+vn 0.1981 0.0000 0.9802
+vn -0.7908 0.0000 0.6120
+vn -0.9982 0.0000 -0.0602
+vn -0.9969 0.0000 -0.0784
+vn -0.8574 0.0000 0.5146
+vn -0.9912 0.0000 -0.1322
+vn -0.1741 0.0000 0.9847
+vn -0.4541 0.0000 0.8909
+vn 0.3732 0.0000 -0.9278
+vn -0.9979 0.0000 -0.0645
+vn -0.6205 0.0000 0.7842
+vn -0.1403 0.0000 0.9901
+vn -0.4795 0.0000 0.8775
+vn -0.6302 0.0000 -0.7765
+vn -0.9562 0.0000 -0.2926
+vn -0.5165 0.0000 0.8563
+vn -0.9999 0.0000 -0.0163
+vn -0.9734 0.0000 0.2293
+vn -0.7097 0.0000 -0.7045
+vn -0.9088 0.0000 0.4172
+vn -0.9528 0.0000 -0.3035
+vn -0.4408 0.0000 0.8976
+vn 0.6024 0.0000 -0.7982
+vn 0.8984 0.0000 -0.4392
+vn 0.7875 0.0000 -0.6164
+vn -0.6335 0.0000 -0.7737
+vn 0.8214 0.0000 0.5704
+vn -0.2769 0.0000 0.9609
+vn -0.6657 0.0000 0.7462
+vn 0.1947 0.0000 0.9809
+vn -0.7712 0.0000 -0.6366
+vn -0.2624 0.0000 -0.9649
+vn 0.7543 0.0000 -0.6565
+vn -0.4358 0.0000 0.9000
+vn -0.9140 0.0000 0.4057
+vn 0.8575 0.0000 0.5144
+vn 0.1091 0.0000 -0.9940
+vn -0.9871 0.0000 0.1599
+vn 1.0000 0.0000 0.0085
+vn 0.1564 0.0000 0.9877
+vn 0.9857 0.0000 -0.1685
+vn -0.3652 0.0000 0.9309
+vn -0.3620 -0.4442 0.8195
+vn 0.2558 0.8223 -0.5084
+vn 0.5289 -0.0043 -0.8487
+vn 0.9014 -0.0537 -0.4297
+vn -0.4898 0.1229 -0.8631
+vn -0.6917 -0.2411 0.6808
+vn -0.5471 -0.3211 0.7730
+vn 0.9032 -0.0486 -0.4264
+vn -0.7851 0.2074 -0.5836
+vn 0.8446 0.1459 -0.5151
+vn 0.9974 -0.0338 0.0640
+vn 0.7025 -0.4092 0.5823
+vn 0.2486 -0.1752 0.9526
+vn 0.7145 -0.0766 0.6954
+vn -0.5715 -0.2145 -0.7921
+vn -0.2940 -0.0077 0.9558
+vn 0.8771 -0.4406 0.1912
+vn 0.7402 0.4937 0.4565
+vn -0.1393 -0.6581 -0.7399
+vn 0.5339 -0.2022 0.8210
+vn -0.0249 -0.2893 -0.9569
+vn 0.8773 0.3054 0.3703
+vn -0.2517 -0.1758 0.9517
+vn 0.0428 -0.3147 -0.9482
+vn 0.8834 -0.2466 0.3985
+vn 0.3669 -0.0602 -0.9283
+vn -0.6768 -0.0693 0.7329
+vn 0.5036 -0.0695 0.8611
+vn -0.1530 -0.3060 -0.9397
+vn 0.6775 0.5277 -0.5123
+vn 0.9076 0.1934 0.3725
+vn 0.9641 0.2054 0.1685
+vn -0.5509 0.1215 0.8257
+vn -0.9741 0.1707 0.1485
+vn -0.0763 0.5555 -0.8280
+vn -0.6497 0.0265 -0.7597
+vn -0.2565 0.1295 0.9578
+vn -0.1614 -0.3405 0.9263
+vn 0.1102 0.0066 -0.9939
+vn -0.0086 0.3810 0.9245
+vn 0.3079 0.0776 0.9482
+vn 0.9749 0.0848 -0.2061
+vn 0.6548 0.3010 -0.6933
+vn -0.7769 0.0909 0.6230
+vn 0.3028 0.0052 -0.9530
+vn 0.9338 0.1925 0.3016
+vn -0.4515 -0.0952 -0.8872
+vn 0.9711 0.1391 -0.1941
+vn 0.0597 0.1128 -0.9918
+vn 0.3374 -0.6352 -0.6947
+vn 0.9905 0.1347 -0.0287
+vn 0.3125 -0.0209 -0.9497
+vn -0.8374 0.3057 0.4531
+vn -0.5281 -0.1990 -0.8256
+vn 0.9842 0.1491 -0.0953
+vn -0.7185 0.3542 -0.5986
+vn -0.6069 0.5349 -0.5878
+vn -0.9131 -0.2799 -0.2965
+vn 0.2281 0.1717 0.9584
+vn -0.0204 -0.2922 -0.9561
+vn 0.8425 0.4735 0.2568
+vn 0.1449 0.8076 -0.5716
+vn -0.5776 -0.1111 -0.8087
+vn 0.0555 0.4113 0.9098
+vn -0.4770 0.5334 0.6985
+vn 0.4046 -0.7396 -0.5378
+vn 0.8236 0.5570 0.1064
+vn 0.0745 -0.9118 0.4038
+vn -0.8654 0.1446 -0.4797
+vn -0.6611 -0.5501 -0.5102
+vn 0.5871 0.3656 0.7223
+vn 0.7009 0.0252 0.7128
+vn 0.7378 0.2287 -0.6351
+vn 0.7846 0.2971 0.5442
+vn -0.9596 -0.2795 0.0307
+vn 0.2668 0.4986 0.8247
+vn -0.9543 -0.2173 -0.2051
+vn 0.2616 -0.3804 -0.8871
+vn -0.1750 -0.6939 0.6984
+vn 0.8334 -0.0781 -0.5471
+vn 0.0534 0.0529 -0.9972
+vn -0.5779 -0.5697 -0.5844
+vn -0.6590 0.6771 0.3275
+vn 0.9824 0.0794 0.1690
+vn -0.3828 -0.5306 -0.7562
+vn 0.8770 0.0457 0.4783
+vn -0.7631 -0.5438 -0.3492
+vn 0.2293 0.1072 0.9674
+vn -0.7761 -0.1841 0.6032
+vn -0.9238 0.3737 0.0831
+vn -0.9062 0.4225 -0.0162
+vn 0.9920 0.1223 -0.0312
+vn -0.1867 0.0785 0.9793
+vn -0.7407 -0.1673 -0.6507
+vn -0.8546 0.5159 -0.0588
+vn 0.9180 0.0446 -0.3941
+vn -0.5452 0.1679 -0.8213
+vn -0.8566 -0.3461 0.3826
+vn -0.5308 0.4175 -0.7375
+vn -0.8297 -0.5352 -0.1585
+vn 0.7604 0.3694 -0.5342
+vn 0.9030 0.3683 -0.2211
+vn 0.9568 0.0290 -0.2893
+vn -0.6438 0.6300 -0.4343
+vn 0.9725 -0.0689 0.2223
+vn 0.7710 -0.5596 -0.3040
+vn -0.1854 -0.5044 0.8433
+vn 0.8851 -0.2432 0.3969
+vn 0.4630 -0.7431 -0.4830
+vn 0.8900 0.3103 -0.3340
+vn 0.6222 -0.4564 -0.6360
+vn 0.5534 -0.4642 0.6916
+vn 0.4480 -0.5211 0.7265
+vn 0.0094 0.7723 -0.6351
+vn -0.6912 -0.7201 -0.0615
+vn 0.7675 0.0788 0.6362
+vn 0.2881 0.2588 -0.9220
+vn -0.4035 0.0619 0.9129
+vn -0.1597 0.4086 0.8987
+vn -0.6682 0.6721 -0.3189
+vn -0.9995 -0.0195 -0.0235
+vn 0.4304 -0.5078 -0.7462
+vn -0.4856 -0.3435 -0.8038
+vn 0.3894 0.1498 0.9088
+vn 0.8017 0.5872 -0.1113
+vn 0.5928 0.7408 -0.3160
+vn 0.3944 0.3746 0.8391
+vn -0.5129 0.3716 -0.7739
+vn -0.8963 -0.4139 -0.1592
+vn 0.7469 -0.0110 0.6648
+vn -0.5253 -0.0147 -0.8508
+vn 0.9185 0.0204 0.3949
+vn 0.4660 0.7908 -0.3968
+vn -0.0189 -0.1456 0.9892
+vn 0.8248 -0.3811 0.4176
+vn 0.5316 -0.7979 0.2842
+vn 0.2465 0.4947 -0.8333
+vn -0.7453 -0.4992 0.4420
+vn 0.3812 0.7912 -0.4783
+vn -0.7192 -0.6948 0.0026
+vn 0.6186 0.7252 -0.3024
+vn -0.9399 -0.0043 0.3415
+vn -0.8525 0.4328 -0.2933
+vn -0.4693 0.3832 -0.7956
+vn -0.9638 -0.0459 0.2627
+vn 0.3253 0.1108 0.9391
+vn -0.8390 0.5431 0.0354
+vn 0.7017 -0.4487 -0.5534
+vn 0.8748 0.1686 0.4542
+vn 0.9544 -0.2744 0.1173
+vn -0.3639 -0.3731 0.8535
+vn -0.4603 0.6732 0.5787
+vn -0.3176 -0.6737 0.6672
+vn -0.4491 -0.5786 -0.6809
+vn 0.5310 0.8120 0.2423
+vn -0.4918 0.8288 -0.2669
+vn 0.4687 0.6372 -0.6118
+vn -0.8969 0.2797 0.3425
+vn 0.9373 0.2099 0.2784
+vn -0.1544 -0.3522 -0.9231
+vn -0.1246 -0.2827 0.9511
+vn 0.3950 -0.2465 0.8850
+vn -0.7827 -0.0712 -0.6183
+vn 0.3002 -0.7004 0.6475
+vn 0.1670 0.4706 -0.8664
+vn 0.3371 -0.8026 0.4922
+vn 0.6567 0.2464 0.7128
+vn 0.0260 0.9199 -0.3914
+vn -0.1222 0.1142 0.9859
+vn 0.0083 0.3229 -0.9464
+vn -0.7207 -0.2108 0.6604
+vn -0.9332 -0.0606 -0.3543
+vn 0.8219 -0.3497 0.4496
+vn -0.2633 -0.2483 -0.9322
+vn 0.1151 0.5164 -0.8486
+vn 0.9700 -0.1161 -0.2138
+vn 0.1751 -0.0608 0.9827
+vn -0.4711 0.4447 -0.7618
+vn -0.6347 0.6540 -0.4117
+vn 0.2138 -0.6224 -0.7530
+vn -0.0285 0.3768 -0.9259
+vn -0.7295 0.5154 -0.4496
+vn -0.8373 0.5273 0.1446
+vn 0.5353 -0.4625 -0.7068
+vn 0.3429 0.6860 -0.6417
+vn 0.1062 -0.3065 -0.9459
+vn -0.7074 -0.7067 0.0079
+vn 0.6795 -0.5603 -0.4736
+vn -0.6528 -0.6379 -0.4085
+vn -0.4599 0.2637 0.8479
+vn -0.2860 -0.8004 0.5268
+vn -0.3364 -0.4580 -0.8228
+vn -0.5044 -0.8116 0.2948
+vn 0.1487 0.4519 0.8796
+vn -0.8984 -0.1765 -0.4022
+vn -0.9390 -0.2845 0.1931
+vn -0.9557 0.1827 0.2309
+vn 0.7098 0.4400 0.5501
+vn -0.4271 -0.7592 0.4911
+vn 0.3354 0.0108 -0.9420
+vn 0.5894 -0.8003 -0.1101
+vn -0.4531 -0.1228 -0.8830
+vn 0.2623 0.5307 -0.8059
+vn 0.4418 0.7446 0.5004
+vn -0.6357 -0.5956 -0.4911
+vn 0.2904 0.0563 -0.9553
+vn 0.7401 -0.6640 0.1069
+vn 0.1603 0.6316 0.7586
+vn 0.4401 0.0052 -0.8979
+vn 0.6435 -0.6987 -0.3125
+vn 0.3929 -0.7979 -0.4572
+vn 0.3510 -0.7500 0.5606
+vn -0.6371 0.7693 0.0479
+vn 0.9766 0.1505 0.1537
+vn 0.2389 0.8154 0.5273
+vn 0.2056 -0.7452 -0.6344
+vn -0.7450 0.4171 0.5206
+vn 0.1928 -0.7519 0.6304
+vn 0.5286 -0.8329 -0.1639
+vn -0.3768 -0.1214 -0.9183
+vn 0.6534 -0.3344 0.6792
+vn 0.9924 0.0388 0.1167
+vn 0.6036 -0.6182 -0.5035
+vn 0.7276 0.3476 -0.5914
+vn -0.1385 -0.4727 0.8703
+vn -0.3143 -0.8455 0.4317
+vn -0.6148 0.7431 -0.2642
+vn -0.9587 0.1362 -0.2498
+vn -0.1148 -0.7110 -0.6937
+vn 0.1448 -0.8984 -0.4146
+vn -0.8838 0.0992 -0.4571
+vn 0.6204 0.7244 -0.3006
+vn -0.0704 0.2649 0.9617
+vn -0.8378 0.5405 0.0773
+vn -0.9069 0.4171 0.0598
+vn 0.9894 0.0211 -0.1435
+vn -0.9078 -0.0038 0.4194
+vn 0.7110 0.6860 0.1543
+vn -0.0684 0.3532 -0.9330
+vn 0.9530 0.1400 -0.2686
+vn -0.5902 -0.6321 0.5020
+vn 0.9839 -0.1298 -0.1227
+vn 0.7028 0.2100 -0.6797
+vn 0.6979 0.7101 -0.0934
+vn 0.7780 0.3419 -0.5271
+vn 0.1469 0.7054 -0.6934
+vn -0.6729 -0.7358 0.0767
+vn -0.5877 0.5864 -0.5574
+vn 0.6154 0.6741 -0.4085
+vn 0.4938 0.7646 0.4141
+vn 0.9596 0.0836 -0.2686
+vn -0.8885 -0.1364 0.4382
+vn -0.7267 -0.6762 0.1207
+vn 0.6285 0.0349 0.7770
+vn 0.5511 -0.6445 -0.5301
+vn -0.9607 -0.1912 0.2011
+vn 0.2247 -0.7462 0.6266
+vn -0.6946 -0.0467 0.7179
+vn -0.2141 0.4874 0.8465
+vn -0.6567 0.3708 -0.6567
+vn 0.9798 -0.1122 0.1656
+vn -0.8783 0.4781 -0.0057
+vn -0.1494 -0.0687 0.9864
+vn 0.0376 0.2410 -0.9698
+vn 0.6409 -0.3206 0.6974
+vn -0.8123 0.0447 -0.5816
+vn -0.1124 0.0185 0.9935
+vn -0.2626 -0.8055 0.5313
+vn 0.4164 0.7167 -0.5595
+vn 0.1894 -0.2812 0.9408
+vn -0.0628 0.6477 -0.7593
+vn 0.7784 0.0676 -0.6241
+vn 0.9975 0.0703 -0.0036
+vn 0.9018 -0.4307 0.0338
+vn 0.4190 0.8382 -0.3492
+vn 0.9750 -0.0746 0.2095
+vn 0.7928 0.3044 -0.5281
+vn -0.4455 0.6250 -0.6410
+vn -0.2339 -0.4448 0.8645
+vn 0.9973 0.0077 0.0735
+vn 0.3636 0.6763 -0.6407
+vn 0.0672 -0.1719 -0.9828
+vn 0.5683 0.7842 -0.2491
+vn 0.7260 -0.2033 0.6570
+vn 0.9121 0.2678 0.3104
+vn 0.3875 -0.6496 -0.6541
+vn 0.6109 0.7917 -0.0044
+vn 0.9679 -0.1290 -0.2156
+vn 0.5358 0.2882 0.7936
+vn 0.9509 0.0842 -0.2979
+vn -0.8711 -0.3539 0.3404
+vn 0.4408 0.0000 -0.8976
+vn -0.1008 0.8084 0.5799
+vn 0.9954 -0.0777 0.0564
+vn -0.2366 0.5435 -0.8054
+vn 0.6423 -0.1022 0.7596
+vn -0.7085 -0.5431 -0.4507
+vn -0.2488 -0.3553 -0.9010
+vn 0.0707 -0.7361 -0.6732
+vn -0.1873 -0.0097 -0.9823
+vn 0.5437 -0.7797 0.3105
+vn 0.2686 0.0092 0.9632
+vn -0.5633 0.8164 0.1274
+vn 0.6777 0.7256 -0.1190
+vn 0.7364 0.3306 -0.5903
+vn -0.7815 -0.1393 -0.6082
+vn 0.3424 -0.7897 0.5091
+vn 0.9562 0.2889 0.0467
+vn -0.9524 -0.2007 0.2295
+vn -0.3074 0.4066 -0.8604
+vn 0.8367 0.1737 -0.5194
+vn 0.5264 0.6821 -0.5077
+vn -0.0100 -0.9989 -0.0458
+vn 0.4660 -0.8377 0.2847
+vn 0.8188 -0.1258 0.5602
+vn 0.4813 -0.5772 0.6597
+vn 0.0647 -0.9370 0.3432
+vn -0.0186 -0.9992 -0.0357
+vn 0.1944 0.0681 0.9786
+vn -0.6678 -0.6795 -0.3038
+vn 0.4188 -0.8044 -0.4214
+vn -0.2628 -0.9421 0.2085
+vn -0.2999 -0.5599 0.7724
+vn 0.5675 -0.7519 0.3356
+vn -0.0022 -1.0000 -0.0073
+vn 0.1816 -0.9549 -0.2349
+vn 0.1597 -0.9868 0.0284
+vn 0.3879 -0.9046 0.1768
+vn 0.6410 -0.6865 0.3434
+vn -0.5275 -0.8467 0.0688
+vn 0.9371 -0.3490 -0.0003
+vn 0.3244 -0.9368 0.1307
+vn -0.5789 -0.8125 -0.0688
+vn 0.6592 -0.7512 0.0328
+vn 0.5654 -0.0926 0.8196
+vn -0.3764 -0.6760 -0.6335
+vn 0.4046 -0.9142 0.0221
+vn 0.0210 -0.9989 -0.0423
+vn -0.8338 -0.2334 -0.5003
+vn -0.5438 0.8368 0.0634
+vn 0.1868 0.9767 -0.1057
+vn 0.5890 -0.7578 -0.2808
+vn 0.4760 -0.8786 -0.0389
+vn 0.6063 -0.7662 -0.2127
+vn -0.9857 -0.1684 0.0105
+vn -0.1444 -0.9895 0.0039
+vn 0.2456 -0.4872 0.8381
+vn 0.0160 -0.9999 0.0035
+vn -0.5464 0.5814 0.6028
+vn -0.7439 -0.1542 0.6503
+vn -0.9753 -0.0419 -0.2168
+vn 0.9381 -0.1043 0.3304
+vn -0.9887 -0.1089 -0.1026
+vn -0.1621 -0.9843 -0.0702
+vn 0.1119 -0.9937 0.0010
+vn -0.5455 -0.7263 -0.4181
+vn -0.4451 -0.2504 0.8597
+vn 0.0122 -0.9986 -0.0506
+vn 0.0848 -0.8165 -0.5711
+vn -0.5783 0.0747 0.8124
+vn -0.3052 -0.9506 0.0560
+vn -0.0054 -0.9702 0.2423
+vn -0.1030 0.9922 -0.0708
+vn -0.0446 -0.8601 -0.5082
+vn 0.9852 0.0475 -0.1646
+vn 0.0260 -0.9987 -0.0450
+vn -0.8624 -0.4461 -0.2393
+vn -0.9297 -0.3254 0.1724
+vn -0.8581 -0.2697 -0.4369
+vn -0.7660 0.3666 0.5280
+vn 0.5350 -0.0881 0.8402
+vn -0.1645 0.9839 0.0697
+vn 0.0799 -0.4576 0.8856
+vn -0.3802 -0.9026 -0.2018
+vn -0.2581 -0.6281 0.7340
+vn 0.0037 -1.0000 0.0061
+vn 0.1221 -0.9884 0.0904
+vn 0.1296 -0.9906 0.0447
+vn 0.7136 -0.6571 0.2429
+vn 0.0909 -0.9730 0.2123
+vn 0.7329 -0.5751 0.3636
+vn 0.0201 -0.9991 0.0377
+vn -0.0156 -0.5044 -0.8633
+vn -0.2930 -0.9438 -0.1526
+vn 0.0924 -0.9913 -0.0942
+vn -0.6545 0.0619 0.7535
+vn -0.6198 -0.7796 0.0899
+vn 0.2437 -0.7984 0.5506
+vn -0.3562 -0.7758 -0.5208
+vn -0.5144 -0.3383 0.7880
+vn -0.0409 -0.9990 -0.0176
+vn -0.1076 -0.9814 0.1591
+vn -0.2462 -0.7444 -0.6207
+vn -0.2034 -0.4058 0.8910
+vn 0.8202 0.0105 0.5720
+vn -0.3184 -0.6073 0.7279
+vn -0.8882 -0.0248 -0.4588
+vn -0.0790 0.9377 -0.3382
+vn 0.4064 0.9073 -0.1077
+vn -0.0006 0.6093 0.7929
+vn -0.0906 -0.9437 -0.3182
+vn -0.7632 -0.6264 0.1586
+vn 0.5952 -0.6218 -0.5090
+vn 0.0533 -0.4211 -0.9055
+vn -0.9773 0.0461 0.2068
+vn 0.2113 -0.9768 0.0343
+vn -0.0384 -0.9535 -0.2990
+vn 0.0413 -0.9377 -0.3451
+vn -0.8373 -0.0327 -0.5457
+vn 0.2912 0.1012 0.9513
+vn -0.2501 -0.9673 -0.0423
+vn 0.0877 -0.5990 -0.7960
+vn 0.0170 0.9998 -0.0062
+vn -0.4856 -0.5277 -0.6969
+vn -0.9610 -0.1827 -0.2076
+vn -0.0004 -1.0000 0.0014
+vn -0.1939 -0.9038 -0.3815
+vn -0.1178 0.9255 0.3599
+vn 0.1869 0.9820 -0.0266
+vn -0.9965 0.0275 -0.0785
+vn 0.8553 0.3595 -0.3731
+vn -0.3347 -0.5645 0.7545
+vn 0.2449 -0.6148 -0.7497
+vn 0.2114 -0.9337 0.2889
+vn 0.1132 -0.2023 0.9728
+vn -0.8638 -0.1090 -0.4919
+vn 0.1360 0.9880 0.0735
+vn -0.5086 0.4434 -0.7381
+vn 0.0351 0.0033 -0.9994
+vn -0.1348 -0.9835 -0.1210
+vn 0.3481 -0.8007 -0.4875
+vn 0.5814 -0.3552 -0.7320
+vn -0.1966 -0.3692 -0.9083
+vn 0.7702 -0.3347 -0.5430
+vn -0.4471 -0.8746 -0.1877
+vn 0.0270 0.9963 -0.0815
+vn -0.1008 -0.9805 -0.1689
+vn -0.0452 -0.9427 -0.3306
+vn 0.0397 -0.9686 -0.2454
+vn -0.3537 -0.9336 0.0569
+vn -0.2334 0.8171 0.5271
+vn 0.4502 0.7557 -0.4756
+vn -0.2265 -0.9666 -0.1203
+vn -0.1693 -0.9618 0.2153
+vn -0.5291 -0.8466 -0.0575
+vn -0.0006 -1.0000 -0.0037
+vn 0.9004 -0.1947 -0.3891
+vn 0.1823 -0.6821 -0.7082
+vn -0.4420 -0.6076 0.6599
+vn 0.3358 -0.9314 0.1406
+vn 0.1717 -0.3095 -0.9353
+vn -0.0285 -0.9347 -0.3544
+vn 0.6360 -0.2298 -0.7367
+vn 0.2066 0.6816 0.7019
+vn 0.0358 0.9993 0.0074
+vn -0.7729 -0.4231 0.4729
+vn 0.0275 0.9989 0.0391
+vn 0.1999 -0.9782 0.0565
+vn 0.9866 0.1591 0.0371
+vn -0.5415 -0.8203 0.1843
+vn -0.3870 0.9172 0.0947
+vn -0.2629 -0.3279 0.9074
+vn 0.7222 -0.6795 0.1292
+vn 0.3296 -0.9404 -0.0833
+vn 0.4729 -0.0235 0.8808
+vn 0.2371 0.9679 -0.0832
+vn 0.7921 0.3021 0.5304
+vn -0.2308 -0.9650 -0.1243
+vn -0.9294 0.3654 0.0509
+vn 0.1987 -0.9383 -0.2831
+vn 0.7697 -0.5650 0.2972
+vn -0.0021 -0.9775 0.2111
+vn -0.2411 -0.9704 -0.0152
+vn -0.3412 -0.8563 -0.3877
+vn -0.2453 0.7709 -0.5878
+vn -0.1230 -0.8200 -0.5589
+vn 0.6136 -0.6824 -0.3973
+vn -0.2090 -0.4244 -0.8810
+vn 0.3252 -0.8828 -0.3389
+vn -0.1026 0.9907 -0.0899
+vn -0.1653 -0.9853 -0.0440
+vn -0.4585 -0.8784 -0.1349
+vn -0.9264 -0.3718 -0.0598
+vn 0.0378 -0.5900 -0.8065
+vn -0.3091 -0.8779 -0.3656
+vn 0.0289 -0.9961 -0.0832
+vn -0.5563 -0.2486 -0.7929
+vn -0.5960 -0.7477 -0.2927
+vn 0.6018 -0.5670 0.5624
+vn 0.7762 0.5999 0.1940
+vn 0.3034 -0.9500 0.0733
+vn -0.4273 -0.7558 -0.4962
+vn -0.4605 0.8265 0.3237
+vn 0.3925 -0.8469 0.3586
+vn 0.0779 0.7698 0.6335
+vn 0.9986 0.0151 -0.0516
+vn 0.0133 0.2250 0.9743
+vn 0.1381 -0.5991 -0.7887
+vn -0.5165 -0.7171 0.4680
+vn 0.1265 0.5772 0.8068
+vn 0.7560 0.4110 -0.5094
+vn -0.4279 -0.8865 0.1762
+vn -0.6597 -0.4276 0.6181
+vn -0.4084 -0.8326 0.3741
+vn -0.7252 -0.6154 0.3089
+vn -0.7962 -0.6044 0.0262
+vn -0.9580 0.2841 -0.0399
+vn 0.2143 -0.7322 -0.6465
+vn -0.3601 -0.4182 0.8340
+vn 0.1507 -0.7549 -0.6383
+vn 0.4157 -0.8325 0.3662
+vn -0.7002 -0.5898 -0.4023
+vn 0.3401 -0.8707 0.3554
+vn 0.9883 0.0922 0.1214
+vn -0.2342 -0.8306 -0.5052
+vn -0.9015 -0.3440 0.2628
+vn -0.1648 -0.8515 -0.4978
+vn 0.9782 0.1891 0.0861
+vn -0.7584 -0.6517 -0.0083
+vn -0.2191 -0.9574 0.1878
+vn -0.3486 -0.8120 -0.4681
+vn 0.5261 -0.7778 0.3439
+vn 0.2090 -0.7097 0.6728
+vn 0.0295 -0.9933 -0.1119
+vn 0.8417 -0.5114 0.1733
+vn 0.4096 -0.3912 0.8242
+vn 0.7750 -0.4732 -0.4189
+vn 0.4810 -0.6275 0.6123
+vn -0.3462 -0.9110 -0.2243
+vn -0.0011 -0.9499 -0.3125
+vn 0.8767 -0.1194 -0.4660
+vn -0.0784 -0.8835 -0.4618
+vn -0.0572 -0.9982 -0.0199
+vn 0.1862 -0.9769 0.1051
+vn 0.1995 -0.9796 -0.0230
+vn 0.1385 -0.9901 -0.0234
+vn 0.3159 -0.8095 0.4949
+vn -0.4121 -0.8477 0.3341
+vn 0.3465 -0.8610 0.3724
+vn 0.5647 -0.6789 -0.4692
+vn -0.9720 0.1739 -0.1580
+vn -0.3967 -0.8027 0.4452
+vn 0.7012 -0.5537 0.4491
+vn -0.0099 -0.8842 0.4670
+vn 0.9111 -0.3995 -0.1019
+vn 0.3154 0.6745 -0.6675
+vn 0.2104 -0.9044 0.3711
+vn -0.9871 -0.0152 -0.1595
+vn 0.0933 -0.1597 -0.9827
+vn -0.2467 -0.9626 0.1122
+vn -0.7718 -0.5538 -0.3126
+vn -0.9612 0.2598 0.0926
+vn -0.3526 -0.8135 0.4624
+vn 0.2528 0.9672 -0.0245
+vn 0.0665 -0.9974 -0.0284
+vn -0.6164 0.4296 0.6599
+vn 0.5768 -0.6388 0.5092
+vn -0.1394 0.0110 0.9902
+vn 0.0166 -0.9998 0.0138
+vn 0.0526 -0.2692 -0.9616
+vn -0.1858 -0.6401 -0.7455
+vn -0.4999 0.8655 0.0325
+vn -0.5455 -0.7775 0.3130
+vn -0.0529 -0.3010 0.9522
+vn 0.6094 -0.7016 -0.3694
+vn -0.0403 -0.9877 -0.1511
+vn 0.1884 0.9454 0.2659
+vn 0.3008 0.9448 0.1297
+vn 0.4887 -0.5640 -0.6657
+vn 0.1987 0.1776 -0.9638
+vn 0.8396 -0.3605 0.4064
+vn 0.0552 -0.7903 -0.6102
+vn 0.7607 -0.1888 0.6210
+vn -0.2490 -0.7210 -0.6466
+vn -0.9489 -0.1999 0.2440
+vn -0.1928 -0.9301 -0.3126
+vn -0.4552 -0.8851 0.0967
+vn -0.0994 -0.9901 -0.0988
+vn -0.3207 -0.6959 0.6425
+vn 0.2891 -0.8521 -0.4362
+vn 0.0551 0.8613 0.5051
+vn 0.0768 -0.7463 -0.6612
+vn 0.6267 -0.3788 0.6810
+vn -0.2283 0.4332 -0.8719
+vn -0.9033 -0.4073 -0.1350
+vn -0.2291 -0.7340 0.6393
+vn -0.3893 -0.6861 0.6146
+vn -0.1864 0.9769 -0.1044
+vn -0.3358 -0.7393 -0.5837
+vn -0.0338 -0.9973 -0.0648
+vn 0.0329 -0.9937 0.1069
+vn 0.9867 0.1600 0.0281
+vn -0.0937 -0.1470 0.9847
+vn -0.2249 -0.9738 -0.0326
+vn 0.0928 -0.8775 -0.4706
+vn -0.0542 -0.8898 0.4531
+vn -0.0271 -0.7204 -0.6930
+vn -0.9991 0.0418 -0.0014
+vn -0.3689 -0.9052 -0.2110
+vn -0.4723 -0.0437 0.8804
+vn 0.3322 -0.4676 -0.8191
+vn 0.0261 -0.9997 -0.0032
+vn -0.7588 0.5238 -0.3871
+vn 0.2830 -0.9576 -0.0535
+vn -0.7573 -0.4838 -0.4387
+vn 0.5308 -0.8291 -0.1757
+vn -0.0072 0.3979 0.9174
+vn 0.1161 -0.9842 0.1335
+vn -0.7000 -0.5165 0.4931
+vn 0.0880 -0.9919 0.0919
+vn 0.8650 -0.4159 0.2808
+vn 0.4066 -0.9060 0.1180
+vn 0.3538 0.8181 -0.4534
+vn -0.5567 -0.5168 -0.6503
+vn 0.0778 -0.9012 0.4264
+vn -0.3859 -0.5412 0.7471
+vn 0.1983 0.4915 -0.8480
+vn -0.2674 -0.4037 0.8749
+vn -0.5802 -0.0617 0.8121
+vn 0.4570 -0.8835 -0.1030
+vn 0.2882 0.9451 0.1541
+vn -0.0437 -0.9877 0.1501
+vn 0.7492 -0.5925 0.2961
+vn 0.4292 -0.7167 0.5496
+vn 0.0245 0.9991 0.0360
+vn -0.6466 0.7350 0.2040
+vn 0.8335 -0.0942 0.5445
+vn -0.3518 0.5858 -0.7301
+vn -0.1796 0.9237 -0.3383
+vn 0.0508 0.9980 0.0387
+vn 0.1601 0.0631 -0.9851
+vn 0.5124 0.6603 0.5490
+vn 0.0674 0.3990 0.9145
+vn 0.2558 0.9664 0.0236
+vn 0.5074 0.5272 -0.6817
+vn -0.5748 0.8108 -0.1105
+vn 0.0005 1.0000 0.0058
+vn -0.1868 0.8236 0.5355
+vn -0.1703 0.9853 -0.0118
+vn 0.0580 -0.9795 0.1929
+vn -0.4519 0.7488 0.4848
+vn 0.5238 0.8485 -0.0758
+vn -0.6233 0.3647 -0.6917
+vn 0.2798 0.4399 -0.8534
+vn 0.1943 0.9543 0.2270
+vn -0.8752 0.3185 -0.3641
+vn -0.5474 0.0513 -0.8353
+vn 0.3219 0.7105 0.6257
+vn 0.2145 -0.8055 0.5525
+vn 0.2138 0.9682 0.1299
+vn 0.9904 0.0183 0.1368
+vn -0.3312 0.7933 -0.5109
+vn -0.2550 -0.9668 0.0150
+vn -0.7195 0.6806 0.1382
+vn 0.4912 -0.8462 -0.2067
+vn -0.4754 0.7939 0.3791
+vn 0.9561 0.2813 0.0819
+vn 0.3949 -0.8709 0.2926
+vn 0.8403 -0.1218 -0.5282
+vn -0.0048 0.9997 -0.0238
+vn -0.9419 0.3123 -0.1236
+vn -0.1000 0.9558 -0.2763
+vn 0.9617 -0.1627 -0.2204
+vn -0.5977 0.0073 -0.8017
+vn 0.5313 0.0818 0.8432
+vn 0.0999 0.9426 0.3187
+vn -0.0864 0.9929 -0.0818
+vn 0.5359 0.7242 0.4340
+vn -0.6771 0.7244 -0.1292
+vn 0.0502 -0.9985 0.0232
+vn -0.1723 0.9849 -0.0191
+vn -0.4477 0.2785 -0.8497
+vn -0.2059 -0.9775 -0.0455
+vn 0.6043 0.7870 -0.1244
+vn -0.1131 0.9934 0.0203
+vn -0.1513 -0.8126 0.5629
+vn 0.9445 -0.0445 -0.3254
+vn -0.0280 0.9971 0.0704
+vn 0.7994 0.5280 0.2867
+vn 0.3788 -0.0557 0.9238
+vn -0.0042 -0.9532 0.3022
+vn 0.6756 -0.4601 -0.5761
+vn -0.4358 0.2532 -0.8637
+vn -0.1529 0.9777 0.1436
+vn -0.1544 0.4525 -0.8783
+vn 0.4219 0.8778 -0.2267
+vn 0.2436 0.6266 -0.7403
+vn -0.0111 0.9999 0.0038
+vn -0.1365 0.9875 -0.0789
+vn -0.1330 -0.9713 0.1972
+vn -0.4706 0.6368 -0.6108
+vn -0.4934 0.8128 0.3097
+vn -0.7147 0.6343 -0.2948
+vn -0.0796 -0.9963 0.0336
+vn -0.1109 0.4752 0.8729
+vn -0.5719 0.1442 0.8076
+vn -0.0907 0.9911 0.0977
+vn 0.3445 0.8750 0.3403
+vn 0.6227 0.7788 -0.0756
+vn 0.0224 0.7709 -0.6365
+vn 0.5157 0.7266 0.4541
+vn -0.6359 0.4030 -0.6582
+vn 0.1870 0.9234 -0.3351
+vn 0.0888 0.9778 -0.1896
+vn 0.3024 0.7399 0.6009
+vn -0.1052 0.4259 -0.8986
+vn -0.7531 0.0277 -0.6573
+vn -0.2223 0.7035 -0.6750
+vn 0.9299 0.0913 0.3564
+vn 0.0498 -0.9191 0.3908
+vn -0.4374 -0.8643 0.2483
+vn -0.4515 0.7174 -0.5305
+vn -0.2893 0.9180 0.2713
+vn 0.8778 0.3123 0.3632
+vn -0.5609 0.8050 0.1935
+vn -0.0018 0.3770 0.9262
+vn 0.7181 -0.1099 -0.6872
+vn -0.2039 0.9788 -0.0189
+vn 0.1534 0.9766 0.1504
+vn -0.1387 0.9159 0.3766
+vn -0.0129 -0.9559 0.2935
+vn 0.4388 -0.6523 -0.6180
+vn 0.1927 0.9118 -0.3625
+vn -0.5926 0.5037 0.6286
+vn 0.0138 0.9997 -0.0206
+vn 0.7734 -0.2414 0.5861
+vn 0.9050 -0.1220 -0.4077
+vn 0.0009 1.0000 -0.0013
+vn 0.2170 0.9745 0.0576
+vn 0.1032 -0.9251 -0.3655
+vn 0.3792 0.5011 0.7779
+vn 0.9663 -0.0720 -0.2470
+vn -0.4080 -0.7700 0.4906
+vn 0.4909 0.6114 -0.6207
+vn -0.1272 0.5324 0.8369
+vn -0.1190 0.9576 -0.2625
+vn -0.4768 0.1837 -0.8596
+vn 0.5595 0.4325 0.7070
+vn -0.1457 0.9490 0.2796
+vn -0.0425 0.0306 0.9986
+vn 0.6490 0.6830 0.3351
+vn 0.1270 0.9820 0.1400
+vn -0.3601 0.7972 0.4846
+vn -0.9494 0.2770 0.1482
+vn 0.3065 -0.2611 -0.9154
+vn -0.8212 0.3293 0.4661
+vn -0.3294 -0.4472 0.8316
+vn 0.0747 0.9952 -0.0633
+vn -0.2860 -0.9301 0.2306
+vn 0.0101 0.9399 0.3413
+vn -0.0186 0.9706 0.2400
+vn -0.0809 0.9675 0.2395
+vn 0.0021 0.9993 -0.0373
+vn 0.5180 0.7158 0.4683
+vn -0.3688 -0.9059 0.2080
+vn 0.1962 0.9794 0.0471
+vn 0.5268 0.8485 0.0510
+vn -0.0014 1.0000 0.0009
+vn -0.9791 0.1757 -0.1024
+vn -0.0498 0.6704 0.7403
+vn -0.0704 0.4244 -0.9027
+vn -0.4356 0.7773 -0.4540
+vn 0.1371 -0.7097 0.6910
+vn 0.1450 0.9573 0.2500
+vn 0.2226 0.8341 0.5047
+vn -0.3445 -0.7250 -0.5964
+vn -0.0369 0.9979 0.0536
+vn 0.6363 0.4808 -0.6032
+vn -0.1663 -0.9758 0.1418
+vn -0.1907 0.9809 -0.0374
+vn 0.1892 0.7086 0.6798
+vn -0.2278 -0.7038 -0.6729
+vn -0.1696 0.6802 -0.7131
+vn -0.4216 0.1018 -0.9011
+vn -0.7775 0.6128 0.1411
+vn -0.2876 0.9413 0.1766
+vn -0.1272 0.4400 0.8889
+vn 0.0984 0.9299 0.3545
+vn -0.5223 0.7051 0.4795
+vn -0.7577 -0.0118 0.6525
+vn 0.5348 -0.7698 -0.3484
+vn -0.6100 0.7484 0.2605
+vn -0.2182 0.8187 -0.5312
+vn 0.2025 0.9607 -0.1900
+vn 0.0244 0.9981 0.0568
+vn 0.5773 -0.8141 -0.0634
+vn 0.9522 0.1681 0.2552
+vn 0.0991 0.8171 0.5679
+vn 0.1612 -0.4392 -0.8838
+vn 0.9015 -0.3957 0.1753
+vn -0.4951 0.8662 0.0673
+vn 0.3535 0.6936 -0.6276
+vn 0.1094 0.9727 -0.2046
+vn 0.1472 0.9830 0.1100
+vn -0.0156 0.0128 0.9998
+vn -0.0038 0.5896 0.8077
+vn -0.5940 -0.7103 0.3776
+vn 0.0075 0.9997 0.0243
+vn 0.7474 -0.0581 0.6618
+vn 0.5960 0.7477 0.2927
+vn -0.9137 0.2123 0.3465
+vn 0.0394 0.2149 0.9758
+vn -0.0965 0.9891 0.1113
+vn -0.6947 -0.5843 0.4195
+vn -0.4248 0.8839 -0.1956
+vn -0.2579 0.8532 0.4533
+vn 0.3749 0.8378 -0.3969
+vn -0.9565 0.0094 0.2917
+vn 0.2523 0.0112 -0.9676
+vn -0.0728 0.6220 0.7796
+vn 0.5791 0.7323 -0.3583
+vn -0.0642 -0.5024 -0.8623
+vn -0.0756 0.5270 0.8465
+vn 0.4978 0.8589 -0.1203
+vn 0.4607 0.5101 -0.7263
+vn 0.3556 0.7983 -0.4860
+vn 0.7319 0.6184 -0.2862
+vn 0.9747 -0.1629 -0.1528
+vn 0.5716 -0.2215 -0.7900
+vn -0.0346 0.4292 0.9025
+vn 0.4519 0.4436 -0.7739
+vn 0.0367 0.7415 0.6700
+vn -0.3950 0.8175 -0.4191
+vn 0.6931 0.5853 0.4207
+vn -0.4400 0.8324 -0.3370
+vn 0.7335 0.4649 0.4959
+vn -0.1084 0.8451 0.5236
+vn 0.1485 0.4490 0.8811
+vn -0.1787 0.8042 0.5668
+vn -0.7423 0.4084 0.5312
+vn 0.7006 0.1412 -0.6994
+vn -0.1199 0.1362 -0.9834
+vn 0.5344 0.8222 0.1961
+vn -0.5574 0.7935 -0.2442
+vn -0.3691 0.6468 -0.6674
+vn -0.0724 0.9927 0.0969
+vn -0.9270 0.3675 0.0747
+vn -0.2684 0.2545 -0.9291
+vn 0.4418 0.8877 -0.1300
+vn -0.0720 -0.9166 -0.3931
+vn 0.1673 0.9389 0.3009
+vn -0.1655 0.9469 0.2756
+vn -0.9718 0.2318 -0.0432
+vn 0.2497 0.8963 0.3664
+vn 0.0669 0.9729 0.2212
+vn -0.1694 0.9747 -0.1461
+vn -0.8438 -0.0423 -0.5350
+vn -0.1342 0.9907 0.0201
+vn 0.0489 0.8765 -0.4789
+vn 0.4715 0.8321 -0.2921
+vn -0.3181 0.8718 -0.3725
+vn -0.6922 0.6600 0.2919
+vn -0.3204 0.7040 -0.6338
+vn 0.9313 0.3581 0.0672
+vn 0.3310 -0.2610 0.9068
+vn -0.3276 0.8826 -0.3373
+vn -0.8935 0.4037 0.1964
+vn 0.7018 0.6247 -0.3423
+vn -0.0775 -0.8913 0.4468
+vn 0.4569 -0.7330 -0.5039
+vn -0.6992 0.5087 -0.5024
+vn 0.1359 0.3765 -0.9164
+vn -0.6950 -0.6981 -0.1724
+vn -0.1391 0.5914 -0.7943
+vn 0.4644 0.8834 0.0633
+vn -0.3059 -0.8554 -0.4179
+vn -0.0577 0.9983 -0.0074
+vn 0.8393 -0.5180 -0.1649
+vn -0.6198 0.7400 -0.2612
+vn 0.7377 0.6323 -0.2365
+vn -0.0124 0.9999 -0.0037
+vn 0.1727 0.2765 0.9454
+vn 0.4776 0.5608 0.6764
+vn -0.1088 0.9621 -0.2502
+vn -0.4927 -0.8036 -0.3339
+vn -0.7696 0.6369 0.0450
+vn -0.1150 0.6159 0.7794
+vn -0.1459 -0.9763 -0.1599
+vn 0.2360 0.9497 0.2058
+vn -0.0254 0.9873 0.1567
+vn -0.5724 0.5287 0.6268
+vn -0.2080 0.9254 0.3167
+vn 0.5475 -0.5832 0.6000
+vn 0.0364 0.7641 0.6440
+vn 0.8102 -0.5579 -0.1800
+vn 0.3518 0.7205 0.5976
+vn -0.9407 -0.3300 -0.0787
+vn 0.2956 0.9348 0.1970
+vn 0.3826 0.1013 0.9183
+vn 0.0734 0.9901 0.1196
+vn -0.0671 0.8141 -0.5768
+vn -0.0033 0.9532 0.3023
+vn -0.0246 -0.8453 -0.5337
+vn -0.0449 0.7359 0.6756
+vn -0.4952 0.3653 -0.7882
+vn 0.1155 -0.2633 0.9578
+vn 0.7610 0.5414 -0.3574
+vn -0.1081 0.7375 -0.6667
+vn 0.3323 0.6919 -0.6410
+vn -0.3783 0.0920 0.9211
+vn 0.3272 0.7127 0.6205
+vn 0.0951 0.9920 0.0836
+vn -0.0562 0.9932 -0.1022
+vn 0.8989 0.3446 -0.2706
+vn -0.5396 0.1572 -0.8271
+vn 0.0059 0.9911 -0.1329
+vn -0.0936 0.8805 0.4647
+vn 0.5062 -0.8605 -0.0571
+vn -0.0410 0.7421 0.6691
+vn -0.8316 0.4455 -0.3316
+vn 0.4287 0.2092 -0.8789
+vn 0.4503 -0.0202 -0.8926
+vn -0.1011 0.7162 0.6905
+vn -0.0108 0.9998 0.0149
+vn 0.4282 -0.0915 0.8990
+vn -0.1957 0.9665 0.1660
+vn 0.9227 0.3744 0.0918
+vn -0.5205 0.8220 0.2310
+vn 0.3730 0.1394 -0.9173
+vn -0.2718 0.9617 0.0345
+vn 0.2539 0.4558 -0.8531
+vn -0.1996 0.9763 0.0833
+vn -0.8616 0.4151 -0.2921
+vn -0.4170 0.9089 0.0011
+vn -0.2837 -0.8451 0.4532
+vn 0.5426 0.5039 0.6721
+vn -0.0917 0.9022 -0.4214
+vn 0.2451 0.5542 -0.7955
+vn -0.0751 -0.4009 0.9130
+vn 0.6186 0.1954 -0.7610
+vn 0.8647 0.3908 -0.3155
+vn -0.6024 0.7854 -0.1426
+vn 0.1690 0.9582 0.2307
+vn -0.0001 0.9850 -0.1727
+vn -0.5702 0.8213 -0.0153
+vn -0.3832 0.7351 -0.5593
+vn -0.9992 0.0000 -0.0399
+vn -0.6951 0.0000 0.7189
+vn 0.8708 0.0000 -0.4916
+vn 0.3311 0.0000 0.9436
+vn -0.2182 0.0000 0.9759
+vn 0.9919 0.0000 -0.1273
+vn 0.8976 0.0000 0.4408
+vn -0.8976 0.0000 -0.4408
+vn 0.4392 0.0000 0.8984
+usemtl None
+s off
+f 128//1 146//1 326//1 309//1
+f 134//2 29//2 210//2 315//2
+f 106//3 177//3 355//3 287//3
+f 147//4 75//4 256//4 327//4
+f 135//5 44//5 225//5 316//5
+f 177//6 103//6 284//6 355//6
+f 129//7 147//7 327//7 310//7
+f 136//8 45//8 226//8 317//8
+f 67//9 177//9 355//9 248//9
+f 147//10 50//10 231//10 327//10
+f 137//11 45//11 226//11 318//11
+f 178//12 84//12 265//12 356//12
+f 127//13 147//13 327//13 308//13
+f 14//14 46//14 227//14 195//14
+f 110//15 178//15 356//15 291//15
+f 148//16 126//16 307//16 328//16
+f 15//17 47//17 228//17 196//17
+f 178//18 107//18 288//18 356//18
+f 69//19 148//19 328//19 250//19
+f 16//20 49//20 230//20 197//20
+f 60//21 178//21 356//21 241//21
+f 148//22 124//22 305//22 328//22
+f 17//23 50//23 231//23 198//23
+f 179//24 73//24 254//24 357//24
+f 149//25 125//25 306//25 329//25
+f 18//26 51//26 232//26 199//26
+f 114//27 179//27 357//27 295//27
+f 48//28 149//28 329//28 229//28
+f 19//29 52//29 233//29 200//29
+f 179//30 111//30 292//30 357//30
+f 149//31 78//31 259//31 329//31
+f 21//32 53//32 234//32 202//32
+f 59//33 179//33 357//33 240//33
+f 124//34 149//34 329//34 305//34
+f 22//35 54//35 235//35 203//35
+f 180//36 81//36 262//36 358//36
+f 150//37 57//37 238//37 330//37
+f 23//38 55//38 236//38 204//38
+f 118//39 180//39 358//39 299//39
+f 125//40 150//40 330//40 306//40
+f 24//41 56//41 237//41 205//41
+f 180//42 115//42 296//42 358//42
+f 150//43 55//43 236//43 330//43
+f 26//44 57//44 238//44 207//44
+f 126//45 181//45 359//45 307//45
+f 123//46 150//46 330//46 304//46
+f 28//47 58//47 239//47 209//47
+f 181//48 123//48 304//48 359//48
+f 152//49 122//49 303//49 331//49
+f 29//50 59//50 240//50 210//50
+f 130//51 182//51 360//51 311//51
+f 81//52 152//52 331//52 262//52
+f 30//53 60//53 241//53 211//53
+f 182//54 127//54 308//54 360//54
+f 152//55 120//55 301//55 331//55
+f 31//56 61//56 242//56 212//56
+f 183//57 79//57 260//57 361//57
+f 153//58 121//58 302//58 332//58
+f 32//59 62//59 243//59 213//59
+f 135//60 183//60 361//60 316//60
+f 58//61 153//61 332//61 239//61
+f 33//62 63//62 244//62 214//62
+f 183//63 132//63 313//63 361//63
+f 153//64 73//64 254//64 332//64
+f 34//65 64//65 245//65 215//65
+f 74//66 183//66 361//66 255//66
+f 120//67 153//67 332//67 301//67
+f 35//68 65//68 246//68 216//68
+f 184//69 77//69 258//69 362//69
+f 154//70 77//70 258//70 333//70
+f 5//71 67//71 248//71 186//71
+f 137//72 184//72 362//72 318//72
+f 121//73 154//73 333//73 302//73
+f 6//74 69//74 250//74 187//74
+f 49//75 184//75 362//75 230//75
+f 154//76 51//76 232//76 333//76
+f 7//77 70//77 251//77 188//77
+f 119//78 154//78 333//78 300//78
+f 8//79 71//79 252//79 189//79
+f 46//80 2//80 151//80 227//80
+f 155//81 118//81 299//81 334//81
+f 9//82 72//82 253//82 190//82
+f 47//83 1//83 138//83 228//83
+f 155//84 116//84 297//84 334//84
+f 10//85 73//85 254//85 191//85
+f 48//86 4//86 185//86 229//86
+f 156//87 117//87 298//87 335//87
+f 1//88 74//88 255//88 138//88
+f 49//89 3//89 158//89 230//89
+f 47//90 156//90 335//90 228//90
+f 2//91 75//91 256//91 151//91
+f 50//92 2//92 151//92 231//92
+f 156//93 79//93 260//93 335//93
+f 4//94 76//94 257//94 185//94
+f 51//95 3//95 158//95 232//95
+f 116//96 156//96 335//96 297//96
+f 3//97 77//97 258//97 158//97
+f 52//98 5//98 186//98 233//98
+f 157//99 58//99 239//99 336//99
+f 4//100 78//100 259//100 185//100
+f 53//101 7//101 188//101 234//101
+f 117//102 157//102 336//102 298//102
+f 1//103 79//103 260//103 138//103
+f 54//104 8//104 189//104 235//104
+f 157//105 56//105 237//105 336//105
+f 11//106 82//106 263//106 192//106
+f 55//107 9//107 190//107 236//107
+f 115//108 157//108 336//108 296//108
+f 9//109 83//109 264//109 190//109
+f 56//110 10//110 191//110 237//110
+f 159//111 114//111 295//111 337//111
+f 11//112 84//112 265//112 192//112
+f 57//113 9//113 190//113 238//113
+f 84//114 159//114 337//114 265//114
+f 5//115 85//115 266//115 186//115
+f 58//116 10//116 191//116 239//116
+f 159//117 112//117 293//117 337//117
+f 6//118 86//118 267//118 187//118
+f 59//119 10//119 191//119 240//119
+f 82//120 159//120 337//120 263//120
+f 7//121 87//121 268//121 188//121
+f 60//122 11//122 192//122 241//122
+f 160//123 113//123 294//123 338//123
+f 13//124 88//124 269//124 194//124
+f 61//125 7//125 188//125 242//125
+f 61//126 160//126 338//126 242//126
+f 13//127 90//127 271//127 194//127
+f 62//128 11//128 192//128 243//128
+f 160//129 70//129 251//129 338//129
+f 20//130 93//130 274//130 201//130
+f 63//131 12//131 193//131 244//131
+f 112//132 160//132 338//132 293//132
+f 36//133 95//133 276//133 217//133
+f 64//134 13//134 194//134 245//134
+f 161//135 51//135 232//135 339//135
+f 35//136 96//136 277//136 216//136
+f 65//137 5//137 186//137 246//137
+f 113//138 161//138 339//138 294//138
+f 36//139 97//139 278//139 217//139
+f 66//140 13//140 194//140 247//140
+f 161//141 49//141 230//141 339//141
+f 37//142 99//142 280//142 218//142
+f 67//143 14//143 195//143 248//143
+f 111//144 161//144 339//144 292//144
+f 37//145 101//145 282//145 218//145
+f 70//146 16//146 197//146 251//146
+f 162//147 110//147 291//147 340//147
+f 21//148 102//148 283//148 202//148
+f 72//149 17//149 198//149 253//149
+f 55//150 162//150 340//150 236//150
+f 38//151 103//151 284//151 219//151
+f 73//152 18//152 199//152 254//152
+f 162//153 108//153 289//153 340//153
+f 17//154 104//154 285//154 198//154
+f 74//155 19//155 200//155 255//155
+f 83//156 162//156 340//156 264//156
+f 38//157 105//157 286//157 219//157
+f 75//158 20//158 201//158 256//158
+f 163//159 109//159 290//159 341//159
+f 14//160 106//160 287//160 195//160
+f 76//161 21//161 202//161 257//161
+f 78//162 163//162 341//162 259//162
+f 39//163 107//163 288//163 220//163
+f 77//164 22//164 203//164 258//164
+f 163//165 76//165 257//165 341//165
+f 23//166 108//166 289//166 204//166
+f 78//167 23//167 204//167 259//167
+f 108//168 163//168 341//168 289//168
+f 39//169 109//169 290//169 220//169
+f 79//170 24//170 205//170 260//170
+f 164//171 61//171 242//171 342//171
+f 30//172 110//172 291//172 211//172
+f 80//173 25//173 206//173 261//173
+f 109//174 164//174 342//174 290//174
+f 40//175 111//175 292//175 221//175
+f 81//176 28//176 209//176 262//176
+f 164//177 53//177 234//177 342//177
+f 31//178 112//178 293//178 212//178
+f 82//179 29//179 210//179 263//179
+f 107//180 164//180 342//180 288//180
+f 40//181 113//181 294//181 221//181
+f 83//182 30//182 211//182 264//182
+f 165//183 106//183 287//183 343//183
+f 29//184 114//184 295//184 210//184
+f 84//185 31//185 212//185 265//185
+f 50//186 165//186 343//186 231//186
+f 41//187 115//187 296//187 222//187
+f 85//188 32//188 213//188 266//188
+f 165//189 104//189 285//189 343//189
+f 15//190 116//190 297//190 196//190
+f 87//191 33//191 214//191 268//191
+f 46//192 165//192 343//192 227//192
+f 41//193 117//193 298//193 222//193
+f 89//194 34//194 215//194 270//194
+f 166//195 105//195 286//195 344//195
+f 27//196 118//196 299//196 208//196
+f 90//197 35//197 216//197 271//197
+f 72//198 166//198 344//198 253//198
+f 42//199 119//199 300//199 223//199
+f 91//200 34//200 215//200 272//200
+f 166//201 83//201 264//201 344//201
+f 28//202 120//202 301//202 209//202
+f 92//203 35//203 216//203 273//203
+f 104//204 166//204 344//204 285//204
+f 42//205 121//205 302//205 223//205
+f 94//206 14//206 195//206 275//206
+f 167//207 62//207 243//207 345//207
+f 43//208 123//208 304//208 224//208
+f 95//209 15//209 196//209 276//209
+f 105//210 167//210 345//210 286//210
+f 43//211 125//211 306//211 224//211
+f 96//212 36//212 217//212 277//212
+f 167//213 60//213 241//213 345//213
+f 26//214 128//214 309//214 207//214
+f 97//215 19//215 200//215 278//215
+f 103//216 167//216 345//216 284//216
+f 25//217 130//217 311//217 206//217
+f 98//218 36//218 217//218 279//218
+f 168//219 102//219 283//219 346//219
+f 44//220 132//220 313//220 225//220
+f 99//221 33//221 214//221 280//221
+f 48//222 168//222 346//222 229//222
+f 32//223 133//223 314//223 213//223
+f 100//224 37//224 218//224 281//224
+f 168//225 100//225 281//225 346//225
+f 44//226 134//226 315//226 225//226
+f 102//227 37//227 218//227 283//227
+f 76//228 168//228 346//228 257//228
+f 19//229 135//229 316//229 200//229
+f 103//230 32//230 213//230 284//230
+f 169//231 101//231 282//231 347//231
+f 33//232 136//232 317//232 214//232
+f 104//233 38//233 219//233 285//233
+f 69//234 169//234 347//234 250//234
+f 16//235 137//235 318//235 197//235
+f 105//236 30//236 211//236 286//236
+f 169//237 86//237 267//237 347//237
+f 139//238 137//238 318//238 319//238
+f 106//239 38//239 219//239 287//239
+f 100//240 169//240 347//240 281//240
+f 87//241 139//241 319//241 268//241
+f 107//242 31//242 212//242 288//242
+f 170//243 97//243 278//243 348//243
+f 139//244 136//244 317//244 319//244
+f 108//245 39//245 220//245 289//245
+f 65//246 170//246 348//246 246//246
+f 70//247 139//247 319//247 251//247
+f 109//248 21//248 202//248 290//248
+f 170//249 52//249 233//249 348//249
+f 63//155 140//155 320//155 244//155
+f 110//250 39//250 220//250 291//250
+f 96//251 170//251 348//251 277//251
+f 136//252 140//252 320//252 317//252
+f 111//253 18//253 199//253 292//253
+f 171//254 47//254 228//254 349//254
+f 141//255 135//255 316//255 321//255
+f 112//256 40//256 221//256 293//256
+f 97//257 171//257 349//257 278//257
+f 85//258 141//258 321//258 266//258
+f 113//259 16//259 197//259 294//259
+f 171//260 74//260 255//260 349//260
+f 141//261 133//261 314//261 321//261
+f 114//262 40//262 221//262 295//262
+f 95//263 171//263 349//263 276//263
+f 52//264 141//264 321//264 233//264
+f 115//265 28//265 209//265 296//265
+f 172//266 94//266 275//266 350//266
+f 142//267 134//267 315//267 322//267
+f 116//268 41//268 222//268 297//268
+f 75//269 172//269 350//269 256//269
+f 62//270 142//270 322//270 243//270
+f 117//271 24//271 205//271 298//271
+f 172//272 46//272 227//272 350//272
+f 142//273 82//273 263//273 322//273
+f 118//274 41//274 222//274 299//274
+f 93//275 172//275 350//275 274//275
+f 133//276 142//276 322//276 314//276
+f 119//277 22//277 203//277 300//277
+f 173//278 65//278 246//278 351//278
+f 143//279 56//279 237//279 323//279
+f 120//280 42//280 223//280 301//280
+f 94//281 173//281 351//281 275//281
+f 134//282 143//282 323//282 315//282
+f 121//283 18//283 199//283 302//283
+f 173//284 67//284 248//284 351//284
+f 143//285 59//285 240//285 323//285
+f 122//286 42//286 223//286 303//286
+f 92//287 173//287 351//287 273//287
+f 132//288 143//288 323//288 313//288
+f 123//289 26//289 207//289 304//289
+f 174//290 91//290 272//290 352//290
+f 131//291 144//291 324//291 312//291
+f 124//292 43//292 224//292 305//292
+f 68//293 174//293 352//293 249//293
+f 145//294 130//294 311//294 325//294
+f 125//295 23//295 204//295 306//295
+f 174//296 89//296 270//296 352//296
+f 145//297 128//297 309//297 325//297
+f 126//298 43//298 224//298 307//298
+f 175//299 87//299 268//299 353//299
+f 80//300 145//300 325//300 261//300
+f 127//301 20//301 201//301 308//301
+f 102//302 175//302 353//302 283//302
+f 146//303 129//303 310//303 326//303
+f 129//304 17//304 198//304 310//304
+f 175//305 99//305 280//305 353//305
+f 57//306 146//306 326//306 238//306
+f 132//307 24//307 205//307 313//307
+f 53//308 175//308 353//308 234//308
+f 146//309 72//309 253//309 326//309
+f 133//310 44//310 225//310 314//310
+f 177//311 85//311 266//311 355//311
+f 671//312 688//312 508//312 490//312
+f 677//313 572//313 391//313 496//313
+f 649//314 717//314 539//314 468//314
+f 689//315 618//315 437//315 509//315
+f 678//316 587//316 406//316 497//316
+f 717//317 646//317 465//317 539//317
+f 672//318 689//318 509//318 491//318
+f 679//319 588//319 407//319 498//319
+f 610//320 717//320 539//320 429//320
+f 689//321 593//321 412//321 509//321
+f 680//322 588//322 407//322 499//322
+f 718//323 627//323 446//323 540//323
+f 670//324 689//324 509//324 489//324
+f 557//325 589//325 408//325 376//325
+f 653//326 718//326 540//326 472//326
+f 690//327 669//327 488//327 510//327
+f 558//328 590//328 409//328 377//328
+f 718//329 650//329 469//329 540//329
+f 612//330 690//330 510//330 431//330
+f 559//331 592//331 411//331 378//331
+f 603//332 718//332 540//332 422//332
+f 690//333 667//333 486//333 510//333
+f 560//334 593//334 412//334 379//334
+f 719//335 616//335 435//335 541//335
+f 691//336 668//336 487//336 511//336
+f 561//337 594//337 413//337 380//337
+f 657//338 719//338 541//338 476//338
+f 591//339 691//339 511//339 410//339
+f 562//340 595//340 414//340 381//340
+f 719//341 654//341 473//341 541//341
+f 691//342 621//342 440//342 511//342
+f 564//343 596//343 415//343 383//343
+f 602//344 719//344 541//344 421//344
+f 667//345 691//345 511//345 486//345
+f 565//346 597//346 416//346 384//346
+f 720//347 624//347 443//347 542//347
+f 692//348 600//348 419//348 512//348
+f 566//349 598//349 417//349 385//349
+f 661//350 720//350 542//350 480//350
+f 668//351 692//351 512//351 487//351
+f 567//352 599//352 418//352 386//352
+f 720//353 658//353 477//353 542//353
+f 692//354 598//354 417//354 512//354
+f 569//355 600//355 419//355 388//355
+f 669//356 721//356 543//356 488//356
+f 666//357 692//357 512//357 485//357
+f 571//358 601//358 420//358 390//358
+f 721//359 666//359 485//359 543//359
+f 693//360 665//360 484//360 514//360
+f 572//361 602//361 421//361 391//361
+f 673//362 722//362 544//362 492//362
+f 624//363 693//363 514//363 443//363
+f 573//364 603//364 422//364 392//364
+f 722//365 670//365 489//365 544//365
+f 693//366 663//366 482//366 514//366
+f 574//367 604//367 423//367 393//367
+f 723//368 622//368 441//368 545//368
+f 694//369 664//369 483//369 515//369
+f 575//370 605//370 424//370 394//370
+f 678//371 723//371 545//371 497//371
+f 601//372 694//372 515//372 420//372
+f 576//373 606//373 425//373 395//373
+f 723//374 675//374 494//374 545//374
+f 694//375 616//375 435//375 515//375
+f 577//376 607//376 426//376 396//376
+f 617//377 723//377 545//377 436//377
+f 663//378 694//378 515//378 482//378
+f 578//379 608//379 427//379 397//379
+f 724//380 620//380 439//380 546//380
+f 695//381 620//381 439//381 516//381
+f 548//382 610//382 429//382 367//382
+f 680//383 724//383 546//383 499//383
+f 664//384 695//384 516//384 483//384
+f 549//385 612//385 431//385 368//385
+f 592//386 724//386 546//386 411//386
+f 695//387 594//387 413//387 516//387
+f 550//388 613//388 432//388 369//388
+f 662//389 695//389 516//389 481//389
+f 551//390 614//390 433//390 370//390
+f 589//391 513//391 364//391 408//391
+f 696//392 661//392 480//392 517//392
+f 552//393 615//393 434//393 371//393
+f 590//394 500//394 363//394 409//394
+f 696//395 659//395 478//395 517//395
+f 553//396 616//396 435//396 372//396
+f 591//397 547//397 366//397 410//397
+f 697//398 660//398 479//398 518//398
+f 500//399 617//399 436//399 363//399
+f 592//400 520//400 365//400 411//400
+f 590//401 697//401 518//401 409//401
+f 513//402 618//402 437//402 364//402
+f 593//403 513//403 364//403 412//403
+f 697//404 622//404 441//404 518//404
+f 547//405 619//405 438//405 366//405
+f 594//406 520//406 365//406 413//406
+f 659//407 697//407 518//407 478//407
+f 520//408 620//408 439//408 365//408
+f 595//409 548//409 367//409 414//409
+f 698//410 601//410 420//410 519//410
+f 547//411 621//411 440//411 366//411
+f 596//412 550//412 369//412 415//412
+f 660//413 698//413 519//413 479//413
+f 500//414 622//414 441//414 363//414
+f 597//415 551//415 370//415 416//415
+f 698//416 599//416 418//416 519//416
+f 554//417 625//417 444//417 373//417
+f 598//418 552//418 371//418 417//418
+f 658//419 698//419 519//419 477//419
+f 552//420 626//420 445//420 371//420
+f 599//421 553//421 372//421 418//421
+f 699//422 657//422 476//422 521//422
+f 554//423 627//423 446//423 373//423
+f 600//424 552//424 371//424 419//424
+f 627//425 699//425 521//425 446//425
+f 548//426 628//426 447//426 367//426
+f 601//427 553//427 372//427 420//427
+f 699//428 655//428 474//428 521//428
+f 549//429 629//429 448//429 368//429
+f 602//430 553//430 372//430 421//430
+f 625//431 699//431 521//431 444//431
+f 550//432 630//432 449//432 369//432
+f 603//433 554//433 373//433 422//433
+f 700//434 656//434 475//434 522//434
+f 556//435 631//435 450//435 375//435
+f 604//436 550//436 369//436 423//436
+f 604//437 700//437 522//437 423//437
+f 556//438 633//438 452//438 375//438
+f 605//439 554//439 373//439 424//439
+f 700//440 613//440 432//440 522//440
+f 563//441 636//441 455//441 382//441
+f 606//442 555//442 374//442 425//442
+f 655//443 700//443 522//443 474//443
+f 579//444 638//444 457//444 398//444
+f 607//445 556//445 375//445 426//445
+f 701//446 594//446 413//446 523//446
+f 578//447 639//447 458//447 397//447
+f 608//448 548//448 367//448 427//448
+f 656//449 701//449 523//449 475//449
+f 579//450 640//450 459//450 398//450
+f 609//451 556//451 375//451 428//451
+f 701//452 592//452 411//452 523//452
+f 580//453 642//453 461//453 399//453
+f 610//454 557//454 376//454 429//454
+f 654//455 701//455 523//455 473//455
+f 580//456 644//456 463//456 399//456
+f 613//457 559//457 378//457 432//457
+f 702//458 653//458 472//458 524//458
+f 564//459 645//459 464//459 383//459
+f 615//460 560//460 379//460 434//460
+f 598//461 702//461 524//461 417//461
+f 581//462 646//462 465//462 400//462
+f 616//463 561//463 380//463 435//463
+f 702//464 651//464 470//464 524//464
+f 560//465 647//465 466//465 379//465
+f 617//466 562//466 381//466 436//466
+f 626//467 702//467 524//467 445//467
+f 581//468 648//468 467//468 400//468
+f 618//469 563//469 382//469 437//469
+f 703//470 652//470 471//470 525//470
+f 557//471 649//471 468//471 376//471
+f 619//472 564//472 383//472 438//472
+f 621//473 703//473 525//473 440//473
+f 582//474 650//474 469//474 401//474
+f 620//475 565//475 384//475 439//475
+f 703//476 619//476 438//476 525//476
+f 566//477 651//477 470//477 385//477
+f 621//478 566//478 385//478 440//478
+f 651//479 703//479 525//479 470//479
+f 582//480 652//480 471//480 401//480
+f 622//481 567//481 386//481 441//481
+f 704//482 604//482 423//482 526//482
+f 573//483 653//483 472//483 392//483
+f 623//484 568//484 387//484 442//484
+f 652//485 704//485 526//485 471//485
+f 583//486 654//486 473//486 402//486
+f 624//487 571//487 390//487 443//487
+f 704//488 596//488 415//488 526//488
+f 574//489 655//489 474//489 393//489
+f 625//490 572//490 391//490 444//490
+f 650//491 704//491 526//491 469//491
+f 583//492 656//492 475//492 402//492
+f 626//493 573//493 392//493 445//493
+f 705//494 649//494 468//494 527//494
+f 572//495 657//495 476//495 391//495
+f 627//496 574//496 393//496 446//496
+f 593//497 705//497 527//497 412//497
+f 584//498 658//498 477//498 403//498
+f 628//499 575//499 394//499 447//499
+f 705//500 647//500 466//500 527//500
+f 558//501 659//501 478//501 377//501
+f 630//502 576//502 395//502 449//502
+f 589//503 705//503 527//503 408//503
+f 584//504 660//504 479//504 403//504
+f 632//505 577//505 396//505 451//505
+f 706//506 648//506 467//506 528//506
+f 570//507 661//507 480//507 389//507
+f 633//508 578//508 397//508 452//508
+f 615//509 706//509 528//509 434//509
+f 585//510 662//510 481//510 404//510
+f 634//511 577//511 396//511 453//511
+f 706//512 626//512 445//512 528//512
+f 571//513 663//513 482//513 390//513
+f 635//514 578//514 397//514 454//514
+f 647//515 706//515 528//515 466//515
+f 585//516 664//516 483//516 404//516
+f 637//517 557//517 376//517 456//517
+f 707//518 605//518 424//518 529//518
+f 586//519 666//519 485//519 405//519
+f 638//520 558//520 377//520 457//520
+f 648//521 707//521 529//521 467//521
+f 586//522 668//522 487//522 405//522
+f 639//523 579//523 398//523 458//523
+f 707//524 603//524 422//524 529//524
+f 569//525 671//525 490//525 388//525
+f 640//526 562//526 381//526 459//526
+f 646//527 707//527 529//527 465//527
+f 568//528 673//528 492//528 387//528
+f 641//529 579//529 398//529 460//529
+f 708//530 645//530 464//530 530//530
+f 587//531 675//531 494//531 406//531
+f 642//532 576//532 395//532 461//532
+f 591//533 708//533 530//533 410//533
+f 575//534 676//534 495//534 394//534
+f 643//535 580//535 399//535 462//535
+f 708//536 643//536 462//536 530//536
+f 587//537 677//537 496//537 406//537
+f 645//538 580//538 399//538 464//538
+f 619//539 708//539 530//539 438//539
+f 562//540 678//540 497//540 381//540
+f 646//541 575//541 394//541 465//541
+f 709//542 644//542 463//542 531//542
+f 576//543 679//543 498//543 395//543
+f 647//544 581//544 400//544 466//544
+f 612//545 709//545 531//545 431//545
+f 559//546 680//546 499//546 378//546
+f 648//547 573//547 392//547 467//547
+f 709//548 629//548 448//548 531//548
+f 681//549 680//549 499//549 501//549
+f 649//550 581//550 400//550 468//550
+f 643//551 709//551 531//551 462//551
+f 630//552 681//552 501//552 449//552
+f 650//553 574//553 393//553 469//553
+f 710//554 640//554 459//554 532//554
+f 681//555 679//555 498//555 501//555
+f 651//556 582//556 401//556 470//556
+f 608//557 710//557 532//557 427//557
+f 613//558 681//558 501//558 432//558
+f 652//559 564//559 383//559 471//559
+f 710//560 595//560 414//560 532//560
+f 606//561 682//561 502//561 425//561
+f 653//562 582//562 401//562 472//562
+f 639//563 710//563 532//563 458//563
+f 679//564 682//564 502//564 498//564
+f 654//565 561//565 380//565 473//565
+f 711//566 590//566 409//566 533//566
+f 683//567 678//567 497//567 503//567
+f 655//568 583//568 402//568 474//568
+f 640//569 711//569 533//569 459//569
+f 628//570 683//570 503//570 447//570
+f 656//571 559//571 378//571 475//571
+f 711//572 617//572 436//572 533//572
+f 683//573 676//573 495//573 503//573
+f 657//574 583//574 402//574 476//574
+f 638//575 711//575 533//575 457//575
+f 595//576 683//576 503//576 414//576
+f 658//577 571//577 390//577 477//577
+f 712//578 637//578 456//578 534//578
+f 684//579 677//579 496//579 504//579
+f 659//580 584//580 403//580 478//580
+f 618//581 712//581 534//581 437//581
+f 605//582 684//582 504//582 424//582
+f 660//583 567//583 386//583 479//583
+f 712//584 589//584 408//584 534//584
+f 684//585 625//585 444//585 504//585
+f 661//586 584//586 403//586 480//586
+f 636//587 712//587 534//587 455//587
+f 676//588 684//588 504//588 495//588
+f 662//589 565//589 384//589 481//589
+f 713//590 608//590 427//590 535//590
+f 685//591 599//591 418//591 505//591
+f 663//592 585//592 404//592 482//592
+f 637//593 713//593 535//593 456//593
+f 677//594 685//594 505//594 496//594
+f 664//595 561//595 380//595 483//595
+f 713//596 610//596 429//596 535//596
+f 685//597 602//597 421//597 505//597
+f 665//598 585//598 404//598 484//598
+f 635//599 713//599 535//599 454//599
+f 675//600 685//600 505//600 494//600
+f 666//601 569//601 388//601 485//601
+f 714//602 634//602 453//602 536//602
+f 674//603 686//603 506//603 493//603
+f 667//604 586//604 405//604 486//604
+f 611//605 714//605 536//605 430//605
+f 687//606 673//606 492//606 507//606
+f 668//607 566//607 385//607 487//607
+f 714//608 632//608 451//608 536//608
+f 687//609 671//609 490//609 507//609
+f 669//610 586//610 405//610 488//610
+f 715//611 630//611 449//611 537//611
+f 623//612 687//612 507//612 442//612
+f 670//613 563//613 382//613 489//613
+f 645//614 715//614 537//614 464//614
+f 688//615 672//615 491//615 508//615
+f 672//616 560//616 379//616 491//616
+f 715//617 642//617 461//617 537//617
+f 600//618 688//618 508//618 419//618
+f 675//619 567//619 386//619 494//619
+f 596//620 715//620 537//620 415//620
+f 688//621 615//621 434//621 508//621
+f 676//622 587//622 406//622 495//622
+f 717//623 628//623 447//623 539//623
+f 2//624 46//624 408//624 364//624
+f 1//625 47//625 409//625 363//625
+f 4//626 48//626 410//626 366//626
+f 3//627 49//627 411//627 365//627
+f 2//628 50//628 412//628 364//628
+f 3//629 51//629 413//629 365//629
+f 5//630 52//630 414//630 367//630
+f 7//631 53//631 415//631 369//631
+f 8//632 54//632 416//632 370//632
+f 9//633 55//633 417//633 371//633
+f 10//634 56//634 418//634 372//634
+f 9//635 57//635 419//635 371//635
+f 10//636 58//636 420//636 372//636
+f 10//637 59//637 421//637 372//637
+f 11//638 60//638 422//638 373//638
+f 7//639 61//639 423//639 369//639
+f 11//640 62//640 424//640 373//640
+f 12//641 63//641 425//641 374//641
+f 13//642 64//642 426//642 375//642
+f 5//643 65//643 427//643 367//643
+f 13//644 66//644 428//644 375//644
+f 14//645 67//645 429//645 376//645
+f 16//646 70//646 432//646 378//646
+f 17//647 72//647 434//647 379//647
+f 18//648 73//648 435//648 380//648
+f 19//649 74//649 436//649 381//649
+f 20//650 75//650 437//650 382//650
+f 21//651 76//651 438//651 383//651
+f 22//652 77//652 439//652 384//652
+f 23//653 78//653 440//653 385//653
+f 24//654 79//654 441//654 386//654
+f 25//655 80//655 442//655 387//655
+f 28//656 81//656 443//656 390//656
+f 29//657 82//657 444//657 391//657
+f 30//658 83//658 445//658 392//658
+f 31//659 84//659 446//659 393//659
+f 32//660 85//660 447//660 394//660
+f 33//661 87//661 449//661 395//661
+f 34//662 89//662 451//662 396//662
+f 35//663 90//663 452//663 397//663
+f 34//664 91//664 453//664 396//664
+f 35//665 92//665 454//665 397//665
+f 14//666 94//666 456//666 376//666
+f 15//667 95//667 457//667 377//667
+f 36//668 96//668 458//668 398//668
+f 19//669 97//669 459//669 381//669
+f 36//670 98//670 460//670 398//670
+f 33//671 99//671 461//671 395//671
+f 37//672 100//672 462//672 399//672
+f 37//673 102//673 464//673 399//673
+f 32//674 103//674 465//674 394//674
+f 38//675 104//675 466//675 400//675
+f 30//676 105//676 467//676 392//676
+f 38//677 106//677 468//677 400//677
+f 31//678 107//678 469//678 393//678
+f 39//679 108//679 470//679 401//679
+f 21//680 109//680 471//680 383//680
+f 39//681 110//681 472//681 401//681
+f 18//682 111//682 473//682 380//682
+f 40//683 112//683 474//683 402//683
+f 16//684 113//684 475//684 378//684
+f 40//685 114//685 476//685 402//685
+f 28//686 115//686 477//686 390//686
+f 41//687 116//687 478//687 403//687
+f 24//688 117//688 479//688 386//688
+f 41//689 118//689 480//689 403//689
+f 22//690 119//690 481//690 384//690
+f 42//691 120//691 482//691 404//691
+f 18//692 121//692 483//692 380//692
+f 42//693 122//693 484//693 404//693
+f 26//694 123//694 485//694 388//694
+f 43//695 124//695 486//695 405//695
+f 23//696 125//696 487//696 385//696
+f 43//697 126//697 488//697 405//697
+f 20//698 127//698 489//698 382//698
+f 17//699 129//699 491//699 379//699
+f 24//700 132//700 494//700 386//700
+f 44//701 133//701 495//701 406//701
+f 29//702 134//702 496//702 391//702
+f 44//703 135//703 497//703 406//703
+f 45//704 136//704 498//704 407//704
+f 45//705 137//705 499//705 407//705
+f 46//706 14//706 376//706 408//706
+f 47//707 15//707 377//707 409//707
+f 49//708 16//708 378//708 411//708
+f 50//709 17//709 379//709 412//709
+f 51//710 18//710 380//710 413//710
+f 52//711 19//711 381//711 414//711
+f 53//712 21//712 383//712 415//712
+f 54//713 22//713 384//713 416//713
+f 55//714 23//714 385//714 417//714
+f 56//715 24//715 386//715 418//715
+f 57//716 26//716 388//716 419//716
+f 58//717 28//717 390//717 420//717
+f 59//718 29//718 391//718 421//718
+f 60//719 30//719 392//719 422//719
+f 61//720 31//720 393//720 423//720
+f 62//721 32//721 394//721 424//721
+f 63//722 33//722 395//722 425//722
+f 64//723 34//723 396//723 426//723
+f 65//724 35//724 397//724 427//724
+f 67//725 5//725 367//725 429//725
+f 69//726 6//726 368//726 431//726
+f 70//727 7//727 369//727 432//727
+f 71//728 8//728 370//728 433//728
+f 72//729 9//729 371//729 434//729
+f 73//730 10//730 372//730 435//730
+f 74//731 1//731 363//731 436//731
+f 75//732 2//732 364//732 437//732
+f 76//733 4//733 366//733 438//733
+f 77//734 3//734 365//734 439//734
+f 78//735 4//735 366//735 440//735
+f 79//736 1//736 363//736 441//736
+f 82//737 11//737 373//737 444//737
+f 83//738 9//738 371//738 445//738
+f 84//739 11//739 373//739 446//739
+f 85//740 5//740 367//740 447//740
+f 86//741 6//741 368//741 448//741
+f 87//742 7//742 369//742 449//742
+f 88//743 13//743 375//743 450//743
+f 90//744 13//744 375//744 452//744
+f 93//745 20//745 382//745 455//745
+f 95//746 36//746 398//746 457//746
+f 96//747 35//747 397//747 458//747
+f 97//748 36//748 398//748 459//748
+f 99//749 37//749 399//749 461//749
+f 101//750 37//750 399//750 463//750
+f 102//751 21//751 383//751 464//751
+f 103//752 38//752 400//752 465//752
+f 104//753 17//753 379//753 466//753
+f 105//754 38//754 400//754 467//754
+f 106//755 14//755 376//755 468//755
+f 107//756 39//756 401//756 469//756
+f 108//757 23//757 385//757 470//757
+f 109//758 39//758 401//758 471//758
+f 110//759 30//759 392//759 472//759
+f 111//760 40//760 402//760 473//760
+f 112//761 31//761 393//761 474//761
+f 113//762 40//762 402//762 475//762
+f 114//763 29//763 391//763 476//763
+f 115//764 41//764 403//764 477//764
+f 116//765 15//765 377//765 478//765
+f 117//766 41//766 403//766 479//766
+f 118//767 27//767 389//767 480//767
+f 119//768 42//768 404//768 481//768
+f 120//769 28//769 390//769 482//769
+f 121//770 42//770 404//770 483//770
+f 123//771 43//771 405//771 485//771
+f 125//772 43//772 405//772 487//772
+f 128//773 26//773 388//773 490//773
+f 130//774 25//774 387//774 492//774
+f 132//775 44//775 406//775 494//775
+f 133//776 32//776 394//776 495//776
+f 134//777 44//777 406//777 496//777
+f 135//778 19//778 381//778 497//778
+f 136//779 33//779 395//779 498//779
+f 137//780 16//780 378//780 499//780
+f 137//781 139//781 501//781 499//781
+f 139//782 87//782 449//782 501//782
+f 136//783 139//783 501//783 498//783
+f 139//784 70//784 432//784 501//784
+f 140//785 63//785 425//785 502//785
+f 140//786 136//786 498//786 502//786
+f 135//787 141//787 503//787 497//787
+f 141//788 85//788 447//788 503//788
+f 133//789 141//789 503//789 495//789
+f 141//790 52//790 414//790 503//790
+f 134//791 142//791 504//791 496//791
+f 142//792 62//792 424//792 504//792
+f 82//793 142//793 504//793 444//793
+f 142//794 133//794 495//794 504//794
+f 56//795 143//795 505//795 418//795
+f 143//796 134//796 496//796 505//796
+f 59//797 143//797 505//797 421//797
+f 143//798 132//798 494//798 505//798
+f 144//799 131//799 493//799 506//799
+f 130//800 145//800 507//800 492//800
+f 128//801 145//801 507//801 490//801
+f 145//802 80//802 442//802 507//802
+f 129//803 146//803 508//803 491//803
+f 146//804 57//804 419//804 508//804
+f 72//805 146//805 508//805 434//805
+f 146//806 128//806 490//806 508//806
+f 75//807 147//807 509//807 437//807
+f 147//808 129//808 491//808 509//808
+f 50//809 147//809 509//809 412//809
+f 147//810 127//810 489//810 509//810
+f 126//811 148//811 510//811 488//811
+f 148//812 69//812 431//812 510//812
+f 124//813 148//813 510//813 486//813
+f 125//814 149//814 511//814 487//814
+f 149//815 48//815 410//815 511//815
+f 78//816 149//816 511//816 440//816
+f 149//817 124//817 486//817 511//817
+f 57//818 150//818 512//818 419//818
+f 150//819 125//819 487//819 512//819
+f 55//820 150//820 512//820 417//820
+f 150//821 123//821 485//821 512//821
+f 122//822 152//822 514//822 484//822
+f 152//823 81//823 443//823 514//823
+f 120//824 152//824 514//824 482//824
+f 121//825 153//825 515//825 483//825
+f 153//826 58//826 420//826 515//826
+f 73//827 153//827 515//827 435//827
+f 153//828 120//828 482//828 515//828
+f 77//829 154//829 516//829 439//829
+f 154//830 121//830 483//830 516//830
+f 51//831 154//831 516//831 413//831
+f 154//832 119//832 481//832 516//832
+f 118//833 155//833 517//833 480//833
+f 116//834 155//834 517//834 478//834
+f 117//835 156//835 518//835 479//835
+f 156//836 47//836 409//836 518//836
+f 79//837 156//837 518//837 441//837
+f 156//838 116//838 478//838 518//838
+f 58//839 157//839 519//839 420//839
+f 157//840 117//840 479//840 519//840
+f 56//841 157//841 519//841 418//841
+f 157//842 115//842 477//842 519//842
+f 114//843 159//843 521//843 476//843
+f 159//844 84//844 446//844 521//844
+f 112//845 159//845 521//845 474//845
+f 159//846 82//846 444//846 521//846
+f 113//847 160//847 522//847 475//847
+f 160//848 61//848 423//848 522//848
+f 70//849 160//849 522//849 432//849
+f 160//850 112//850 474//850 522//850
+f 51//851 161//851 523//851 413//851
+f 161//852 113//852 475//852 523//852
+f 49//853 161//853 523//853 411//853
+f 161//854 111//854 473//854 523//854
+f 110//855 162//855 524//855 472//855
+f 162//856 55//856 417//856 524//856
+f 108//857 162//857 524//857 470//857
+f 162//858 83//858 445//858 524//858
+f 109//859 163//859 525//859 471//859
+f 163//860 78//860 440//860 525//860
+f 76//861 163//861 525//861 438//861
+f 163//862 108//862 470//862 525//862
+f 61//863 164//863 526//863 423//863
+f 164//864 109//864 471//864 526//864
+f 53//865 164//865 526//865 415//865
+f 164//866 107//866 469//866 526//866
+f 106//867 165//867 527//867 468//867
+f 165//868 50//868 412//868 527//868
+f 104//869 165//869 527//869 466//869
+f 165//870 46//870 408//870 527//870
+f 105//871 166//871 528//871 467//871
+f 166//872 72//872 434//872 528//872
+f 83//873 166//873 528//873 445//873
+f 166//874 104//874 466//874 528//874
+f 62//875 167//875 529//875 424//875
+f 167//876 105//876 467//876 529//876
+f 60//877 167//877 529//877 422//877
+f 167//878 103//878 465//878 529//878
+f 102//879 168//879 530//879 464//879
+f 168//880 48//880 410//880 530//880
+f 100//881 168//881 530//881 462//881
+f 168//882 76//882 438//882 530//882
+f 101//883 169//883 531//883 463//883
+f 169//884 69//884 431//884 531//884
+f 86//885 169//885 531//885 448//885
+f 169//886 100//886 462//886 531//886
+f 97//887 170//887 532//887 459//887
+f 170//888 65//888 427//888 532//888
+f 52//889 170//889 532//889 414//889
+f 170//890 96//890 458//890 532//890
+f 47//891 171//891 533//891 409//891
+f 171//892 97//892 459//892 533//892
+f 74//893 171//893 533//893 436//893
+f 171//894 95//894 457//894 533//894
+f 94//895 172//895 534//895 456//895
+f 172//896 75//896 437//896 534//896
+f 46//897 172//897 534//897 408//897
+f 172//898 93//898 455//898 534//898
+f 65//899 173//899 535//899 427//899
+f 173//900 94//900 456//900 535//900
+f 67//901 173//901 535//901 429//901
+f 173//902 92//902 454//902 535//902
+f 91//903 174//903 536//903 453//903
+f 174//904 68//904 430//904 536//904
+f 89//905 174//905 536//905 451//905
+f 87//906 175//906 537//906 449//906
+f 175//907 102//907 464//907 537//907
+f 99//908 175//908 537//908 461//908
+f 175//909 53//909 415//909 537//909
+f 85//910 177//910 539//910 447//910
+f 177//911 106//911 468//911 539//911
+f 103//912 177//912 539//912 465//912
+f 177//913 67//913 429//913 539//913
+f 84//914 178//914 540//914 446//914
+f 178//915 110//915 472//915 540//915
+f 107//916 178//916 540//916 469//916
+f 178//917 60//917 422//917 540//917
+f 73//918 179//918 541//918 435//918
+f 179//919 114//919 476//919 541//919
+f 111//920 179//920 541//920 473//920
+f 179//921 59//921 421//921 541//921
+f 81//922 180//922 542//922 443//922
+f 180//923 118//923 480//923 542//923
+f 115//924 180//924 542//924 477//924
+f 181//925 126//925 488//925 543//925
+f 123//926 181//926 543//926 485//926
+f 182//927 130//927 492//927 544//927
+f 127//928 182//928 544//928 489//928
+f 79//929 183//929 545//929 441//929
+f 183//930 135//930 497//930 545//930
+f 132//931 183//931 545//931 494//931
+f 183//932 74//932 436//932 545//932
+f 77//933 184//933 546//933 439//933
+f 184//934 137//934 499//934 546//934
+f 184//935 49//935 411//935 546//935
+f 227//936 151//936 513//936 589//936
+f 228//937 138//937 500//937 590//937
+f 229//938 185//938 547//938 591//938
+f 230//939 158//939 520//939 592//939
+f 231//940 151//940 513//940 593//940
+f 232//941 158//941 520//941 594//941
+f 233//942 186//942 548//942 595//942
+f 234//943 188//943 550//943 596//943
+f 235//944 189//944 551//944 597//944
+f 236//945 190//945 552//945 598//945
+f 237//946 191//946 553//946 599//946
+f 238//947 190//947 552//947 600//947
+f 239//948 191//948 553//948 601//948
+f 240//949 191//949 553//949 602//949
+f 241//950 192//950 554//950 603//950
+f 242//951 188//951 550//951 604//951
+f 243//952 192//952 554//952 605//952
+f 244//953 193//953 555//953 606//953
+f 245//954 194//954 556//954 607//954
+f 246//955 186//955 548//955 608//955
+f 247//956 194//956 556//956 609//956
+f 248//957 195//957 557//957 610//957
+f 251//958 197//958 559//958 613//958
+f 253//959 198//959 560//959 615//959
+f 254//960 199//960 561//960 616//960
+f 255//961 200//961 562//961 617//961
+f 256//962 201//962 563//962 618//962
+f 257//963 202//963 564//963 619//963
+f 258//964 203//964 565//964 620//964
+f 259//965 204//965 566//965 621//965
+f 260//966 205//966 567//966 622//966
+f 261//967 206//967 568//967 623//967
+f 262//968 209//968 571//968 624//968
+f 263//969 210//969 572//969 625//969
+f 264//970 211//970 573//970 626//970
+f 265//971 212//971 574//971 627//971
+f 266//972 213//972 575//972 628//972
+f 268//973 214//973 576//973 630//973
+f 270//974 215//974 577//974 632//974
+f 271//975 216//975 578//975 633//975
+f 272//976 215//976 577//976 634//976
+f 273//977 216//977 578//977 635//977
+f 275//978 195//978 557//978 637//978
+f 276//979 196//979 558//979 638//979
+f 277//980 217//980 579//980 639//980
+f 278//981 200//981 562//981 640//981
+f 279//982 217//982 579//982 641//982
+f 280//983 214//983 576//983 642//983
+f 281//984 218//984 580//984 643//984
+f 283//985 218//985 580//985 645//985
+f 284//986 213//986 575//986 646//986
+f 285//987 219//987 581//987 647//987
+f 286//988 211//988 573//988 648//988
+f 287//989 219//989 581//989 649//989
+f 288//990 212//990 574//990 650//990
+f 289//991 220//991 582//991 651//991
+f 290//992 202//992 564//992 652//992
+f 291//993 220//993 582//993 653//993
+f 292//994 199//994 561//994 654//994
+f 293//995 221//995 583//995 655//995
+f 294//996 197//996 559//996 656//996
+f 295//997 221//997 583//997 657//997
+f 296//998 209//998 571//998 658//998
+f 297//999 222//999 584//999 659//999
+f 298//1000 205//1000 567//1000 660//1000
+f 299//1001 222//1001 584//1001 661//1001
+f 300//1002 203//1002 565//1002 662//1002
+f 301//1003 223//1003 585//1003 663//1003
+f 302//1004 199//1004 561//1004 664//1004
+f 303//1005 223//1005 585//1005 665//1005
+f 304//1006 207//1006 569//1006 666//1006
+f 305//1007 224//1007 586//1007 667//1007
+f 306//1008 204//1008 566//1008 668//1008
+f 307//1009 224//1009 586//1009 669//1009
+f 308//1010 201//1010 563//1010 670//1010
+f 310//1011 198//1011 560//1011 672//1011
+f 313//1012 205//1012 567//1012 675//1012
+f 314//1013 225//1013 587//1013 676//1013
+f 315//1014 210//1014 572//1014 677//1014
+f 316//1015 225//1015 587//1015 678//1015
+f 317//1016 226//1016 588//1016 679//1016
+f 318//1017 226//1017 588//1017 680//1017
+f 195//1018 227//1018 589//1018 557//1018
+f 196//1019 228//1019 590//1019 558//1019
+f 197//1020 230//1020 592//1020 559//1020
+f 198//1021 231//1021 593//1021 560//1021
+f 199//1022 232//1022 594//1022 561//1022
+f 200//1023 233//1023 595//1023 562//1023
+f 202//1024 234//1024 596//1024 564//1024
+f 203//1025 235//1025 597//1025 565//1025
+f 204//1026 236//1026 598//1026 566//1026
+f 205//1027 237//1027 599//1027 567//1027
+f 207//1028 238//1028 600//1028 569//1028
+f 209//1029 239//1029 601//1029 571//1029
+f 210//1030 240//1030 602//1030 572//1030
+f 211//1031 241//1031 603//1031 573//1031
+f 212//1032 242//1032 604//1032 574//1032
+f 213//1033 243//1033 605//1033 575//1033
+f 214//1034 244//1034 606//1034 576//1034
+f 215//1035 245//1035 607//1035 577//1035
+f 216//1036 246//1036 608//1036 578//1036
+f 186//1037 248//1037 610//1037 548//1037
+f 187//1038 250//1038 612//1038 549//1038
+f 188//1039 251//1039 613//1039 550//1039
+f 189//1040 252//1040 614//1040 551//1040
+f 190//1041 253//1041 615//1041 552//1041
+f 191//1042 254//1042 616//1042 553//1042
+f 138//1043 255//1043 617//1043 500//1043
+f 151//1044 256//1044 618//1044 513//1044
+f 185//1045 257//1045 619//1045 547//1045
+f 158//1046 258//1046 620//1046 520//1046
+f 185//1047 259//1047 621//1047 547//1047
+f 138//1048 260//1048 622//1048 500//1048
+f 192//1049 263//1049 625//1049 554//1049
+f 190//1050 264//1050 626//1050 552//1050
+f 192//1051 265//1051 627//1051 554//1051
+f 186//1052 266//1052 628//1052 548//1052
+f 187//1053 267//1053 629//1053 549//1053
+f 188//1054 268//1054 630//1054 550//1054
+f 194//1055 269//1055 631//1055 556//1055
+f 194//1056 271//1056 633//1056 556//1056
+f 201//1057 274//1057 636//1057 563//1057
+f 217//1058 276//1058 638//1058 579//1058
+f 216//1059 277//1059 639//1059 578//1059
+f 217//1060 278//1060 640//1060 579//1060
+f 218//1061 280//1061 642//1061 580//1061
+f 218//1062 282//1062 644//1062 580//1062
+f 202//1063 283//1063 645//1063 564//1063
+f 219//1064 284//1064 646//1064 581//1064
+f 198//1065 285//1065 647//1065 560//1065
+f 219//1066 286//1066 648//1066 581//1066
+f 195//1067 287//1067 649//1067 557//1067
+f 220//1068 288//1068 650//1068 582//1068
+f 204//1069 289//1069 651//1069 566//1069
+f 220//1070 290//1070 652//1070 582//1070
+f 211//1071 291//1071 653//1071 573//1071
+f 221//1072 292//1072 654//1072 583//1072
+f 212//1073 293//1073 655//1073 574//1073
+f 221//1074 294//1074 656//1074 583//1074
+f 210//1075 295//1075 657//1075 572//1075
+f 222//1076 296//1076 658//1076 584//1076
+f 196//1077 297//1077 659//1077 558//1077
+f 222//1078 298//1078 660//1078 584//1078
+f 208//1079 299//1079 661//1079 570//1079
+f 223//1080 300//1080 662//1080 585//1080
+f 209//1081 301//1081 663//1081 571//1081
+f 223//1082 302//1082 664//1082 585//1082
+f 224//1083 304//1083 666//1083 586//1083
+f 224//1084 306//1084 668//1084 586//1084
+f 207//1085 309//1085 671//1085 569//1085
+f 206//1086 311//1086 673//1086 568//1086
+f 225//1087 313//1087 675//1087 587//1087
+f 213//1088 314//1088 676//1088 575//1088
+f 225//1089 315//1089 677//1089 587//1089
+f 200//1090 316//1090 678//1090 562//1090
+f 214//1091 317//1091 679//1091 576//1091
+f 197//1092 318//1092 680//1092 559//1092
+f 319//1093 318//1093 680//1093 681//1093
+f 268//1094 319//1094 681//1094 630//1094
+f 319//1095 317//1095 679//1095 681//1095
+f 251//1096 319//1096 681//1096 613//1096
+f 244//1097 320//1097 682//1097 606//1097
+f 317//1098 320//1098 682//1098 679//1098
+f 321//1099 316//1099 678//1099 683//1099
+f 266//1100 321//1100 683//1100 628//1100
+f 321//1101 314//1101 676//1101 683//1101
+f 233//1102 321//1102 683//1102 595//1102
+f 322//1103 315//1103 677//1103 684//1103
+f 243//1104 322//1104 684//1104 605//1104
+f 322//1105 263//1105 625//1105 684//1105
+f 314//1106 322//1106 684//1106 676//1106
+f 323//1107 237//1107 599//1107 685//1107
+f 315//1108 323//1108 685//1108 677//1108
+f 323//1109 240//1109 602//1109 685//1109
+f 313//1110 323//1110 685//1110 675//1110
+f 312//1111 324//1111 686//1111 674//1111
+f 325//1112 311//1112 673//1112 687//1112
+f 325//1113 309//1113 671//1113 687//1113
+f 261//1114 325//1114 687//1114 623//1114
+f 326//1115 310//1115 672//1115 688//1115
+f 238//1116 326//1116 688//1116 600//1116
+f 326//1117 253//1117 615//1117 688//1117
+f 309//1118 326//1118 688//1118 671//1118
+f 327//1119 256//1119 618//1119 689//1119
+f 310//1120 327//1120 689//1120 672//1120
+f 327//1121 231//1121 593//1121 689//1121
+f 308//1122 327//1122 689//1122 670//1122
+f 328//1123 307//1123 669//1123 690//1123
+f 250//1124 328//1124 690//1124 612//1124
+f 328//1125 305//1125 667//1125 690//1125
+f 329//1126 306//1126 668//1126 691//1126
+f 229//1127 329//1127 691//1127 591//1127
+f 329//1128 259//1128 621//1128 691//1128
+f 305//1129 329//1129 691//1129 667//1129
+f 330//1130 238//1130 600//1130 692//1130
+f 306//1131 330//1131 692//1131 668//1131
+f 330//1132 236//1132 598//1132 692//1132
+f 304//1133 330//1133 692//1133 666//1133
+f 331//1134 303//1134 665//1134 693//1134
+f 262//1135 331//1135 693//1135 624//1135
+f 331//1136 301//1136 663//1136 693//1136
+f 332//1137 302//1137 664//1137 694//1137
+f 239//1138 332//1138 694//1138 601//1138
+f 332//1139 254//1139 616//1139 694//1139
+f 301//1140 332//1140 694//1140 663//1140
+f 333//1141 258//1141 620//1141 695//1141
+f 302//1142 333//1142 695//1142 664//1142
+f 333//1143 232//1143 594//1143 695//1143
+f 300//1144 333//1144 695//1144 662//1144
+f 334//1145 299//1145 661//1145 696//1145
+f 334//1146 297//1146 659//1146 696//1146
+f 335//1147 298//1147 660//1147 697//1147
+f 228//1148 335//1148 697//1148 590//1148
+f 335//1149 260//1149 622//1149 697//1149
+f 297//1150 335//1150 697//1150 659//1150
+f 336//1151 239//1151 601//1151 698//1151
+f 298//1152 336//1152 698//1152 660//1152
+f 336//1153 237//1153 599//1153 698//1153
+f 296//1154 336//1154 698//1154 658//1154
+f 337//1155 295//1155 657//1155 699//1155
+f 265//1156 337//1156 699//1156 627//1156
+f 337//1157 293//1157 655//1157 699//1157
+f 263//1158 337//1158 699//1158 625//1158
+f 338//1159 294//1159 656//1159 700//1159
+f 242//1160 338//1160 700//1160 604//1160
+f 338//1161 251//1161 613//1161 700//1161
+f 293//1162 338//1162 700//1162 655//1162
+f 339//1163 232//1163 594//1163 701//1163
+f 294//1164 339//1164 701//1164 656//1164
+f 339//1165 230//1165 592//1165 701//1165
+f 292//1166 339//1166 701//1166 654//1166
+f 340//1167 291//1167 653//1167 702//1167
+f 236//1168 340//1168 702//1168 598//1168
+f 340//1169 289//1169 651//1169 702//1169
+f 264//1170 340//1170 702//1170 626//1170
+f 341//1171 290//1171 652//1171 703//1171
+f 259//1172 341//1172 703//1172 621//1172
+f 341//1173 257//1173 619//1173 703//1173
+f 289//1174 341//1174 703//1174 651//1174
+f 342//1175 242//1175 604//1175 704//1175
+f 290//1176 342//1176 704//1176 652//1176
+f 342//1177 234//1177 596//1177 704//1177
+f 288//1178 342//1178 704//1178 650//1178
+f 343//1179 287//1179 649//1179 705//1179
+f 231//1180 343//1180 705//1180 593//1180
+f 343//1181 285//1181 647//1181 705//1181
+f 227//1182 343//1182 705//1182 589//1182
+f 344//1183 286//1183 648//1183 706//1183
+f 253//1184 344//1184 706//1184 615//1184
+f 344//1185 264//1185 626//1185 706//1185
+f 285//1186 344//1186 706//1186 647//1186
+f 345//1187 243//1187 605//1187 707//1187
+f 286//1188 345//1188 707//1188 648//1188
+f 345//1189 241//1189 603//1189 707//1189
+f 284//1190 345//1190 707//1190 646//1190
+f 346//1191 283//1191 645//1191 708//1191
+f 229//1192 346//1192 708//1192 591//1192
+f 346//1193 281//1193 643//1193 708//1193
+f 257//1194 346//1194 708//1194 619//1194
+f 347//1195 282//1195 644//1195 709//1195
+f 250//1196 347//1196 709//1196 612//1196
+f 347//1197 267//1197 629//1197 709//1197
+f 281//1198 347//1198 709//1198 643//1198
+f 348//1199 278//1199 640//1199 710//1199
+f 246//1200 348//1200 710//1200 608//1200
+f 348//1201 233//1201 595//1201 710//1201
+f 277//1202 348//1202 710//1202 639//1202
+f 349//1203 228//1203 590//1203 711//1203
+f 278//1204 349//1204 711//1204 640//1204
+f 349//1205 255//1205 617//1205 711//1205
+f 276//1206 349//1206 711//1206 638//1206
+f 350//1207 275//1207 637//1207 712//1207
+f 256//1208 350//1208 712//1208 618//1208
+f 350//1209 227//1209 589//1209 712//1209
+f 274//1210 350//1210 712//1210 636//1210
+f 351//1211 246//1211 608//1211 713//1211
+f 275//1212 351//1212 713//1212 637//1212
+f 351//1213 248//1213 610//1213 713//1213
+f 273//1214 351//1214 713//1214 635//1214
+f 352//1215 272//1215 634//1215 714//1215
+f 249//1216 352//1216 714//1216 611//1216
+f 352//1217 270//1217 632//1217 714//1217
+f 353//1218 268//1218 630//1218 715//1218
+f 283//1219 353//1219 715//1219 645//1219
+f 353//1220 280//1220 642//1220 715//1220
+f 234//1221 353//1221 715//1221 596//1221
+f 355//1222 266//1222 628//1222 717//1222
+f 287//1223 355//1223 717//1223 649//1223
+f 355//1224 284//1224 646//1224 717//1224
+f 248//1225 355//1225 717//1225 610//1225
+f 356//1226 265//1226 627//1226 718//1226
+f 291//1227 356//1227 718//1227 653//1227
+f 356//1228 288//1228 650//1228 718//1228
+f 241//1229 356//1229 718//1229 603//1229
+f 357//1230 254//1230 616//1230 719//1230
+f 295//1231 357//1231 719//1231 657//1231
+f 357//1232 292//1232 654//1232 719//1232
+f 240//1233 357//1233 719//1233 602//1233
+f 358//1234 262//1234 624//1234 720//1234
+f 299//1235 358//1235 720//1235 661//1235
+f 358//1236 296//1236 658//1236 720//1236
+f 307//1237 359//1237 721//1237 669//1237
+f 359//1238 304//1238 666//1238 721//1238
+f 311//1239 360//1239 722//1239 673//1239
+f 360//1240 308//1240 670//1240 722//1240
+f 361//1241 260//1241 622//1241 723//1241
+f 316//1242 361//1242 723//1242 678//1242
+f 361//1243 313//1243 675//1243 723//1243
+f 255//1244 361//1244 723//1244 617//1244
+f 362//1245 258//1245 620//1245 724//1245
+f 318//1246 362//1246 724//1246 680//1246
+f 230//1247 362//1247 724//1247 592//1247
+f 252//1248 71//1248 433//1248 614//1248
+f 269//1249 88//1249 450//1249 631//1249
+f 193//1250 12//1250 374//1250 555//1250
+f 66//1251 247//1251 609//1251 428//1251
+f 27//1252 208//1252 570//1252 389//1252
+f 98//1253 279//1253 641//1253 460//1253
+f 324//1254 144//1254 506//1254 686//1254
+f 131//1255 312//1255 674//1255 493//1255
+f 68//1256 249//1256 611//1256 430//1256
+l 176 354
+l 538 716
+</pre>
+
+		<p class="file_page_meta no_print" style="line-height: 1.5rem;">
+			<label class="checkbox normal mini float_right no_top_padding no_min_width">
+				<input type="checkbox" id="file_preview_wrap_cb"> wrap long lines
+			</label>
+		</p>
+
+	</div>
+
+	<div id="comments_holder" class="clearfix clear_both">
+	<div class="col span_1_of_6"></div>
+	<div class="col span_4_of_6 no_right_padding">
+		<div id="file_page_comments">
+					</div>	
+		<form action="https://kawaiigamejam.slack.com/files/darkdestry/F32CUQGP9/backgroundmesh.obj"
+		id="file_comment_form"
+					class="comment_form"
+				method="post">
+			<a href="/team/eclmist" class="member_preview_link" data-member-id="U31B6JNJX" >
+			<span class="member_image thumb_36" style="background-image: url('https://secure.gravatar.com/avatar/a2ba7d151a7e317e651b09dd0966b0cc.jpg?s=72&d=https%3A%2F%2Fa.slack-edge.com%2F66f9%2Fimg%2Favatars%2Fava_0008-72.png')" data-thumb-size="36" data-member-id="U31B6JNJX"></span>
+		</a>
+		<input type="hidden" name="addcomment" value="1" />
+	<input type="hidden" name="crumb" value="s-1478914013-9b7a4e9f51-☃" />
+
+	<textarea id="file_comment" data-el-id-to-keep-in-view="file_comment_submit_btn" class="small comment_input small_bottom_margin autogrow-short" name="comment" wrap="virtual" ></textarea>
+	<span class="input_note float_left cloud_silver file_comment_tip">shift+enter to add a new line</span>	<button id="file_comment_submit_btn" type="submit" class="btn float_right  ladda-button" data-style="expand-right"><span class="ladda-label">Add Comment</span></button>
+</form>
+
+<form
+		id="file_edit_comment_form"
+					class="edit_comment_form hidden"
+				method="post">
+		<textarea id="file_edit_comment" class="small comment_input small_bottom_margin" name="comment" wrap="virtual"></textarea><br>
+	<span class="input_note float_left cloud_silver file_comment_tip">shift+enter to add a new line</span>	<input type="submit" class="save btn float_right " value="Save" />
+	<button class="cancel btn btn_outline float_right small_right_margin ">Cancel</button>
+</form>	
+	</div>
+	<div class="col span_1_of_6"></div>
+</div>
+</div>
+
+
+
+
+		
+	</div>
+	<div id="overlay"></div>
+</div>
+
+
+
+
+
+
+
+<script type="text/javascript">
+
+	function vvv(v) {
+
+		var vvv_warning = 'You cannot use vvv on dynamic values. Please make sure you only pass in static file paths.';
+		if (TS && TS.warn) {
+			TS.warn(vvv_warning);
+		} else {
+			console.warn(vvv_warning);
+		}
+
+		return v;
+	}
+
+	var cdn_url = "https:\/\/slack.global.ssl.fastly.net";
+	var inc_js_setup_data = {
+		emoji_sheets: {
+			apple: 'https://a.slack-edge.com/f360/img/emoji_2016_06_08/sheet_apple_64_indexed_256colors.png',
+			google: 'https://a.slack-edge.com/f360/img/emoji_2016_06_08/sheet_google_64_indexed_128colors.png',
+			twitter: 'https://a.slack-edge.com/f360/img/emoji_2016_06_08/sheet_twitter_64_indexed_128colors.png',
+			emojione: 'https://a.slack-edge.com/f360/img/emoji_2016_06_08/sheet_emojione_64_indexed_128colors.png',
+		},
+	};
+</script>
+			<script type="text/javascript">
+<!--
+	// common boot_data
+	var boot_data = {
+		start_ms: Date.now(),
+		app: 'web',
+		user_id: 'U31B6JNJX',
+		no_login: false,
+		version_ts: '1478912398',
+		version_uid: '0e3774f1e39018d74f0a054c26ca6fe8d61c2a55',
+		cache_version: "v13-tiger",
+		cache_ts_version: "v1-cat",
+		redir_domain: 'slack-redir.net',
+		signin_url: 'https://slack.com/signin',
+		abs_root_url: 'https://slack.com/',
+		api_url: '/api/',
+		team_url: 'https://kawaiigamejam.slack.com/',
+		image_proxy_url: 'https://slack-imgs.com/',
+		beacon_timing_url: "https:\/\/slack.com\/beacon\/timing",
+		beacon_error_url: "https:\/\/slack.com\/beacon\/error",
+		clog_url: "clog\/track\/",
+		api_token: 'xoxs-102732447216-103380634643-103535926709-febbbc1e5c',
+		ls_disabled: false,
+
+		notification_sounds: [{"value":"b2.mp3","label":"Ding","url":"https:\/\/slack.global.ssl.fastly.net\/dfc0\/sounds\/push\/b2.mp3"},{"value":"animal_stick.mp3","label":"Boing","url":"https:\/\/slack.global.ssl.fastly.net\/dfc0\/sounds\/push\/animal_stick.mp3"},{"value":"been_tree.mp3","label":"Drop","url":"https:\/\/slack.global.ssl.fastly.net\/dfc0\/sounds\/push\/been_tree.mp3"},{"value":"complete_quest_requirement.mp3","label":"Ta-da","url":"https:\/\/slack.global.ssl.fastly.net\/dfc0\/sounds\/push\/complete_quest_requirement.mp3"},{"value":"confirm_delivery.mp3","label":"Plink","url":"https:\/\/slack.global.ssl.fastly.net\/dfc0\/sounds\/push\/confirm_delivery.mp3"},{"value":"flitterbug.mp3","label":"Wow","url":"https:\/\/slack.global.ssl.fastly.net\/dfc0\/sounds\/push\/flitterbug.mp3"},{"value":"here_you_go_lighter.mp3","label":"Here you go","url":"https:\/\/slack.global.ssl.fastly.net\/dfc0\/sounds\/push\/here_you_go_lighter.mp3"},{"value":"hi_flowers_hit.mp3","label":"Hi","url":"https:\/\/slack.global.ssl.fastly.net\/dfc0\/sounds\/push\/hi_flowers_hit.mp3"},{"value":"item_pickup.mp3","label":"Yoink","url":"https:\/\/slack.global.ssl.fastly.net\/dfc0\/sounds\/push\/item_pickup.mp3"},{"value":"knock_brush.mp3","label":"Knock Brush","url":"https:\/\/slack.global.ssl.fastly.net\/dfc0\/sounds\/push\/knock_brush.mp3"},{"value":"save_and_checkout.mp3","label":"Woah!","url":"https:\/\/slack.global.ssl.fastly.net\/dfc0\/sounds\/push\/save_and_checkout.mp3"},{"value":"none","label":"None"}],
+		alert_sounds: [{"value":"frog.mp3","label":"Frog","url":"https:\/\/slack.global.ssl.fastly.net\/a34a\/sounds\/frog.mp3"}],
+		call_sounds: [{"value":"call\/alert_v2.mp3","label":"Alert","url":"https:\/\/slack.global.ssl.fastly.net\/08f7\/sounds\/call\/alert_v2.mp3"},{"value":"call\/incoming_ring_v2.mp3","label":"Incoming ring","url":"https:\/\/slack.global.ssl.fastly.net\/08f7\/sounds\/call\/incoming_ring_v2.mp3"},{"value":"call\/outgoing_ring_v2.mp3","label":"Outgoing ring","url":"https:\/\/slack.global.ssl.fastly.net\/08f7\/sounds\/call\/outgoing_ring_v2.mp3"},{"value":"call\/pop_v2.mp3","label":"Incoming reaction","url":"https:\/\/slack.global.ssl.fastly.net\/08f7\/sounds\/call\/pop_v2.mp3"},{"value":"call\/they_left_call_v2.mp3","label":"They left call","url":"https:\/\/slack.global.ssl.fastly.net\/08f7\/sounds\/call\/they_left_call_v2.mp3"},{"value":"call\/you_left_call_v2.mp3","label":"You left call","url":"https:\/\/slack.global.ssl.fastly.net\/08f7\/sounds\/call\/you_left_call_v2.mp3"},{"value":"call\/they_joined_call_v2.mp3","label":"They joined call","url":"https:\/\/slack.global.ssl.fastly.net\/08f7\/sounds\/call\/they_joined_call_v2.mp3"},{"value":"call\/you_joined_call_v2.mp3","label":"You joined call","url":"https:\/\/slack.global.ssl.fastly.net\/08f7\/sounds\/call\/you_joined_call_v2.mp3"},{"value":"call\/confirmation_v2.mp3","label":"Confirmation","url":"https:\/\/slack.global.ssl.fastly.net\/08f7\/sounds\/call\/confirmation_v2.mp3"}],
+		call_sounds_version: "v2",
+		max_team_handy_rxns: 5,
+		max_channel_handy_rxns: 5,
+		max_poll_handy_rxns: 7,
+		max_handy_rxns_title_chars: 30,
+		
+		feature_tinyspeck: false,
+		feature_i18n: false,
+		feature_create_team_google_auth: false,
+		feature_api_extended_2fa_backup: false,
+		feature_flannel_fe: false,
+		feature_ms_eventlog_changes: false,
+		feature_frecency_normalization: true,
+		feature_emoji_usage_stats: false,
+		feature_batch_file_deleted_event: false,
+		feature_viewmodel_proto: false,
+		feature_sales_tax: true,
+		feature_message_replies: false,
+		feature_message_replies_rewrite_864: false,
+		feature_message_replies_off: false,
+		feature_message_replies_threads_view: false,
+		feature_no_rollups: false,
+		feature_web_lean: false,
+		feature_web_lean_all_users: false,
+		feature_reminders_v3: true,
+		feature_server_side_emoji_counts: true,
+		feature_a11y_keyboard_shortcuts: false,
+		feature_email_ingestion: false,
+		feature_msg_consistency: false,
+		feature_sli_channel_priority: false,
+		feature_sli_similar_channels: true,
+		feature_sli_clog_selections: true,
+		feature_sli_search_limit_extracts: false,
+		feature_thanks: false,
+		feature_attachments_inline: false,
+		feature_fix_files: true,
+		feature_canonical_avatars_web_client: false,
+		feature_files_list: true,
+		feature_channel_eventlog_client: true,
+		feature_macssb1_banner: true,
+		feature_macssb2_banner: true,
+		feature_macelectron1_banner: true,
+		feature_macelectron2_banner: true,
+		feature_latest_event_ts: true,
+		feature_elide_closed_dms: true,
+		feature_no_redirects_in_ssb: true,
+		feature_referer_policy: true,
+		feature_more_field_in_message_attachments: false,
+		feature_calls: true,
+		feature_calls_no_rtm_start: true,
+		feature_integrations_message_preview: true,
+		feature_paging_api: false,
+		feature_enterprise_api: true,
+		feature_enterprise_create: true,
+		feature_enterprise_api_auth: true,
+		feature_enterprise_profile: true,
+		feature_enterprise_search: true,
+		feature_enterprise_locked_settings: false,
+		feature_frecency_migration: false,
+		feature_enterprise_frecency: false,
+		feature_enterprise_team_overview_page: false,
+		feature_enterprise_conditional_team_removal: false,
+		feature_enterprise_search_ui: false,
+		feature_enterprise_mandatory_2fa: true,
+		feature_enterprise_user_account_settings: true,
+		feature_enterprise_security_auth_refactor: false,
+		feature_enterprise_member_profile_refactor: false,
+		feature_enterprise_context_menu: false,
+		feature_enterprise_profile_menu_deactivate_2fa: false,
+		feature_private_channels: true,
+		feature_mpim_restrictions: false,
+		feature_subteams_hard_delete: false,
+		feature_no_unread_counts: true,
+		feature_js_raf_queue: false,
+		feature_shared_channels: false,
+		feature_external_shared_channels_ui: false,
+		feature_you_autocomplete_me: false,
+		feature_roster_changes: false,
+		feature_allow_shared_general: false,
+		feature_shared_channels_settings: true,
+		feature_fast_files_flexpane: true,
+		feature_no_has_files: true,
+		feature_custom_saml_signin_button_label: true,
+		feature_optimistic_im_close: true,
+		feature_file_reactions_activity: false,
+		feature_admin_approved_apps: true,
+		feature_winssb_beta_channel: false,
+		feature_inline_media_playback: true,
+		feature_branch_io_deeplink: true,
+		feature_policy_effective_date: false,
+		feature_clog_whats_new: true,
+		feature_presence_sub: false,
+		feature_live_support_free_plan: false,
+		feature_dm_yahself: true,
+		feature_slackbot_goes_to_college: false,
+		feature_newxp_enqueue_message: true,
+		feature_shared_invites: true,
+		feature_lato_2_ssb: true,
+		feature_refactor_buildmsghtml: false,
+		feature_omit_localstorage_users_bots: false,
+		feature_disable_ls_compression: false,
+		feature_force_ls_compression: false,
+		feature_sign_in_with_slack: true,
+		feature_sign_in_with_slack_ui_elements: true,
+		feature_prevent_msg_rebuild: false,
+		feature_app_review_scope_error: true,
+		feature_zendesk_app_submission_improvement: false,
+		feature_react_emoji_picker: false,
+		feature_better_msg_copying: false,
+		feature_name_tagging_client: false,
+		feature_name_tagging_client_extras: false,
+		feature_name_tagging_client_search: false,
+		feature_msg_input_contenteditable: false,
+		feature_new_msg_input: false,
+		feature_browse_date: true,
+		feature_use_imgproxy_resizing: false,
+		feature_always_active_bots: false,
+		feature_single_team_apps: false,
+		feature_multiple_app_ownership: true,
+		feature_update_message_file: true,
+		feature_custom_clogs: true,
+		feature_calls_linux: true,
+		feature_a11y_pref_text_size: false,
+		feature_a11y_pref_no_animation: true,
+		feature_share_mention_comment_cleanup: false,
+		feature_unread_view: true,
+		feature_tw: false,
+		feature_tw_ls_disabled: false,
+		feature_external_files: false,
+		feature_min_web: false,
+		feature_electron_memory_logging: false,
+		feature_channel_name_menu: true,
+		feature_electron_window_gripper: true,
+		feature_no_tokenless_ms_connections: false,
+		feature_simple_file_events: true,
+		feature_devrel_try_it_now: false,
+		feature_wait_for_all_mentions_in_client: false,
+		feature_prev_next_button: false,
+		feature_free_inactive_domains: true,
+		feature_platform_calls: true,
+		feature_a11y_tab: false,
+		feature_admin_billing_refactor: false,
+		feature_pdf_viewer: true,
+		feature_wrapped_mention_parsing: false,
+		feature_measure_css_usage: false,
+		feature_take_profile_photo: false,
+		feature_ajax_billing_history: false,
+		feature_update_coachmarks_cta: true,
+		feature_multnomah: false,
+		feature_texty: false,
+		feature_sales_tax_address: true,
+		feature_toggle_id_translation: false,
+		feature_can_edit_app: true,
+		feature_gdrive_1_dot_5: true,
+		feature_mention_non_members: false,
+		feature_hide_email_pref: true,
+		feature_ent_pricing_lp: true,
+		feature_file_id_from_url_update: false,
+		feature_pin_update: true,
+		feature_tos_oct2016: false,
+		feature_flexbox_client: false,
+		feature_emoji_menu_tuning: false,
+		feature_discoverable_teams: false,
+		feature_discoverable_teams_client: false,
+		feature_reveal_channel_renames: false,
+		feature_app_info_youtube_url: false,
+		feature_api_metadata_token_allow: false,
+		feature_app_cards_and_profs_frontend: false,
+		feature_user_removed_from_team: false,
+		feature_user_added_to_team: false,
+		feature_a11y_ui_zoom: false,
+		feature_file_comment_help_text: false,
+		feature_refactored_message_template: false,
+		feature_message_inputs: false,
+		feature_contact_us_form: true,
+		feature_app_cards_and_profs_set_card_color: false,
+		feature_cdn_load_tracking: false,
+		feature_fresh_team_directory: false,
+		feature_move_star_in_channel_header: false,
+		feature_team_to_org_directory: true,
+		feature_reposition_search_dropdown: false,
+
+	client_logs: {"0":{"numbers":[0],"whitelisted":false},"@scott":{"numbers":[2,4,37,58,67,389,390,481,488,529,667,773,888,999],"owner":"@scott"},"@eric":{"numbers":[2,23,47,48,65,66,72,73,82,91,93,96,222,365,438,528,552,777,794],"owner":"@eric"},"2":{"owner":"@scott \/ @eric","numbers":[2],"whitelisted":false},"4":{"owner":"@scott","numbers":[4],"whitelisted":false},"5":{"channels":"#dhtml","numbers":[5],"whitelisted":false},"23":{"owner":"@eric","numbers":[23],"whitelisted":false},"sounds":{"owner":"@scott","name":"sounds","numbers":[37]},"37":{"owner":"@scott","name":"sounds","numbers":[37],"whitelisted":true},"47":{"owner":"@eric","numbers":[47],"whitelisted":false},"48":{"owner":"@eric","numbers":[48],"whitelisted":false},"58":{"owner":"@scott","numbers":[58],"whitelisted":false},"65":{"owner":"@eric","numbers":[65],"whitelisted":false},"66":{"owner":"@eric","numbers":[66],"whitelisted":false},"67":{"owner":"@scott","numbers":[67],"whitelisted":false},"72":{"owner":"@eric","numbers":[72],"whitelisted":false},"73":{"owner":"@eric","numbers":[73],"whitelisted":false},"82":{"owner":"@eric","numbers":[82],"whitelisted":false},"@shinypb":{"owner":"@shinypb","numbers":[88,1000,1989,1996]},"88":{"owner":"@shinypb","numbers":[88],"whitelisted":false},"91":{"owner":"@eric","numbers":[91],"whitelisted":false},"93":{"owner":"@eric","numbers":[93],"whitelisted":false},"96":{"owner":"@eric","numbers":[96],"whitelisted":false},"@steveb":{"owner":"@steveb","numbers":[99]},"99":{"owner":"@steveb","numbers":[99],"whitelisted":false},"222":{"owner":"@eric","numbers":[222],"whitelisted":false},"365":{"owner":"@eric","numbers":[365],"whitelisted":false},"389":{"owner":"@scott","numbers":[389],"whitelisted":false},"390":{"owner":"@scott","numbers":[390],"whitelisted":false},"438":{"owner":"@eric","numbers":[438],"whitelisted":false},"@rowan":{"numbers":[444,666],"owner":"@rowan"},"444":{"owner":"@rowan","numbers":[444],"whitelisted":false},"481":{"owner":"@scott","numbers":[481],"whitelisted":false},"488":{"owner":"@scott","numbers":[488],"whitelisted":false},"528":{"owner":"@eric","numbers":[528],"whitelisted":false},"529":{"owner":"@scott","numbers":[529],"whitelisted":false},"552":{"owner":"@eric","numbers":[552],"whitelisted":false},"dashboard":{"owner":"@ac \/ @bruce \/ @kylestetz \/ @nic \/ @rowan","channels":"#devel-enterprise-fe, #feat-enterprise-dash","name":"dashboard","numbers":[666]},"@ac":{"channels":"#devel-enterprise-fe, #feat-enterprise-dash","name":"dashboard","numbers":[666],"owner":"@ac"},"@bruce":{"channels":"#devel-enterprise-fe, #feat-enterprise-dash","name":"dashboard","numbers":[666],"owner":"@bruce"},"@kylestetz":{"channels":"#devel-enterprise-fe, #feat-enterprise-dash","name":"dashboard","numbers":[666],"owner":"@kylestetz"},"@nic":{"channels":"#devel-enterprise-fe, #feat-enterprise-dash","name":"dashboard","numbers":[666],"owner":"@nic"},"666":{"owner":"@ac \/ @bruce \/ @kylestetz \/ @nic \/ @rowan","channels":"#devel-enterprise-fe, #feat-enterprise-dash","name":"dashboard","numbers":[666],"whitelisted":false},"667":{"owner":"@scott","numbers":[667],"whitelisted":false},"773":{"owner":"@scott","numbers":[773],"whitelisted":false},"777":{"owner":"@eric","numbers":[777],"whitelisted":false},"794":{"owner":"@eric","numbers":[794],"whitelisted":false},"888":{"owner":"@scott","numbers":[888],"whitelisted":false},"999":{"owner":"@scott","numbers":[999],"whitelisted":false},"1000":{"owner":"@shinypb","numbers":[1000],"whitelisted":false},"minweb":{"owner":"@johnnyrodgers","features":["feature_min_web"],"channels":"#feat-minweb","name":"minweb","numbers":[1983]},"@johnnyrodgers":{"owner":"@johnnyrodgers","features":["feature_min_web"],"channels":"#feat-minweb","name":"minweb","numbers":[1983]},"1983":{"owner":"@johnnyrodgers","features":["feature_min_web"],"channels":"#feat-minweb","name":"minweb","numbers":[1983],"whitelisted":false},"flannel":{"owner":"@shinypb","features":["feature_flannel_fe"],"channels":"#devel-flannel","name":"flannel","numbers":[1989]},"1989":{"owner":"@shinypb","features":["feature_flannel_fe"],"channels":"#devel-flannel","name":"flannel","numbers":[1989],"whitelisted":true},"ms":{"owner":"@shinypb","name":"ms","numbers":[1996]},"1996":{"owner":"@shinypb","name":"ms","numbers":[1996],"whitelisted":true},"@patrick":{"owner":"@patrick","channels":"#dhtml","numbers":[2001,2002,2003,2004]},"2001":{"owner":"@patrick","channels":"#dhtml","numbers":[2001],"whitelisted":false},"dnd":{"owner":"@patrick","channels":"dhtml","name":"dnd","numbers":[2002]},"2002":{"owner":"@patrick","channels":"dhtml","name":"dnd","numbers":[2002],"whitelisted":true},"2003":{"owner":"@patrick","channels":"dhtml","numbers":[2003],"whitelisted":false},"2004":{"owner":"@patrick","channels":"#feature_message_replies, #feat-threads","numbers":[2004],"whitelisted":false},"mc_sibs":{"name":"mc_sibs","numbers":[9999]},"9999":{"name":"mc_sibs","numbers":[9999],"whitelisted":false},"@fearon":{"owner":"@fearon","numbers":[98765]},"98765":{"owner":"@fearon","numbers":[98765],"whitelisted":false}},
+
+
+		img: {
+			app_icon: 'https://a.slack-edge.com/272a/img/slack_growl_icon.png'
+		},
+		page_needs_custom_emoji: false,
+		page_needs_team_profile_fields: false,
+		page_needs_enterprise: false,
+		slackbot_help_enabled: true
+	};
+
+	
+	
+	
+	
+	// client boot data
+	
+	
+	
+//-->
+</script>	
+	
+				<!-- output_js "core" -->
+<script type="text/javascript" src="https://a.slack-edge.com/61a52/js/rollup-core_required_libs.js" crossorigin="anonymous"></script>
+<script type="text/javascript" src="https://a.slack-edge.com/ec3a/js/rollup-core_required_ts.js" crossorigin="anonymous"></script>
+<script type="text/javascript" src="https://a.slack-edge.com/32b0/js/TS.web.js" crossorigin="anonymous"></script>
+
+		<!-- output_js "core_web" -->
+<script type="text/javascript" src="https://a.slack-edge.com/9982f/js/rollup-core_web.js" crossorigin="anonymous"></script>
+
+		<!-- output_js "secondary" -->
+<script type="text/javascript" src="https://a.slack-edge.com/dbd87/js/rollup-secondary_a_required.js" crossorigin="anonymous"></script>
+<script type="text/javascript" src="https://a.slack-edge.com/b52340/js/rollup-secondary_b_required.js" crossorigin="anonymous"></script>
+
+					
+	<!-- output_js "regular" -->
+<script type="text/javascript" src="https://a.slack-edge.com/4016/js/TS.web.comments.js" crossorigin="anonymous"></script>
+<script type="text/javascript" src="https://a.slack-edge.com/c439/js/TS.web.file.js" crossorigin="anonymous"></script>
+<script type="text/javascript" src="https://a.slack-edge.com/cb0fd/js/libs/codemirror.js" crossorigin="anonymous"></script>
+<script type="text/javascript" src="https://a.slack-edge.com/db4a/js/codemirror_load.js" crossorigin="anonymous"></script>
+
+		<script type="text/javascript">
+	<!--
+		boot_data.page_needs_custom_emoji = true;
+
+		boot_data.file = {"id":"F32CUQGP9","created":1478913828,"timestamp":1478913828,"name":"backgroundMesh.obj","title":"backgroundMesh.obj","mimetype":"text\/plain","filetype":"text","pretty_type":"Plain Text","user":"U31F4S0MA","editable":true,"size":101648,"mode":"snippet","is_external":false,"external_type":"","is_public":true,"public_url_shared":false,"display_as_bot":false,"username":"","url_private":"https:\/\/files.slack.com\/files-pri\/T30MJD56C-F32CUQGP9\/backgroundmesh.obj","url_private_download":"https:\/\/files.slack.com\/files-pri\/T30MJD56C-F32CUQGP9\/download\/backgroundmesh.obj","permalink":"https:\/\/kawaiigamejam.slack.com\/files\/darkdestry\/F32CUQGP9\/backgroundmesh.obj","permalink_public":"https:\/\/slack-files.com\/T30MJD56C-F32CUQGP9-c66c3cccd2","edit_link":"https:\/\/kawaiigamejam.slack.com\/files\/darkdestry\/F32CUQGP9\/backgroundmesh.obj\/edit","preview":"# Blender v2.77 (sub 0) OBJ File: ''\n# www.blender.org\nmtllib backgroundMesh.mtl\no Cube\nv -7.828660 -5.821172 8.058353","preview_highlight":"\u003Cdiv class=\"CodeMirror cm-s-default CodeMirrorServer\" oncopy=\"if(event.clipboardData){event.clipboardData.setData('text\/plain',window.getSelection().toString().replace(\/\\u200b\/g,''));event.preventDefault();event.stopPropagation();}\"\u003E\n\u003Cdiv class=\"CodeMirror-code\"\u003E\n\u003Cdiv\u003E\u003Cpre\u003E# Blender v2.77 (sub 0) OBJ File: ''\u003C\/pre\u003E\u003C\/div\u003E\n\u003Cdiv\u003E\u003Cpre\u003E# www.blender.org\u003C\/pre\u003E\u003C\/div\u003E\n\u003Cdiv\u003E\u003Cpre\u003Emtllib backgroundMesh.mtl\u003C\/pre\u003E\u003C\/div\u003E\n\u003Cdiv\u003E\u003Cpre\u003Eo Cube\u003C\/pre\u003E\u003C\/div\u003E\n\u003Cdiv\u003E\u003Cpre\u003Ev -7.828660 -5.821172 8.058353\u003C\/pre\u003E\u003C\/div\u003E\n\u003C\/div\u003E\n\u003C\/div\u003E\n","lines":3246,"lines_more":3241,"preview_is_truncated":true,"channels":["C31FFUHPX"],"groups":[],"ims":[],"comments_count":0};
+		boot_data.file.comments = [];
+
+		
+
+		var g_editor;
+
+		$(function(){
+
+			var wrap_long_lines = !!TS.model.code_wrap_long_lines;
+
+			g_editor = CodeMirror(function(elt){
+				var content = document.getElementById("file_contents");
+				content.parentNode.replaceChild(elt, content);
+			}, {
+				value: $('#file_contents').text(),
+				lineNumbers: true,
+				matchBrackets: true,
+				indentUnit: 4,
+				indentWithTabs: true,
+				enterMode: "keep",
+				tabMode: "shift",
+				viewportMargin: 10,
+				readOnly: true,
+				lineWrapping: wrap_long_lines
+			});
+
+			// past a certain point, CodeMirror rendering may simply stop working.
+			// start having CodeMirror use its Long List View-style scolling at >= max_lines.
+			var max_lines = 8192;
+
+			var snippet_lines;
+
+			// determine # of lines, limit height accordingly
+			if (g_editor.doc && g_editor.doc.lineCount) {
+				snippet_lines = parseInt(g_editor.doc.lineCount());
+				var new_height;
+				if (snippet_lines) {
+					// we want the CodeMirror container to collapse around short snippets.
+					// however, we want to let it auto-expand only up to a limit, at which point
+					// we specify a fixed height so CM can display huge snippets without dying.
+					// this is because CodeMirror works nicely with no height set, but doesn't
+					// scale (big file performance issue), and doesn't work with min/max-height -
+					// so at some point, we have to set an absolute height to kick it into its
+					// smart / partial "Long List View"-style rendering mode.
+					if (snippet_lines < max_lines) {
+						new_height = 'auto';
+					} else {
+						new_height = (max_lines * 0.875) + 'rem'; // line-to-rem ratio
+					}
+					var line_count = Math.min(snippet_lines, max_lines);
+					TS.info('Applying height of ' + new_height + ' to container for this snippet of ' + snippet_lines + (snippet_lines === 1 ? ' line' : ' lines'));
+					$('#page .CodeMirror').height(new_height);
+				}
+			}
+
+			$('#file_preview_wrap_cb').bind('change', function(e) {
+				TS.model.code_wrap_long_lines = $(this).prop('checked');
+				g_editor.setOption('lineWrapping', TS.model.code_wrap_long_lines);
+			})
+
+			$('#file_preview_wrap_cb').prop('checked', wrap_long_lines);
+
+			CodeMirror.switchSlackMode(g_editor, "text");
+		});
+
+		
+		$('#file_comment').css('overflow', 'hidden').autogrow();
+	//-->
+	</script>
+
+
+		<script type="text/javascript">
+				TS.clog.setTeam('T30MJD56C');
+						TS.clog.setUser('U31B6JNJX');
+			</script>
+
+			<script type="text/javascript">TS.boot(boot_data);</script>
+	
+<style>.color_9f69e7:not(.nuc) {color:#9F69E7;}.color_4bbe2e:not(.nuc) {color:#4BBE2E;}.color_e7392d:not(.nuc) {color:#E7392D;}.color_3c989f:not(.nuc) {color:#3C989F;}.color_674b1b:not(.nuc) {color:#674B1B;}.color_e96699:not(.nuc) {color:#E96699;}.color_e0a729:not(.nuc) {color:#E0A729;}.color_684b6c:not(.nuc) {color:#684B6C;}.color_5b89d5:not(.nuc) {color:#5B89D5;}.color_2b6836:not(.nuc) {color:#2B6836;}.color_99a949:not(.nuc) {color:#99A949;}.color_df3dc0:not(.nuc) {color:#DF3DC0;}.color_4cc091:not(.nuc) {color:#4CC091;}.color_9b3b45:not(.nuc) {color:#9B3B45;}.color_d58247:not(.nuc) {color:#D58247;}.color_bb86b7:not(.nuc) {color:#BB86B7;}.color_5a4592:not(.nuc) {color:#5A4592;}.color_db3150:not(.nuc) {color:#DB3150;}.color_235e5b:not(.nuc) {color:#235E5B;}.color_9e3997:not(.nuc) {color:#9E3997;}.color_53b759:not(.nuc) {color:#53B759;}.color_c386df:not(.nuc) {color:#C386DF;}.color_385a86:not(.nuc) {color:#385A86;}.color_a63024:not(.nuc) {color:#A63024;}.color_5870dd:not(.nuc) {color:#5870DD;}.color_ea2977:not(.nuc) {color:#EA2977;}.color_50a0cf:not(.nuc) {color:#50A0CF;}.color_d55aef:not(.nuc) {color:#D55AEF;}.color_d1707d:not(.nuc) {color:#D1707D;}.color_43761b:not(.nuc) {color:#43761B;}.color_e06b56:not(.nuc) {color:#E06B56;}.color_8f4a2b:not(.nuc) {color:#8F4A2B;}.color_902d59:not(.nuc) {color:#902D59;}.color_de5f24:not(.nuc) {color:#DE5F24;}.color_a2a5dc:not(.nuc) {color:#A2A5DC;}.color_827327:not(.nuc) {color:#827327;}.color_3c8c69:not(.nuc) {color:#3C8C69;}.color_8d4b84:not(.nuc) {color:#8D4B84;}.color_84b22f:not(.nuc) {color:#84B22F;}.color_4ec0d6:not(.nuc) {color:#4EC0D6;}.color_e23f99:not(.nuc) {color:#E23F99;}.color_e475df:not(.nuc) {color:#E475DF;}.color_619a4f:not(.nuc) {color:#619A4F;}.color_a72f79:not(.nuc) {color:#A72F79;}.color_7d414c:not(.nuc) {color:#7D414C;}.color_aba727:not(.nuc) {color:#ABA727;}.color_965d1b:not(.nuc) {color:#965D1B;}.color_4d5e26:not(.nuc) {color:#4D5E26;}.color_dd8527:not(.nuc) {color:#DD8527;}.color_bd9336:not(.nuc) {color:#BD9336;}.color_e85d72:not(.nuc) {color:#E85D72;}.color_dc7dbb:not(.nuc) {color:#DC7DBB;}.color_bc3663:not(.nuc) {color:#BC3663;}.color_9d8eee:not(.nuc) {color:#9D8EEE;}.color_8469bc:not(.nuc) {color:#8469BC;}.color_73769d:not(.nuc) {color:#73769D;}.color_b14cbc:not(.nuc) {color:#B14CBC;}</style>
+
+<!-- slack-www-hhvm21 / 2016-11-11 17:26:53 / v0e3774f1e39018d74f0a054c26ca6fe8d61c2a55 / B:H -->
+
+</body>
+</html>
