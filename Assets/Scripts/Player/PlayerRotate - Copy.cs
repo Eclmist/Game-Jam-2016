@@ -22,7 +22,7 @@ public class PlayerRotate : MonoBehaviour
     public AnimationCurve RollLerpCurve;
     public float rollScale = 4;
     public AnimationCurve YawLerpCurve;
-    public float yawScale = 1;
+    public float yawScale = 2;
     
     [Header("Current Status (Do Not Change in Inspector)")]
     public float pitch, yaw, roll;
